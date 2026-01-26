@@ -97,7 +97,7 @@ export default function AboutPage() {
           </div>
 
           {/* TRUSTED BY */}
-          <div className="flex flex-col items-center text-center md:items-start md:text-left">
+          <div className="flex flex-col items-center text-center">
             <p className="font-heading font-bold text-[24px] leading-tight tracking-[-1.2px] mb-8 text-[#111827]">
               Trusted by the creme de la creme.
             </p>
