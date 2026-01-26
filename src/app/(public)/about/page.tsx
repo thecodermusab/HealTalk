@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import TrustedLogosCarousel from "@/components/about/TrustedLogosCarousel";
+import TrustedSection from "@/components/TrustedSection";
 import WhoAreWeSection from "@/components/about/WhoAreWeSection";
 import CoreValuesSection from "@/components/about/CoreValuesSection";
 
@@ -104,7 +105,7 @@ export default function AboutPage() {
               Trusted by the creme de la creme.
             </p>
             <div className="w-full">
-               <TrustedLogosCarousel />
+               <TrustedSection />
             </div>
           </div>
         </div>

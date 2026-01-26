@@ -32,48 +32,24 @@ const StatCard = ({
 
 const MosaicGrid = () => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full h-full">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full h-full lg:h-[418px] lg:grid-rows-2">
       {/* Row 1: Founding Year - Full Width */}
       <StatCard
         label="Founding year"
         value="2012"
-        className="md:col-span-2 bg-[#ced4fc] min-h-[200px]" // Pastel Periwinkle
+        className="md:col-span-2 lg:row-span-1 bg-[#ced4fc] min-h-[200px] lg:min-h-0 h-full" // Pastel Periwinkle
       />
 
       {/* Row 2: Employees & Happiness */}
       <StatCard
         label="Number of employees"
         value="70"
-        className="bg-[#ffe1f9] min-h-[200px]" // Pastel Pink
+        className="bg-[#ffe1f9] min-h-[200px] lg:min-h-0 h-full" // Pastel Pink
       />
       <StatCard
         label="Client happiness"
         value="4.7/5"
-        className="bg-[#d4f2c4] min-h-[200px]" // Pastel Green
-      />
-
-      {/* Row 3: Offices & Coffee */}
-      <StatCard
-        label="Offices"
-        value="2"
-        className="bg-[#e2f5d5] min-h-[200px]" // Pastel Green (lighter)
-      />
-      <StatCard
-        label="Number of coffee we drink in a day"
-        value="140+ cups"
-        className="bg-[#e5e7fd] min-h-[200px]" // Pastel Lavender
-      />
-
-      {/* Row 4: Plants & Dogs */}
-      <StatCard
-        label="Plants (that are currently alive)"
-        value="11"
-        className="bg-[#ffffff] border border-black/5 min-h-[200px]" // Warm White
-      />
-      <StatCard
-        label="Office dogs"
-        value="5"
-        className="bg-[#ffdcf5] min-h-[200px]" // Pastel Pink (slightly different)
+        className="bg-[#d4f2c4] min-h-[200px] lg:min-h-0 h-full" // Pastel Green
       />
     </div>
   );
@@ -82,10 +58,10 @@ const MosaicGrid = () => {
 const IllustrationCard = () => {
   return (
     <div
-      className="w-full h-full min-h-[600px] bg-[#e8e6ff] rounded-[32px] flex items-center justify-center relative overflow-hidden group"
+      className="w-full h-full min-h-[418px] lg:h-[418px] bg-[#e8e6ff] rounded-[32px] flex items-center justify-center relative overflow-hidden group"
     >
-       {/* Abstract Character Illustration */}
-       <div className="relative w-[300px] h-[400px]">
+       {/* Abstract Character Illustration Container - Scaled to fit */}
+       <div className="relative w-[300px] h-[400px] scale-90 lg:scale-[0.85] origin-center">
           {/* Planet/Halo */}
           <div 
              className="absolute top-[20px] left-[50%] -translate-x-1/2 w-[120px] h-[120px] z-10"
@@ -143,14 +119,14 @@ export default function WhoAreWeSection() {
         </div>
 
         {/* Grid Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
           {/* Left Column: Illustration */}
-          <div className="w-full h-full">
+          <div className="w-full h-full lg:h-[418px]">
             <IllustrationCard />
           </div>
 
           {/* Right Column: Stats Mosaic */}
-          <div className="w-full mt-6 lg:mt-0">
+          <div className="w-full mt-6 lg:mt-0 lg:h-[418px] flex flex-col justify-between">
             <MosaicGrid />
           </div>
         </div>
