@@ -102,7 +102,7 @@ export default function PsychologistCard({ psychologist }: PsychologistCardProps
             </Button>
           </Link>
           <Link href={`/psychologist/${psychologist.id}?book=true`}>
-            <Button size="sm" className="bg-primary hover:bg-primary/90 text-background">
+            <Button size="sm" className="bg-primary hover:bg-primary/90 text-black">
               Book Now
             </Button>
           </Link>

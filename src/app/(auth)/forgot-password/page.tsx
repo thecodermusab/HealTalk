@@ -29,10 +29,11 @@ export default function ForgotPasswordPage() {
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 mb-8">
-            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-background font-bold text-xl">P</span>
-            </div>
-            <span className="text-2xl font-bold text-foreground">PsyConnect</span>
+            <img
+              src="/images/logo.png"
+              alt="HealTalk logo"
+              className="h-10 w-auto"
+            />
           </Link>
 
           {!isSubmitted ? (
@@ -67,7 +68,7 @@ export default function ForgotPasswordPage() {
                 {/* Submit Button */}
                 <Button
                   type="submit"
-                  className="w-full bg-primary hover:bg-primary/90 text-background h-12 text-base"
+                  className="w-full bg-primary hover:bg-primary/90 text-black h-12 text-base"
                 >
                   Send Reset Link
                 </Button>

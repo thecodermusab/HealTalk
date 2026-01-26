@@ -76,8 +76,8 @@ export default function FindPsychologistsPage() {
                   <button
                     onClick={() => setViewMode("grid")}
                     className={`p-2 rounded transition-colors ${
-                      viewMode === "grid" 
-                        ? "bg-primary text-background" 
+                      viewMode === "grid"
+                        ? "bg-primary text-black"
                         : "text-text-secondary hover:text-foreground"
                     }`}
                     aria-label="Grid view"
@@ -87,8 +87,8 @@ export default function FindPsychologistsPage() {
                   <button
                     onClick={() => setViewMode("list")}
                     className={`p-2 rounded transition-colors ${
-                      viewMode === "list" 
-                        ? "bg-primary text-background" 
+                      viewMode === "list"
+                        ? "bg-primary text-black"
                         : "text-text-secondary hover:text-foreground"
                     }`}
                     aria-label="List view"
@@ -144,7 +144,7 @@ export default function FindPsychologistsPage() {
                       variant={currentPage === page ? "default" : "outline"}
                       size="sm"
                       onClick={() => setCurrentPage(page)}
-                      className={currentPage === page ? "bg-primary text-background" : ""}
+                      className={currentPage === page ? "bg-primary text-black" : ""}
                     >
                       {page}
                     </Button>

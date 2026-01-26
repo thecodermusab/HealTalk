@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**PsyConnect** is a modern mental health consultation platform built with Next.js 14+ (App Router), TypeScript, and Tailwind CSS. The application connects patients with licensed psychologists for video consultations. It's a static/client-side application using placeholder data from `src/lib/data.ts`.
+**HealTalk** is a modern mental health consultation platform built with Next.js 14+ (App Router), TypeScript, and Tailwind CSS. The application connects patients with licensed psychologists for video consultations. It's a static/client-side application using placeholder data from `src/lib/data.ts`.
 
 ## Development Commands
 

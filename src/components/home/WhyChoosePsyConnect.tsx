@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { ArrowRight, Calendar, Shield, Target, UserCheck } from "lucide-react";
 
-export default function WhyChoosePsyConnect() {
+export default function WhyChooseHealTalk() {
   // TODO: tighten pill size/letter-spacing to match reference.
   // TODO: match headline scale/weight and spacing to the reference.
   // TODO: align card radius/shadow strength with the reference cards.
@@ -23,7 +23,7 @@ export default function WhyChoosePsyConnect() {
 
         <h2 className="mb-10 max-w-3xl text-3xl font-semibold leading-tight text-foreground sm:text-4xl lg:mb-12 lg:text-[44px]">
           Why{" "}
-          <span className="text-primary">PsyConnect</span> is The Right Choice
+          <span className="text-primary">HealTalk</span> is The Right Choice
           for You
         </h2>
 

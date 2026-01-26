@@ -57,7 +57,7 @@ export function FooterSection() {
           <AnimatedContainer className="space-y-4 md:col-span-2 lg:col-span-1">
             <Grid2x2PlusIcon className="size-8 text-foreground" />
             <p className="text-muted-foreground text-sm">
-              © {new Date().getFullYear()} PsyConnect. All rights reserved.
+              © {new Date().getFullYear()} HealTalk. All rights reserved.
             </p>
           </AnimatedContainer>
 

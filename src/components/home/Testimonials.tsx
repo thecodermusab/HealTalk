@@ -13,7 +13,7 @@ const testimonials = [
   },
   {
     id: 2,
-    text: "PsyConnect made it easy to get help without the stress of travel. My psychologist listened carefully and the sessions felt personal.",
+    text: "HealTalk made it easy to get help without the stress of travel. My psychologist listened carefully and the sessions felt personal.",
     name: "Nora Malik",
     role: "Project Manager",
   },

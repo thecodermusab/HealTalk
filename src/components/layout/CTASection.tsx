@@ -1,14 +1,22 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import Image from "next/image";
 
 export default function CTASection() {
   return (
     <div className="px-6 pb-12 pt-14 text-center md:px-12 lg:px-16 lg:pt-16">
-      {/* Icon Badge */}
+      {/* Logo */}
       <div className="flex justify-center pb-6">
-        <div className="flex size-14 items-center justify-center rounded-[18px] bg-[#0f172a]">
-          <Sparkles className="size-6 text-white" />
+        <div className="flex items-center justify-center">
+          <Image
+            src="/images/logo.png"
+            alt="HealTalk logo"
+            width={56}
+            height={56}
+            className="h-14 w-auto"
+            style={{ filter: 'invert(88%) sepia(46%) saturate(549%) hue-rotate(21deg) brightness(103%) contrast(95%)' }}
+          />
         </div>
       </div>
 
@@ -28,7 +36,7 @@ export default function CTASection() {
       <Link href="/find-psychologists">
         <Button
           size="lg"
-          className="mt-8 h-12 rounded-full bg-[#5b61e7] px-7 text-base font-semibold text-white shadow-none transition-colors hover:bg-[#4e54d6] focus-visible:ring-2 focus-visible:ring-[#5b61e7]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background has-[>svg]:px-7"
+          className="mt-8 h-12 rounded-full bg-primary px-7 text-base font-semibold text-black shadow-none transition-colors hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background has-[>svg]:px-7"
         >
           Book Appointment
           <ArrowRight className="size-5" />

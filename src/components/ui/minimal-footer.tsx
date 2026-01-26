@@ -87,8 +87,11 @@ export function MinimalFooter() {
         <div className="grid max-w-4xl grid-cols-6 gap-6 p-4">
           <div className="col-span-6 flex flex-col gap-5 md:col-span-4">
             <Link href="/" className="w-max opacity-25 flex items-center gap-2">
-              <HeartPulse className="size-8" />
-              <span className="text-xl font-bold">PsyConnect</span>
+              <img
+                src="/images/logo.png"
+                alt="HealTalk logo"
+                className="h-8 w-auto"
+              />
             </Link>
             <p className="text-muted-foreground max-w-sm font-mono text-sm text-balance">
               Connecting you with licensed psychologists for professional mental health support.
@@ -140,7 +143,7 @@ export function MinimalFooter() {
         <div className="bg-border absolute inset-x-0 h-px w-full" />
         <div className="flex max-w-4xl flex-col justify-between gap-2 pt-2 pb-5">
           <p className="text-muted-foreground text-center font-thin">
-            © {year} <Link href="/" className="hover:underline">PsyConnect</Link>. All rights
+            © {year} <Link href="/" className="hover:underline">HealTalk</Link>. All rights
             reserved.
           </p>
         </div>

@@ -133,17 +133,18 @@ export default function SignUpPage() {
         <div className="w-full max-w-md">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 mb-8">
-            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-background font-bold text-xl">P</span>
-            </div>
-            <span className="text-2xl font-bold text-foreground">PsyConnect</span>
+            <img
+              src="/images/logo.png"
+              alt="HealTalk logo"
+              className="h-10 w-auto"
+            />
           </Link>
 
           <h1 className="text-3xl font-bold text-foreground mb-2">
             Create Your Account
           </h1>
           <p className="text-text-secondary mb-8">
-            Join PsyConnect and start your journey to better mental health
+            Join HealTalk and start your journey to better mental health
           </p>
 
           {/* Role Selection */}
@@ -448,7 +449,7 @@ export default function SignUpPage() {
                 {/* Submit Button */}
                 <Button
                   type="submit"
-                  className="w-full bg-primary hover:bg-primary/90 text-background h-12 text-base"
+                  className="w-full bg-primary hover:bg-primary/90 text-black h-12 text-base"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? "Creating account..." : "Create Account"}
@@ -473,7 +474,7 @@ export default function SignUpPage() {
       <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-primary via-primary/90 to-accent items-center justify-center p-12">
         <div className="text-center text-background max-w-lg">
           <h2 className="text-4xl font-bold mb-6">
-            Welcome to PsyConnect
+            Welcome to HealTalk
           </h2>
           <p className="text-xl text-background/90 mb-8">
             Join thousands of people who found professional mental health support through our platform

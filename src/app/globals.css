@@ -6,9 +6,11 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-body);
   --font-mono: var(--font-geist-mono);
-  --font-serif: var(--font-serif);
+  --font-logo: var(--font-logo);
+  --font-heading: var(--font-heading);
+  --font-body: var(--font-body);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -50,13 +52,13 @@
 }
 
 :root {
-  /* PsyConnect Custom Theme */
+  /* HealTalk Custom Theme */
   --radius: 0.5rem; /* 8px for cards, 6px for buttons */
 
-  /* Main Colors - PsyConnect Palette */
+  /* Main Colors - HealTalk Palette */
   --primary-teal: #c97a5a;
   --secondary-coral: #2f6f6d;
-  --accent-purple: #d9a441;
+  --accent-lime: #d5f567;
   --success-green: #16a34a;
 
   /* Background & Text */
@@ -71,12 +73,12 @@
   --popover-foreground: #111827;
 
   /* Theme Colors */
-  --primary: #c97a5a;
-  --primary-foreground: #fff7f2;
+  --primary: #d5f567;
+  --primary-foreground: #000000;
   --secondary: #2f6f6d;
   --secondary-foreground: #fff7f2;
-  --accent: #d9a441;
-  --accent-foreground: #111827;
+  --accent: #d5f567;
+  --accent-foreground: #000000;
 
   /* UI States */
   --muted: #fff7f2;
@@ -114,14 +116,14 @@
   --card-foreground: #fff7f2;
   --popover: #111827;
   --popover-foreground: #fff7f2;
-  --primary: #c97a5a;
-  --primary-foreground: #fff7f2;
+  --primary: #d5f567;
+  --primary-foreground: #000000;
   --secondary: #2f6f6d;
   --secondary-foreground: #fff7f2;
   --muted: #111827;
   --muted-foreground: #4b5563;
-  --accent: #d9a441;
-  --accent-foreground: #111827;
+  --accent: #d5f567;
+  --accent-foreground: #000000;
   --destructive: #c97a5a;
   --border: #e8d5cc;
   --input: #e8d5cc;
@@ -147,6 +149,24 @@
   }
   html, body {
     @apply m-0 p-0 bg-background text-foreground;
+    font-family: var(--font-body), system-ui, -apple-system, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading), system-ui, -apple-system, sans-serif;
+    font-weight: 600;
+  }
+
+  .font-logo {
+    font-family: var(--font-logo), Georgia, serif;
+  }
+
+  .font-heading {
+    font-family: var(--font-heading), system-ui, -apple-system, sans-serif;
+  }
+
+  .font-body {
+    font-family: var(--font-body), system-ui, -apple-system, sans-serif;
   }
 }
 

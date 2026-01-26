@@ -104,7 +104,7 @@ export const testimonials = [
     id: 1,
     name: "Ayşe K.",
     age: 28,
-    text: "PsyConnect changed my life. Dr. Ahmet helped me overcome my anxiety with patience and practical techniques. I finally feel like myself again.",
+    text: "HealTalk changed my life. Dr. Ahmet helped me overcome my anxiety with patience and practical techniques. I finally feel like myself again.",
     rating: 5,
     photo: "/images/patient-1.jpg",
   },

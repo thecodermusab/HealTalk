@@ -24,10 +24,6 @@ export function SimpleHeader() {
       label: "Find Psychologists",
       href: "/find-psychologists",
     },
-    {
-      label: "About",
-      href: "/about",
-    },
   ];
 
   const isAuthenticated = status === "authenticated";
@@ -54,9 +50,12 @@ export function SimpleHeader() {
         <nav className="mx-auto flex h-16 sm:h-[72px] w-full max-w-[1400px] items-center justify-between gap-4 rounded-full bg-white px-6 sm:px-10 shadow-[0_2px_12px_rgba(0,0,0,0.08)] border border-gray-200/50">
           {/* Brand Logo - Left */}
           <Link href="/" className="flex items-center shrink-0">
-            <span className="text-2xl sm:text-3xl font-serif font-normal text-gray-900 tracking-tight">
-              PsyConnect
-            </span>
+            <img
+              src="/images/logo.png"
+              alt="HealTalk logo"
+              className="h-8 sm:h-10 w-auto brightness-0 saturate-100"
+              style={{ filter: 'invert(88%) sepia(46%) saturate(549%) hue-rotate(21deg) brightness(103%) contrast(95%)' }}
+            />
           </Link>
 
           {/* Navigation Links - Center (Desktop) */}
@@ -88,19 +87,26 @@ export function SimpleHeader() {
               <Globe className="w-5 h-5 text-gray-700" />
             </button>
 
-            {/* Book a Call / Auth Buttons */}
+            {/* Auth Buttons */}
             {isAuthenticated ? (
               <Link href={dashboardHref}>
-                <Button className="h-11 px-6 rounded-full bg-[#d4f567] text-gray-900 font-semibold text-[15px] hover:bg-[#c8e957] transition-colors duration-200 shadow-none border-0 focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2">
+                <Button className="h-11 px-6 rounded-full bg-[#d5f567] text-black font-semibold text-[15px] hover:bg-[#c3e555] transition-colors duration-200 shadow-none border-0 focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2">
                   Dashboard
                 </Button>
               </Link>
             ) : (
-              <Link href="/signup">
-                <Button className="h-11 px-6 rounded-full bg-[#d4f567] text-gray-900 font-semibold text-[15px] hover:bg-[#c8e957] transition-colors duration-200 shadow-none border-0 focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2">
-                  Book a call
-                </Button>
-              </Link>
+              <>
+                <Link href="/login">
+                  <Button className="h-11 px-6 rounded-full bg-white text-black font-medium text-[15px] hover:bg-gray-100 transition-colors duration-200 shadow-none border border-gray-300 focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2">
+                    Sign In
+                  </Button>
+                </Link>
+                <Link href="/signup">
+                  <Button className="h-11 px-6 rounded-full bg-[#d5f567] text-black font-semibold text-[15px] hover:bg-[#c3e555] transition-colors duration-200 shadow-none border-0 focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2">
+                    Get Started
+                  </Button>
+                </Link>
+              </>
             )}
           </div>
 
@@ -109,14 +115,14 @@ export function SimpleHeader() {
             {/* CTA Button (Mobile - visible) */}
             {isAuthenticated ? (
               <Link href={dashboardHref}>
-                <Button className="h-10 px-5 rounded-full bg-[#d4f567] text-gray-900 font-semibold text-sm hover:bg-[#c8e957] transition-colors duration-200 shadow-none border-0">
+                <Button className="h-10 px-5 rounded-full bg-[#d5f567] text-black font-semibold text-sm hover:bg-[#c3e555] transition-colors duration-200 shadow-none border-0">
                   Dashboard
                 </Button>
               </Link>
             ) : (
               <Link href="/signup">
-                <Button className="h-10 px-5 rounded-full bg-[#d4f567] text-gray-900 font-semibold text-sm hover:bg-[#c8e957] transition-colors duration-200 shadow-none border-0">
-                  Book a call
+                <Button className="h-10 px-5 rounded-full bg-[#d5f567] text-black font-semibold text-sm hover:bg-[#c3e555] transition-colors duration-200 shadow-none border-0">
+                  Get Started
                 </Button>
               </Link>
             )}

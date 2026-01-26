@@ -1,4 +1,4 @@
-# PsyConnect - Mental Health Consultation Platform
+# HealTalk - Mental Health Consultation Platform
 
 [![Built with Next.js](https://img.shields.io/badge/Built%20with-Next.js%2015-black)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
@@ -218,7 +218,7 @@ This project is a demonstration/educational project.
 
 ## 👥 Contributors
 
-Built by the PsyConnect team.
+Built by the HealTalk team.
 
 ---
 

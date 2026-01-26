@@ -137,7 +137,7 @@ export default function BookingWidget({ price }: BookingWidgetProps) {
       </div>
 
       {/* Confirm Button */}
-      <Button className="w-full bg-primary hover:bg-primary/90 text-background h-12 text-lg mb-4">
+      <Button className="w-full bg-primary hover:bg-primary/90 text-black h-12 text-lg mb-4">
         Confirm Booking
       </Button>
 
