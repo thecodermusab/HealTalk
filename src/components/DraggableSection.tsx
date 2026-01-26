@@ -80,7 +80,7 @@ export default function DraggableSection({
         <div className="inline-flex gap-4">{children}</div>
       </div>
 
-      {/* Floating Drag Pill - Follows Cursor */}
+      {/* Floating Drag Pill - Follows Cursor - BIGGER SIZE */}
       {showDragIndicator && isHovering && (
         <div
           className="absolute top-0 left-0 pointer-events-none z-50 transition-opacity duration-200"
@@ -90,8 +90,8 @@ export default function DraggableSection({
         >
           <div
             className={cn(
-              "translate-x-3 translate-y-3 bg-[#1a1a1a] text-white text-[12px] font-bold px-3 py-1.5 rounded-full shadow-lg whitespace-nowrap transition-transform duration-200",
-              isDragging && "scale-90"
+              "translate-x-4 translate-y-4 bg-[#131E0D] text-white text-[20px] font-bold px-8 py-4 rounded-full shadow-xl whitespace-nowrap transition-transform duration-200",
+              isDragging && "scale-95"
             )}
           >
             {isDragging ? "Dragging" : "Drag"}

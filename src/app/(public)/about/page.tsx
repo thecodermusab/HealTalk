@@ -3,8 +3,7 @@
 import Image from "next/image";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import TrustedLogosCarousel from "@/components/about/TrustedLogosCarousel";
-import TrustedSection from "@/components/TrustedSection";
+import InfiniteLogoCarousel from "@/components/InfiniteLogoCarousel";
 import WhoAreWeSection from "@/components/about/WhoAreWeSection";
 import CoreValuesSection from "@/components/about/CoreValuesSection";
 
@@ -99,17 +98,11 @@ export default function AboutPage() {
              />
           </div>
 
-          {/* TRUSTED BY */}
-          <div className="flex flex-col items-center text-center">
-            <p className="font-heading font-bold text-[24px] leading-tight tracking-[-1.2px] mb-8 text-[#111827]">
-              Trusted by the creme de la creme.
-            </p>
-            <div className="w-full">
-               <TrustedSection />
-            </div>
-          </div>
         </div>
       </section>
+
+      {/* INFINITE LOGO CAROUSEL */}
+      <InfiniteLogoCarousel />
 
       {/* SECTION 2: STORY & VIDEO */}
       <section className="py-[80px] px-10">

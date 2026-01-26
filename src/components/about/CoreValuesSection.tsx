@@ -82,7 +82,7 @@ const cards = [
 
 export default function CoreValuesSection() {
   return (
-    <section className="py-[96px] px-10 bg-[#FFFBF8]">
+    <section className="py-[96px] px-10">
       <div className="max-w-[1470px] mx-auto">
         {/* Header */}
         <div className="text-center mb-[80px]">
