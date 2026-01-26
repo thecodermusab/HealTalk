@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import TrustedLogosCarousel from "@/components/about/TrustedLogosCarousel";
 
 const leaders = [
   {
@@ -85,7 +86,7 @@ export default function AboutPage() {
           </div>
 
           {/* HERO IMAGE */}
-          <div className="w-full aspect-[16/9] rounded-2xl overflow-hidden mb-[80px] relative bg-gray-200">
+          <div className="w-full max-w-[1386px] mx-auto h-[400px] lg:h-[778px] rounded-[24px] overflow-hidden mb-[80px] relative shadow-sm border border-black/5">
              <Image 
                 src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1600&q=80"
                 alt="HealTalk Team"
@@ -96,17 +97,12 @@ export default function AboutPage() {
           </div>
 
           {/* TRUSTED BY */}
-          <div>
+          <div className="flex flex-col items-center text-center md:items-start md:text-left">
             <p className="font-heading font-bold text-[24px] leading-tight tracking-[-1.2px] mb-8 text-[#111827]">
               Trusted by the creme de la creme.
             </p>
-            <div className="flex flex-wrap gap-6 items-center">
-               {/* Placeholder Logos to match Amby layout */}
-               {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <div key={i} className="h-[112px] w-[112px] bg-white/50 rounded-lg flex items-center justify-center">
-                    <div className="text-sm font-bold text-gray-400">LOGO</div>
-                  </div>
-               ))}
+            <div className="w-full">
+               <TrustedLogosCarousel />
             </div>
           </div>
         </div>
@@ -123,7 +119,7 @@ export default function AboutPage() {
            </div>
 
            {/* VIDEO CARD */}
-           <div className="w-full aspect-[16/9] rounded-2xl overflow-hidden relative shadow-none">
+           <div className="w-full max-w-[1220px] mx-auto h-[400px] lg:h-[681px] rounded-[24px] overflow-hidden relative shadow-sm border border-black/5">
               <video
                 autoPlay
                 loop
@@ -135,7 +131,7 @@ export default function AboutPage() {
                 <source src="https://media.istockphoto.com/id/1324734893/video/diverse-business-people-having-meeting-in-board-room.mp4?s=mp4-640x640-is&k=20&c=vWj_5XqVzgLgZ7Z9zX8Z9zX8Z9zX8Z9zX8Z9zX8Z9zX8" type="video/mp4" />
               </video>
               <div className="absolute inset-0 flex items-center justify-center bg-black/10">
-                <span className="font-logo text-[120px] text-white tracking-tighter opacity-80">HealTalk</span>
+                <span className="font-logo text-[80px] md:text-[120px] text-white tracking-tighter opacity-80">HealTalk</span>
               </div>
            </div>
         </div>
@@ -151,8 +147,8 @@ export default function AboutPage() {
              </h2>
           </div>
 
-          {/* LEADERS GRID */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* LEADERS GRID - Enforcing fixed dimensions on desktop */}
+          <div className="flex flex-wrap justify-center gap-6">
              {leaders.map((leader) => {
                const isActive = activeLeader === leader.id;
                return (
@@ -167,12 +163,12 @@ export default function AboutPage() {
                     role="button"
                     aria-pressed={isActive}
                     // Card Outer Styling:
-                    // - aspect-[3/4]: Matches target tall portrait ratio
+                    // - w-[430px] h-[668px]: Exact requested dimensions on desktop
                     // - rounded-[24px]: Matches target large radius
-                    // - bg-[#effc5f]: Yellow highlight background (visible if image has transparency or during load, acts as active context)
-                    // - shadow-sm: Subtle shadow as requested
+                    // - bg-[#effc5f]: Yellow highlight background
+                    // - shadow-sm: Subtle shadow
                     className={cn(
-                        "relative w-full aspect-[3/4] rounded-[24px] overflow-hidden cursor-pointer group transition-all duration-300 outline-none isolate",
+                        "relative w-full md:w-[430px] h-[600px] md:h-[668px] rounded-[24px] overflow-hidden cursor-pointer group transition-all duration-300 outline-none isolate shrink-0",
                         "bg-[#f0f0f0] border border-black/5 shadow-sm", // Default neutral background
                         isActive && "bg-[#effc5f] border-[#effc5f]" // Active yellow background
                     )}
@@ -183,7 +179,7 @@ export default function AboutPage() {
                         src={leader.image}
                         alt={leader.name}
                         fill
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        sizes="(max-width: 768px) 100vw, 430px"
                         className={cn(
                           "object-cover transition-all duration-500",
                           // Grayscale by default, smooth transition to color
@@ -193,7 +189,6 @@ export default function AboutPage() {
                     </div>
 
                     {/* INSET PANEL */}
-                    {/* INSET PANEL - UPDATED: removed justify-end to fix clipped name */}
                     <div 
                       className={cn(
                         "absolute left-4 right-4 z-10 transition-all duration-300 cubic-bezier(0.4, 0, 0.2, 1) flex flex-col overflow-hidden",

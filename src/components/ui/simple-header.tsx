@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Globe } from "lucide-react";
+import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { MenuToggle } from "@/components/ui/menu-toggle";
@@ -79,13 +79,8 @@ export function SimpleHeader() {
 
           {/* Right Side Actions (Desktop) */}
           <div className="hidden lg:flex items-center gap-3 shrink-0">
-            {/* Globe Icon Button */}
-            <button
-              className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
-              aria-label="Language selector"
-            >
-              <Globe className="w-5 h-5 text-gray-700" />
-            </button>
+            {/* Language Switcher */}
+            <LanguageSwitcher />
 
             {/* Auth Buttons */}
             {isAuthenticated ? (
@@ -112,6 +107,8 @@ export function SimpleHeader() {
 
           {/* Mobile Menu Toggle */}
           <div className="flex lg:hidden items-center gap-3">
+            {/* Mobile Language Switcher */}
+            <LanguageSwitcher />
             {/* CTA Button (Mobile - visible) */}
             {isAuthenticated ? (
               <Link href={dashboardHref}>
