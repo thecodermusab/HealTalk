@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import TrustedLogosCarousel from "@/components/about/TrustedLogosCarousel";
+import WhoAreWeSection from "@/components/about/WhoAreWeSection";
 
 const leaders = [
   {
@@ -233,6 +234,10 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
+
+
+      {/* SECTION 4: WHO ARE WE? */}
+      <WhoAreWeSection />
     </div>
   );
 }

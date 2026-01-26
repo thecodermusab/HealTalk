@@ -56,92 +56,109 @@
   /* HealTalk Custom Theme */
   --radius: 0.5rem; /* 8px for cards, 6px for buttons */
 
-  /* Main Colors - HealTalk Palette */
-  --primary-teal: #c97a5a;
-  --secondary-coral: #2f6f6d;
-  --accent-lime: #d5f567;
-  --success-green: #16a34a;
+  /* Main Colors - Updated Palette */
+  --brand-dark-green: #131E0D;
+  --primary-orange: #FC7D45;
+  --accent-lime: #D2E500;
+  --accent-yellow: #F0FF80;
+  --link-green: #408954;
+  
+  /* Backgrounds */
+  --bg-warm-white: #FFFBF8;
+  --bg-light-gray: #F7F2EB;
+  --bg-alt-purple: #EBEBFF;
+  --bg-alt-green: #E1F4D7;
+  --bg-alt-pink: #FFE5F9;
 
   /* Background & Text */
-  --background: #fff7f2;
-  --foreground: #111827;
-  --text-secondary: #4b5563;
+  --background: #FFFBF8; /* Warm White */
+  --foreground: #131E0D; /* Dark Green */
+  --text-secondary: #408954; /* Green (Links/Muted) */
 
   /* Component Colors */
-  --card: #fff7f2;
-  --card-foreground: #111827;
-  --popover: #fff7f2;
-  --popover-foreground: #111827;
+  --card: #FFFBF8;
+  --card-foreground: #131E0D;
+  --popover: #FFFBF8;
+  --popover-foreground: #131E0D;
 
   /* Theme Colors */
-  --primary: #d5f567;
-  --primary-foreground: #000000;
-  --secondary: #2f6f6d;
-  --secondary-foreground: #fff7f2;
-  --accent: #d5f567;
-  --accent-foreground: #000000;
+  --primary: #FC7D45; /* Coral Orange */
+  --primary-foreground: #FFFFFF; /* White Text */
+  --secondary: #131E0D; /* Dark Green */
+  --secondary-foreground: #FFFFFF; /* White Text */
+  --accent: #D2E500; /* Bright Lime */
+  --accent-foreground: #131E0D;
 
   /* UI States */
-  --muted: #fff7f2;
-  --muted-foreground: #4b5563;
-  --destructive: #c97a5a;
-  --border: #e8d5cc;
-  --input: #e8d5cc;
-  --ring: #c97a5a;
+  --muted: #F7F2EB; /* Light Gray BG */
+  --muted-foreground: #408954;
+  --destructive: #FC7D45;
+  --border: #E1F4D7; /* Pale Green for subtle borders, or use #131E0D for strong ones */
+  --input: #E1F4D7;
+  --ring: #FC7D45;
 
   /* Success */
-  --success: #16a34a;
+  --success: #408954;
 
-  /* Charts */
-  --chart-1: #c97a5a;
-  --chart-2: #2f6f6d;
-  --chart-3: #d9a441;
-  --chart-4: #16a34a;
-  --chart-5: #4b5563;
+  /* Charts - mapped to new palette */
+  --chart-1: #FC7D45; /* Orange */
+  --chart-2: #131E0D; /* Green */
+  --chart-3: #D2E500; /* Lime */
+  --chart-4: #408954; /* Link Green */
+  --chart-5: #F0FF80; /* Yellow */
 
   /* Sidebar */
-  --sidebar: #fff7f2;
-  --sidebar-foreground: #111827;
-  --sidebar-primary: #c97a5a;
-  --sidebar-primary-foreground: #fff7f2;
-  --sidebar-accent: #fff7f2;
-  --sidebar-accent-foreground: #111827;
-  --sidebar-border: #e8d5cc;
-  --sidebar-ring: #c97a5a;
+  --sidebar: #FFFBF8;
+  --sidebar-foreground: #131E0D;
+  --sidebar-primary: #FC7D45;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #F7F2EB;
+  --sidebar-accent-foreground: #131E0D;
+  --sidebar-border: #E1F4D7;
+  --sidebar-ring: #FC7D45;
 }
 
 .dark {
-  --background: #111827;
-  --foreground: #fff7f2;
-  --card: #111827;
-  --card-foreground: #fff7f2;
-  --popover: #111827;
-  --popover-foreground: #fff7f2;
-  --primary: #d5f567;
-  --primary-foreground: #000000;
-  --secondary: #2f6f6d;
-  --secondary-foreground: #fff7f2;
-  --muted: #111827;
-  --muted-foreground: #4b5563;
-  --accent: #d5f567;
-  --accent-foreground: #000000;
-  --destructive: #c97a5a;
-  --border: #e8d5cc;
-  --input: #e8d5cc;
-  --ring: #c97a5a;
-  --chart-1: #c97a5a;
-  --chart-2: #2f6f6d;
-  --chart-3: #d9a441;
+  /* Reversed for Dark Mode: Background is Dark Green, Text is Warm White */
+  --background: #131E0D;
+  --foreground: #FFFBF8;
+  
+  --card: #131E0D;
+  --card-foreground: #FFFBF8;
+  --popover: #131E0D;
+  --popover-foreground: #FFFBF8;
+  
+  --primary: #FC7D45;
+  --primary-foreground: #FFFFFF;
+  
+  --secondary: #FFFBF8; /* Secondary BG in dark mode usually needs to be distinct, maybe Warm White text on dark? Or just keep secondary buttons dark green? */
+  --secondary-foreground: #131E0D;
+  
+  --muted: #1a2e12; /* Slightly lighter dark green for muted areas? Or just use black transparency. Let's use a dark shade. */
+  --muted-foreground: #E1F4D7; /* lighter green for text */
+  
+  --accent: #D2E500;
+  --accent-foreground: #131E0D;
+  
+  --destructive: #FC7D45;
+  --border: #2f4f25; /* Darker border for dark mode */
+  --input: #2f4f25;
+  --ring: #FC7D45;
+  
+  --chart-1: #FC7D45;
+  --chart-2: #408954;
+  --chart-3: #D2E500;
   --chart-4: #16a34a;
-  --chart-5: #4b5563;
-  --sidebar: #111827;
-  --sidebar-foreground: #fff7f2;
-  --sidebar-primary: #c97a5a;
-  --sidebar-primary-foreground: #fff7f2;
-  --sidebar-accent: #111827;
-  --sidebar-accent-foreground: #fff7f2;
-  --sidebar-border: #e8d5cc;
-  --sidebar-ring: #c97a5a;
+  --chart-5: #E1F4D7;
+  
+  --sidebar: #131E0D;
+  --sidebar-foreground: #FFFBF8;
+  --sidebar-primary: #FC7D45;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #1a2e12;
+  --sidebar-accent-foreground: #FFFBF8;
+  --sidebar-border: #2f4f25;
+  --sidebar-ring: #FC7D45;
 }
 
 @layer base {

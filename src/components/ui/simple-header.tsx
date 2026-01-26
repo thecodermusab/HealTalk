@@ -24,6 +24,10 @@ export function SimpleHeader() {
       label: "Find Psychologists",
       href: "/find-psychologists",
     },
+    {
+      label: "About",
+      href: "/about",
+    },
   ];
 
   const isAuthenticated = status === "authenticated";
@@ -40,6 +44,9 @@ export function SimpleHeader() {
     }
     if (href === "/find-psychologists") {
       return pathname === "/find-psychologists" || pathname.startsWith("/psychologist/");
+    }
+    if (href === "/about") {
+      return pathname === "/about";
     }
     return pathname === href;
   };
