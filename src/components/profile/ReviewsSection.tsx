@@ -43,7 +43,7 @@ export default function ReviewsSection({ psychologistId, rating, reviewCount, re
           {/* Overall Rating */}
           <div className="flex flex-col items-center md:items-start">
             <div className="flex items-center gap-2 mb-2">
-              <Star className="text-yellow-400 fill-yellow-400" size={32} />
+              <Star className="text-accent fill-accent" size={32} />
               <span className="text-5xl font-bold text-foreground">{rating}</span>
               <span className="text-xl text-text-secondary">out of 5</span>
             </div>
@@ -85,7 +85,7 @@ export default function ReviewsSection({ psychologistId, rating, reviewCount, re
       {/* Reviews List */}
       <div className="space-y-6">
         {reviews.map((review) => (
-          <div key={review.id} className="bg-white border border-border rounded-xl p-6">
+          <div key={review.id} className="bg-card border border-border rounded-xl p-6">
             {/* Review Header */}
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
@@ -102,7 +102,7 @@ export default function ReviewsSection({ psychologistId, rating, reviewCount, re
                   <Star
                     key={i}
                     className={`${
-                      i < review.rating ? "text-yellow-400 fill-yellow-400" : "text-border"
+                      i < review.rating ? "text-accent fill-accent" : "text-border"
                     }`}
                     size={16}
                   />

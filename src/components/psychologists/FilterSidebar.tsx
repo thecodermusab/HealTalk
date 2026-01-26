@@ -49,7 +49,7 @@ export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
   };
 
   return (
-    <div className="bg-white border border-border rounded-xl p-6 sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto">
+    <div className="bg-card border border-border rounded-xl p-6 sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-bold text-foreground">FILTERS</h3>
@@ -205,7 +205,7 @@ export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
       </div>
 
       {/* Apply Button */}
-      <Button className="w-full bg-primary hover:bg-primary/90 text-white">
+      <Button className="w-full bg-primary hover:bg-primary/90 text-background">
         Apply Filters
       </Button>
     </div>

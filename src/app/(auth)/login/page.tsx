@@ -1,33 +1,75 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { getSession, signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 
+const authErrorMessages: Record<string, string> = {
+  CredentialsSignin: "Invalid email or password.",
+  OAuthAccountNotLinked: "This email is already linked to a different sign-in method.",
+  OAuthCallbackError: "Social login failed. Please try again.",
+};
+
+const getPostLoginPath = (role?: string) => {
+  if (role === "ADMIN") return "/admin/dashboard";
+  if (role === "PSYCHOLOGIST") return "/psychologist/dashboard";
+  return "/patient/dashboard";
+};
+
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     rememberMe: false,
   });
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    const error = searchParams.get("error");
+    if (!error) return;
+    setErrorMessage(authErrorMessages[error] ?? "Unable to sign in. Please try again.");
+  }, [searchParams]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Login:", formData);
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    setErrorMessage(null);
+
+    const result = await signIn("credentials", {
+      redirect: false,
+      email: formData.email,
+      password: formData.password,
+    });
+
+    if (!result || result.error) {
+      setErrorMessage(authErrorMessages.CredentialsSignin);
+      setIsSubmitting(false);
+      return;
+    }
+
+    const session = await getSession();
+    const role = (session?.user as { role?: string } | undefined)?.role;
+    router.push(getPostLoginPath(role));
   };
 
   return (
     <div className="min-h-screen flex">
       {/* Left Side - Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-12 bg-white">
+      <div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-12 bg-card">
         <div className="w-full max-w-md">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 mb-8">
             <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">P</span>
+              <span className="text-background font-bold text-xl">P</span>
             </div>
             <span className="text-2xl font-bold text-foreground">PsyConnect</span>
           </Link>
@@ -41,6 +83,14 @@ export default function LoginPage() {
 
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
+            {errorMessage ? (
+              <div
+                className="rounded-lg border border-primary/30 bg-primary/10 px-4 py-3 text-sm text-primary"
+                role="alert"
+              >
+                {errorMessage}
+              </div>
+            ) : null}
             {/* Email */}
             <div>
               <label className="block text-sm font-semibold text-foreground mb-2">
@@ -55,6 +105,7 @@ export default function LoginPage() {
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   className="pl-10 h-12"
                   required
+                  autoComplete="email"
                 />
               </div>
             </div>
@@ -78,6 +129,7 @@ export default function LoginPage() {
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   className="pl-10 pr-10 h-12"
                   required
+                  autoComplete="current-password"
                 />
                 <button
                   type="button"
@@ -106,9 +158,10 @@ export default function LoginPage() {
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full bg-primary hover:bg-primary/90 text-white h-12 text-base"
+              className="w-full bg-primary hover:bg-primary/90 text-background h-12 text-base"
+              disabled={isSubmitting}
             >
-              Log In
+              {isSubmitting ? "Logging in..." : "Log In"}
             </Button>
           </form>
 
@@ -118,7 +171,7 @@ export default function LoginPage() {
               <div className="w-full border-t border-border"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-text-secondary">Or continue with</span>
+              <span className="px-4 bg-card text-text-secondary">Or continue with</span>
             </div>
           </div>
 
@@ -128,6 +181,7 @@ export default function LoginPage() {
               type="button"
               variant="outline"
               className="h-11"
+              onClick={() => signIn("google")}
             >
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                 <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -141,6 +195,7 @@ export default function LoginPage() {
               type="button"
               variant="outline"
               className="h-11"
+              onClick={() => signIn("facebook")}
             >
               <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
@@ -163,42 +218,42 @@ export default function LoginPage() {
 
       {/* Right Side - Image/Illustration */}
       <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-primary via-primary/90 to-accent items-center justify-center p-12">
-        <div className="text-center text-white max-w-lg">
-          <div className="w-24 h-24 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-8">
-            <Lock size={48} className="text-white" />
+        <div className="text-center text-background max-w-lg">
+          <div className="w-24 h-24 bg-card/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-8">
+            <Lock size={48} className="text-background" />
           </div>
           <h2 className="text-4xl font-bold mb-6">
             Secure & Confidential
           </h2>
-          <p className="text-xl text-white/90 mb-8">
+          <p className="text-xl text-background/90 mb-8">
             Your mental health journey is private and protected with end-to-end encryption
           </p>
           <div className="space-y-4 text-left">
-            <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-lg p-4">
+            <div className="flex items-center gap-3 bg-card/10 backdrop-blur-sm rounded-lg p-4">
               <div className="w-10 h-10 bg-success/30 rounded-full flex items-center justify-center flex-shrink-0">
                 <span className="text-2xl">✓</span>
               </div>
               <div>
                 <div className="font-semibold">Encrypted Sessions</div>
-                <div className="text-sm text-white/80">End-to-end encryption for all consultations</div>
+                <div className="text-sm text-background/80">End-to-end encryption for all consultations</div>
               </div>
             </div>
-            <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-lg p-4">
+            <div className="flex items-center gap-3 bg-card/10 backdrop-blur-sm rounded-lg p-4">
               <div className="w-10 h-10 bg-success/30 rounded-full flex items-center justify-center flex-shrink-0">
                 <span className="text-2xl">✓</span>
               </div>
               <div>
                 <div className="font-semibold">HIPAA Compliant</div>
-                <div className="text-sm text-white/80">Meets healthcare privacy standards</div>
+                <div className="text-sm text-background/80">Meets healthcare privacy standards</div>
               </div>
             </div>
-            <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-lg p-4">
+            <div className="flex items-center gap-3 bg-card/10 backdrop-blur-sm rounded-lg p-4">
               <div className="w-10 h-10 bg-success/30 rounded-full flex items-center justify-center flex-shrink-0">
                 <span className="text-2xl">✓</span>
               </div>
               <div>
                 <div className="font-semibold">Secure Payments</div>
-                <div className="text-sm text-white/80">Protected financial transactions</div>
+                <div className="text-sm text-background/80">Protected financial transactions</div>
               </div>
             </div>
           </div>

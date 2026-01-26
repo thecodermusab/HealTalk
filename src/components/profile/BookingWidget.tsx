@@ -21,7 +21,7 @@ export default function BookingWidget({ price }: BookingWidgetProps) {
   ];
 
   return (
-    <div className="bg-white border-2 border-primary rounded-2xl p-6 shadow-lg sticky top-24">
+    <div className="bg-card border-2 border-primary rounded-2xl p-6 shadow-lg sticky top-24">
       <h3 className="text-2xl font-bold text-foreground mb-6">
         Book an Appointment
       </h3>
@@ -137,7 +137,7 @@ export default function BookingWidget({ price }: BookingWidgetProps) {
       </div>
 
       {/* Confirm Button */}
-      <Button className="w-full bg-primary hover:bg-primary/90 text-white h-12 text-lg mb-4">
+      <Button className="w-full bg-primary hover:bg-primary/90 text-background h-12 text-lg mb-4">
         Confirm Booking
       </Button>
 

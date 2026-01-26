@@ -1,181 +1,96 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, Star, MapPin, Languages } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { psychologists } from "@/lib/data";
-import { motion, AnimatePresence } from "framer-motion";
+import { Star, MapPin } from "lucide-react";
+
+// Professional psychologist images from Unsplash
+const psychologistImages = [
+  "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=800&h=1200&fit=crop", // Professional male doctor
+  "https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=800&h=1200&fit=crop", // Professional female doctor
+  "https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=800&h=1200&fit=crop", // Professional male therapist
+  "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=800&h=1200&fit=crop", // Professional female therapist
+];
 
 export default function FeaturedPsychologists() {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-  const [cardsPerView, setCardsPerView] = useState(3);
-
-  // Handle responsive cards per view
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 1024) {
-        setCardsPerView(3);
-      } else if (window.innerWidth >= 768) {
-        setCardsPerView(2);
-      } else {
-        setCardsPerView(1);
-      }
-    };
-
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  // Auto-scroll every 5 seconds
-  useEffect(() => {
-    if (!isAutoPlaying) return;
-
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % psychologists.length);
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [isAutoPlaying]);
-
-  const nextSlide = () => {
-    setCurrentIndex((prev) => (prev + 1) % psychologists.length);
-    setIsAutoPlaying(false);
-  };
-
-  const prevSlide = () => {
-    setCurrentIndex((prev) => (prev - 1 + psychologists.length) % psychologists.length);
-    setIsAutoPlaying(false);
-  };
-
   return (
-    <section
-      className="py-24 bg-background"
-      onMouseEnter={() => setIsAutoPlaying(false)}
-      onMouseLeave={() => setIsAutoPlaying(true)}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-foreground mb-4">
-            Meet Our Licensed Psychologists
-          </h2>
-          <p className="text-lg text-text-secondary">
-            Experienced professionals ready to support you
-          </p>
+    <section className="bg-background py-16 md:py-32">
+      <div className="mx-auto max-w-7xl border-t border-border px-6">
+        <span className="text-caption -ml-6 -mt-3.5 block w-max bg-background px-6">
+          Our Team
+        </span>
+
+        <div className="mt-12 gap-4 sm:grid sm:grid-cols-2 md:mt-24">
+          <div className="sm:w-2/5">
+            <h2 className="text-3xl font-bold sm:text-4xl">
+              Meet Our Licensed Psychologists
+            </h2>
+          </div>
+          <div className="mt-6 sm:mt-0">
+            <p className="text-muted-foreground">
+              Our team of experienced psychologists is dedicated to providing compassionate,
+              evidence-based care. Each specialist brings unique expertise to help you navigate
+              life's challenges and achieve lasting mental wellness.
+            </p>
+          </div>
         </div>
 
-        {/* Carousel */}
-        <div className="relative">
-          {/* Cards Container */}
-          <div className="overflow-hidden">
-            <div
-              className="flex transition-transform duration-500 ease-in-out"
-              style={{ transform: `translateX(-${currentIndex * (100 / cardsPerView)}%)` }}
-            >
-              {psychologists.map((psychologist) => (
-                <div
-                  key={psychologist.id}
-                  className="flex-shrink-0 w-full md:w-1/2 lg:w-1/3 px-4"
-                >
-                  <motion.div
-                    whileHover={{ scale: 1.03 }}
-                    className="bg-white rounded-2xl p-8 shadow-md hover:shadow-2xl transition-all duration-300 h-full flex flex-col items-center text-center"
-                  >
-                    {/* Photo */}
-                    <div className="w-48 h-48 rounded-full overflow-hidden mb-6 bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                      <div className="w-40 h-40 rounded-full bg-primary/30 flex items-center justify-center text-6xl font-bold text-primary">
-                        {psychologist.name.split(' ')[1][0]}
-                      </div>
-                    </div>
-
-                    {/* Name & Credentials */}
-                    <h3 className="text-xl font-bold text-foreground mb-1">
+        <div className="mt-12 md:mt-24">
+          <div className="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
+            {psychologists.map((psychologist, index) => (
+              <Link
+                key={psychologist.id}
+                href={`/psychologist/${psychologist.id}`}
+                className="group overflow-hidden block"
+              >
+                <img
+                  className="h-96 w-full rounded-md object-cover object-top grayscale transition-all duration-500 hover:grayscale-0 group-hover:h-[22.5rem] group-hover:rounded-xl"
+                  src={psychologistImages[index % psychologistImages.length]}
+                  alt={psychologist.name}
+                  width="826"
+                  height="1239"
+                  loading="lazy"
+                />
+                <div className="px-2 pt-2 sm:pb-0 sm:pt-4">
+                  <div className="flex justify-between">
+                    <h3 className="text-title text-base font-medium transition-all duration-500 group-hover:tracking-wider">
                       {psychologist.name}
                     </h3>
-                    <p className="text-sm text-text-secondary mb-4">
-                      {psychologist.credentials}
-                    </p>
-
-                    {/* Rating */}
-                    <div className="flex items-center gap-2 mb-4">
-                      <Star className="text-yellow-400 fill-yellow-400" size={18} />
-                      <span className="font-semibold">{psychologist.rating}</span>
-                      <span className="text-text-secondary text-sm">
-                        ({psychologist.reviewCount} reviews)
-                      </span>
+                    <span className="text-xs">_0{index + 1}</span>
+                  </div>
+                  <div className="mt-1 flex flex-col gap-1">
+                    <span className="text-muted-foreground inline-block translate-y-6 text-sm opacity-0 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                      {psychologist.specializations[0]}
+                    </span>
+                    <div className="inline-flex items-center gap-2 translate-y-8 opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100">
+                      <div className="flex items-center gap-1">
+                        <Star className="text-accent fill-accent" size={14} />
+                        <span className="text-sm font-medium">{psychologist.rating}</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground">•</span>
+                      <div className="flex items-center gap-1">
+                        <MapPin size={12} className="text-primary" />
+                        <span className="text-xs text-muted-foreground">{psychologist.location}</span>
+                      </div>
                     </div>
-
-                    {/* Specialization Tags */}
-                    <div className="flex flex-wrap gap-2 justify-center mb-4">
-                      {psychologist.specializations.slice(0, 3).map((spec) => (
-                        <span
-                          key={spec}
-                          className="px-3 py-1 bg-primary/10 text-primary text-xs font-medium rounded-full"
-                        >
-                          {spec}
-                        </span>
-                      ))}
-                    </div>
-
-                    {/* Hospital Badge */}
-                    <div className="flex items-center gap-2 text-sm text-text-secondary mb-2">
-                      <MapPin size={16} className="text-primary" />
-                      <span>{psychologist.hospital}, {psychologist.location}</span>
-                    </div>
-
-                    {/* Languages */}
-                    <div className="flex items-center gap-2 text-sm text-text-secondary mb-6">
-                      <Languages size={16} className="text-primary" />
-                      <span>{psychologist.languages.join(", ")}</span>
-                    </div>
-
-                    {/* View Profile Button */}
-                    <Link href={`/psychologist/${psychologist.id}`} className="w-full mt-auto">
-                      <Button className="w-full bg-primary hover:bg-primary/90">
-                        View Profile
-                      </Button>
-                    </Link>
-                  </motion.div>
+                    <span className="text-primary inline-block translate-y-8 text-sm tracking-wide opacity-0 transition-all duration-500 hover:underline group-hover:translate-y-0 group-hover:opacity-100">
+                      View Profile →
+                    </span>
+                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Navigation Arrows */}
-          <button
-            onClick={prevSlide}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-primary hover:text-white transition-colors"
-            aria-label="Previous"
-          >
-            <ChevronLeft size={24} />
-          </button>
-          <button
-            onClick={nextSlide}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-primary hover:text-white transition-colors"
-            aria-label="Next"
-          >
-            <ChevronRight size={24} />
-          </button>
-
-          {/* Dot Indicators */}
-          <div className="flex justify-center gap-2 mt-8">
-            {psychologists.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => {
-                  setCurrentIndex(index);
-                  setIsAutoPlaying(false);
-                }}
-                className={`w-2 h-2 rounded-full transition-all ${
-                  index === currentIndex ? "bg-primary w-8" : "bg-border"
-                }`}
-                aria-label={`Go to slide ${index + 1}`}
-              />
+              </Link>
             ))}
           </div>
+        </div>
+
+        {/* View All Link */}
+        <div className="mt-12 text-center md:mt-16">
+          <Link
+            href="/find-psychologists"
+            className="inline-flex items-center gap-2 rounded-full bg-primary px-8 py-3 text-sm font-medium text-white transition-all hover:bg-primary/90 hover:shadow-lg"
+          >
+            Browse All Psychologists
+          </Link>
         </div>
       </div>
     </section>

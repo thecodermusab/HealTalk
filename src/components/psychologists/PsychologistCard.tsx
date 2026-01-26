@@ -29,8 +29,8 @@ export default function PsychologistCard({ psychologist }: PsychologistCardProps
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      whileHover={{ y: -8, boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)" }}
-      className="bg-white border border-border rounded-2xl p-6 transition-all duration-300 hover:border-primary h-full flex flex-col"
+      whileHover={{ y: -8 }}
+      className="bg-card border border-border rounded-2xl p-6 transition-all duration-300 hover:border-primary hover:shadow-lg h-full flex flex-col"
     >
       {/* Photo */}
       <div className="w-full aspect-square rounded-xl overflow-hidden mb-4 bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
@@ -52,7 +52,7 @@ export default function PsychologistCard({ psychologist }: PsychologistCardProps
 
       {/* Rating */}
       <div className="flex items-center gap-2 mb-4">
-        <Star className="text-yellow-400 fill-yellow-400" size={16} />
+        <Star className="text-accent fill-accent" size={16} />
         <span className="font-semibold text-sm">{psychologist.rating}</span>
         <span className="text-text-secondary text-sm">
           ({psychologist.reviewCount} reviews)
@@ -102,7 +102,7 @@ export default function PsychologistCard({ psychologist }: PsychologistCardProps
             </Button>
           </Link>
           <Link href={`/psychologist/${psychologist.id}?book=true`}>
-            <Button size="sm" className="bg-primary hover:bg-primary/90 text-white">
+            <Button size="sm" className="bg-primary hover:bg-primary/90 text-background">
               Book Now
             </Button>
           </Link>

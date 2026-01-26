@@ -19,7 +19,7 @@ export default function ForgotPasswordPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left Side - Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-12 bg-white">
+      <div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-12 bg-card">
         <div className="w-full max-w-md">
           {/* Back to Login */}
           <Link href="/login" className="flex items-center gap-2 text-sm text-primary hover:underline mb-8">
@@ -30,7 +30,7 @@ export default function ForgotPasswordPage() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 mb-8">
             <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">P</span>
+              <span className="text-background font-bold text-xl">P</span>
             </div>
             <span className="text-2xl font-bold text-foreground">PsyConnect</span>
           </Link>
@@ -67,7 +67,7 @@ export default function ForgotPasswordPage() {
                 {/* Submit Button */}
                 <Button
                   type="submit"
-                  className="w-full bg-primary hover:bg-primary/90 text-white h-12 text-base"
+                  className="w-full bg-primary hover:bg-primary/90 text-background h-12 text-base"
                 >
                   Send Reset Link
                 </Button>
@@ -108,14 +108,14 @@ export default function ForgotPasswordPage() {
 
       {/* Right Side - Image/Illustration */}
       <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-primary via-primary/90 to-accent items-center justify-center p-12">
-        <div className="text-center text-white max-w-lg">
-          <div className="w-24 h-24 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-8">
-            <Mail size={48} className="text-white" />
+        <div className="text-center text-background max-w-lg">
+          <div className="w-24 h-24 bg-card/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-8">
+            <Mail size={48} className="text-background" />
           </div>
           <h2 className="text-4xl font-bold mb-6">
             We've Got You Covered
           </h2>
-          <p className="text-xl text-white/90">
+          <p className="text-xl text-background/90">
             Password resets are quick and secure. You'll be back to your sessions in no time.
           </p>
         </div>

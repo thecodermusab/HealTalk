@@ -1,64 +1,133 @@
 "use client";
 
-import { Quote, Star } from "lucide-react";
-import { testimonials } from "@/lib/data";
-import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { ChevronLeft, ChevronRight, Star } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+
+const testimonials = [
+  {
+    id: 1,
+    text: "I was skeptical about online consultations, but Doctorin exceeded my expectations. The doctor was professional, attentive, and provided accurate diagnosis. Highly recommend!",
+    name: "Sarah Ahmed",
+    role: "Software Engineer",
+  },
+  {
+    id: 2,
+    text: "PsyConnect made it easy to get help without the stress of travel. My psychologist listened carefully and the sessions felt personal.",
+    name: "Nora Malik",
+    role: "Project Manager",
+  },
+  {
+    id: 3,
+    text: "The platform is seamless and the care feels premium. I found the right specialist quickly and felt supported every step.",
+    name: "Ethan Brooks",
+    role: "Product Designer",
+  },
+];
 
 export default function Testimonials() {
-  return (
-    <section className="py-24 bg-gradient-to-br from-primary/90 via-primary/80 to-accent/70 relative overflow-hidden">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-5" style={{
-        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-      }}></div>
+  const [activeIndex, setActiveIndex] = useState(0);
+  const total = testimonials.length;
+  const activeTestimonial = testimonials[activeIndex];
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-white mb-4">
+  const handleNext = () => {
+    setActiveIndex((prev) => (prev + 1) % total);
+  };
+
+  const handlePrevious = () => {
+    setActiveIndex((prev) => (prev - 1 + total) % total);
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      const isTypingField = target?.tagName === "INPUT" || target?.tagName === "TEXTAREA";
+      if (isTypingField) {
+        return;
+      }
+
+      if (event.key === "ArrowLeft") {
+        setActiveIndex((prev) => (prev - 1 + total) % total);
+      }
+      if (event.key === "ArrowRight") {
+        setActiveIndex((prev) => (prev + 1) % total);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [total]);
+
+  return (
+    <section className="py-20 sm:py-24 bg-background">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-10 sm:mb-14">
+          <h2 className="text-3xl sm:text-4xl font-semibold text-foreground">
             What Our Patients Say
           </h2>
         </div>
 
-        {/* Testimonials Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {testimonials.map((testimonial, index) => (
-            <motion.div
-              key={testimonial.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.15 }}
-              className="bg-white/95 backdrop-blur-sm rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-shadow min-h-[280px] flex flex-col"
+        <div className="bg-card rounded-[36px] shadow-lg px-8 sm:px-14 lg:px-20 py-14 sm:py-16 lg:py-20 border border-border">
+          <div className="flex items-center justify-center gap-4 sm:gap-8">
+            <button
+              type="button"
+              onClick={handlePrevious}
+              aria-label="Previous testimonial"
+              className="h-10 w-10 sm:h-12 sm:w-12 rounded-full border border-border text-secondary flex items-center justify-center transition-colors hover:bg-accent/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
-              {/* Quote Icon */}
-              <Quote className="text-primary/30 mb-4" size={40} />
+              <ChevronLeft size={20} />
+            </button>
 
-              {/* Testimonial Text */}
-              <p className="text-lg text-foreground mb-6 flex-grow leading-relaxed">
-                "{testimonial.text}"
-              </p>
+            <div className="flex-1 text-center max-w-3xl">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeTestimonial.id}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.35 }}
+                  className="space-y-6"
+                >
+                  <p className="text-xl sm:text-2xl leading-relaxed text-text-secondary">
+                    {activeTestimonial.text}
+                  </p>
 
-              {/* Patient Info */}
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/30 to-accent/30 flex items-center justify-center flex-shrink-0">
-                  <span className="text-xl font-bold text-primary">
-                    {testimonial.name.charAt(0)}
-                  </span>
-                </div>
-                <div className="flex-grow">
-                  <div className="font-semibold text-foreground">
-                    {testimonial.name}, {testimonial.age}
-                  </div>
-                  <div className="flex items-center gap-1 mt-1">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="text-yellow-400 fill-yellow-400" size={14} />
+                  <div className="flex items-center justify-center gap-2">
+                    {Array.from({ length: 5 }).map((_, index) => (
+                      <Star
+                        key={index}
+                        size={18}
+                        className="text-accent fill-accent"
+                      />
                     ))}
                   </div>
-                </div>
-              </div>
-            </motion.div>
-          ))}
+
+                  <div className="flex items-center justify-center gap-3">
+                    <div className="h-11 w-11 rounded-full bg-accent/15 text-foreground flex items-center justify-center text-sm font-semibold">
+                      {activeTestimonial.name.split(" ").slice(0, 1).join("")}
+                    </div>
+                    <div className="text-left">
+                      <div className="text-foreground font-semibold">
+                        {activeTestimonial.name}
+                      </div>
+                      <div className="text-sm text-text-secondary">
+                        {activeTestimonial.role}
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleNext}
+              aria-label="Next testimonial"
+              className="h-10 w-10 sm:h-12 sm:w-12 rounded-full border border-border text-secondary flex items-center justify-center transition-colors hover:bg-accent/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            >
+              <ChevronRight size={20} />
+            </button>
+          </div>
         </div>
       </div>
     </section>

@@ -26,7 +26,7 @@ const steps = [
 
 export default function HowItWorks() {
   return (
-    <section className="py-24 bg-white">
+    <section className="py-24 bg-card">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-16">
@@ -49,10 +49,10 @@ export default function HowItWorks() {
               transition={{ duration: 0.5, delay: index * 0.2 }}
               className="group"
             >
-              <div className="bg-white border border-border rounded-xl p-10 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 h-full flex flex-col items-center text-center">
+              <div className="bg-card border border-border rounded-xl p-10 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 h-full flex flex-col items-center text-center">
                 {/* Icon Circle */}
                 <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6 group-hover:bg-primary group-hover:scale-110 transition-all duration-300">
-                  <step.icon className="text-primary group-hover:text-white transition-colors" size={32} />
+                  <step.icon className="text-primary group-hover:text-background transition-colors" size={32} />
                 </div>
 
                 {/* Step Number */}

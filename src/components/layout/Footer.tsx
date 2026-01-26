@@ -1,126 +1,187 @@
 import Link from "next/link";
-import { Mail, Phone, Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
+import { Mail, MapPin, Phone } from "lucide-react";
 
-export default function Footer() {
-  const currentYear = new Date().getFullYear();
+type FooterProps = {
+  withShell?: boolean;
+};
 
-  const quickLinks = [
-    { href: "/", label: "Home" },
-    { href: "/find-psychologists", label: "Find Psychologists" },
-    { href: "/services", label: "Services" },
-    { href: "/about", label: "About" },
-    { href: "/contact", label: "Contact" },
+export default function Footer({ withShell = true }: FooterProps) {
+  const contactInfo = [
+    {
+      icon: <Phone className="size-4" />,
+      text: "602-774-4735",
+      href: "tel:6027744735",
+    },
+    {
+      icon: <MapPin className="size-4" />,
+      text: "11022 South 51st Street Suite 105 Phoenix, AZ 85044",
+      href: "#",
+    },
+    {
+      icon: <Mail className="size-4" />,
+      text: "hello@unifiedui.com",
+      href: "mailto:hello@unifiedui.com",
+    },
   ];
 
-  const professionalLinks = [
-    { href: "/become-psychologist", label: "Become a Psychologist" },
-    { href: "/hospital-partnerships", label: "Hospital Partnerships" },
+  const navigateLinks = [
+    { title: "Services", href: "#" },
+    { title: "Success Stories", href: "#" },
+    { title: "Our Team", href: "#" },
+    { title: "Discover", href: "#" },
+    { title: "Care", href: "#" },
+    { title: "Download App", href: "#" },
   ];
 
-  return (
-    <footer className="bg-[#2C3E50] text-white/80">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
-          {/* Column 1: About */}
+  const solutionLinks = [
+    { title: "Get in Touch", href: "#" },
+    { title: "Technology", href: "#" },
+    { title: "Who're We?", href: "#" },
+    { title: "Expertise", href: "#" },
+  ];
+
+  const discoverLinks = [
+    { title: "Latest News", href: "#" },
+    { title: "New Arrivals", href: "#" },
+    { title: "Solution", href: "#" },
+    { title: "Gain Profession", href: "#" },
+    { title: "Career", href: "#" },
+  ];
+
+  const socialLinks = [
+    { title: "Facebook", href: "https://facebook.com" },
+    { title: "Instagram", href: "https://instagram.com" },
+    { title: "LinkedIn", href: "https://linkedin.com" },
+    { title: "Twitter", href: "https://twitter.com" },
+  ];
+
+  const content = (
+    <>
+      {/* Footer Links Grid */}
+      <div className="px-6 py-12 md:px-12 lg:px-16">
+        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 lg:gap-6">
+          {/* Contact Column */}
           <div>
-            <div className="flex items-center space-x-2 mb-4">
-              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">P</span>
-              </div>
-              <span className="text-2xl font-bold text-white">PsyConnect</span>
+            <h3 className="text-base font-semibold text-[#1f2937]">Contact</h3>
+            <div className="mt-4 space-y-4">
+              {contactInfo.map((item, i) => (
+                <a
+                  key={i}
+                  href={item.href}
+                  className="flex items-start gap-3 text-sm text-[#667085] transition-colors hover:text-[#1f2937]"
+                >
+                  <div className="mt-0.5 flex size-9 items-center justify-center rounded-full border border-[#e7eaf2] bg-white text-[#5b61e7]">
+                    {item.icon}
+                  </div>
+                  <span className="leading-relaxed">{item.text}</span>
+                </a>
+              ))}
             </div>
-            <p className="text-sm leading-relaxed mb-4">
-              Professional mental health support, whenever you need it. Connect with licensed 
-              psychologists from the comfort of your home.
-            </p>
           </div>
 
-          {/* Column 2: Quick Links */}
+          {/* Navigate Column */}
           <div>
-            <h3 className="text-white font-semibold text-lg mb-4">Quick Links</h3>
-            <ul className="space-y-3">
-              {quickLinks.map((link) => (
-                <li key={link.href}>
+            <h3 className="text-base font-semibold text-[#1f2937]">Navigate</h3>
+            <ul className="mt-4 space-y-2">
+              {navigateLinks.map((link, i) => (
+                <li key={i}>
                   <Link
                     href={link.href}
-                    className="text-sm hover:text-white transition-colors hover:translate-x-1 inline-block"
+                    className="text-sm text-[#667085] transition-colors hover:text-[#1f2937]"
                   >
-                    {link.label}
+                    {link.title}
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Column 3: For Professionals */}
+          {/* Solution Column */}
           <div>
-            <h3 className="text-white font-semibold text-lg mb-4">For Professionals</h3>
-            <ul className="space-y-3">
-              {professionalLinks.map((link) => (
-                <li key={link.href}>
+            <h3 className="text-base font-semibold text-[#1f2937]">Solution</h3>
+            <ul className="mt-4 space-y-2">
+              {solutionLinks.map((link, i) => (
+                <li key={i}>
                   <Link
                     href={link.href}
-                    className="text-sm hover:text-white transition-colors hover:translate-x-1 inline-block"
+                    className="text-sm text-[#667085] transition-colors hover:text-[#1f2937]"
                   >
-                    {link.label}
+                    {link.title}
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Column 4: Contact */}
+          {/* Discover Column */}
           <div>
-            <h3 className="text-white font-semibold text-lg mb-4">Contact</h3>
-            <div className="space-y-3">
-              <div className="flex items-center space-x-3 text-sm">
-                <Mail size={18} className="text-primary" />
-                <a href="mailto:info@psyconnect.com" className="hover:text-white transition-colors">
-                  info@psyconnect.com
-                </a>
-              </div>
-              <div className="flex items-center space-x-3 text-sm">
-                <Phone size={18} className="text-primary" />
-                <a href="tel:+905551234567" className="hover:text-white transition-colors">
-                  +90 555 123 45 67
-                </a>
-              </div>
-              <div className="flex items-center space-x-4 mt-4">
-                <a href="#" className="hover:text-primary transition-colors" aria-label="Facebook">
-                  <Facebook size={20} />
-                </a>
-                <a href="#" className="hover:text-primary transition-colors" aria-label="Twitter">
-                  <Twitter size={20} />
-                </a>
-                <a href="#" className="hover:text-primary transition-colors" aria-label="Instagram">
-                  <Instagram size={20} />
-                </a>
-                <a href="#" className="hover:text-primary transition-colors" aria-label="LinkedIn">
-                  <Linkedin size={20} />
-                </a>
-              </div>
-            </div>
+            <h3 className="text-base font-semibold text-[#1f2937]">Discover</h3>
+            <ul className="mt-4 space-y-2">
+              {discoverLinks.map((link, i) => (
+                <li key={i}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-[#667085] transition-colors hover:text-[#1f2937]"
+                  >
+                    {link.title}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Follow Us Column */}
+          <div>
+            <h3 className="text-base font-semibold text-[#1f2937]">Follow Us</h3>
+            <ul className="mt-4 space-y-2">
+              {socialLinks.map((link, i) => (
+                <li key={i}>
+                  <a
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-[#667085] transition-colors hover:text-[#1f2937]"
+                  >
+                    {link.title}
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </div>
+
+      {/* Bottom Bar Divider */}
+      <div className="border-t border-[#e7eaf2]" />
 
       {/* Bottom Bar */}
-      <div className="border-t border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex flex-col md:flex-row justify-between items-center text-sm space-y-2 md:space-y-0">
-            <p>Copyright © {currentYear} PsyConnect. All rights reserved.</p>
-            <div className="flex items-center space-x-6">
-              <Link href="/privacy-policy" className="hover:text-white transition-colors">
-                Privacy Policy
-              </Link>
-              <span className="text-white/40">|</span>
-              <Link href="/terms-of-service" className="hover:text-white transition-colors">
-                Terms of Service
-              </Link>
-            </div>
+      <div className="px-6 py-6 text-xs text-[#667085] md:px-12 lg:px-16">
+        <div className="flex flex-col items-start justify-between gap-3 md:flex-row md:items-center">
+          <span>&copy;Copyright UnifiedUI.com All rights reserved.2024</span>
+          <div className="flex flex-wrap items-center gap-6">
+            <a href="#" className="transition-colors hover:text-[#1f2937]">
+              Privacy &amp; Policy
+            </a>
+            <a href="#" className="transition-colors hover:text-[#1f2937]">
+              Terms &amp; Condition
+            </a>
           </div>
         </div>
       </div>
-    </footer>
+    </>
+  );
+
+  if (!withShell) {
+    return content;
+  }
+
+  return (
+    <section className="w-full bg-background pt-16 md:pt-20">
+      <div className="w-full">
+        <div className="rounded-[40px] border border-[#e7eaf2] bg-background overflow-hidden">
+          {content}
+        </div>
+      </div>
+    </section>
   );
 }
