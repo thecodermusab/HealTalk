@@ -5,6 +5,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import TrustedLogosCarousel from "@/components/about/TrustedLogosCarousel";
 import WhoAreWeSection from "@/components/about/WhoAreWeSection";
+import CoreValuesSection from "@/components/about/CoreValuesSection";
 
 const leaders = [
   {
@@ -238,6 +239,9 @@ export default function AboutPage() {
 
       {/* SECTION 4: WHO ARE WE? */}
       <WhoAreWeSection />
+
+      {/* SECTION 5: CORE VALUES */}
+      <CoreValuesSection />
     </div>
   );
 }
