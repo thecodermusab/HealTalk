@@ -1,124 +1,175 @@
 "use client";
 
-import { motion, useAnimationControls, PanInfo } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { BRAND_LOGOS } from "./brand-logos";
 
-// Triplicate the logos to ensure seamless looping during drag/scroll
+// Triplicate the logos to ensure seamless looping (Left Buffer | Middle | Right Buffer)
 const REPEATED_LOGOS = [...BRAND_LOGOS, ...BRAND_LOGOS, ...BRAND_LOGOS];
 
 export default function TrustedLogosCarousel() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const controls = useAnimationControls();
+  const trackRef = useRef<HTMLDivElement>(null);
+  
+  // Interaction State
   const [isDragging, setIsDragging] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
   
-  // Use a ref to track the current animation frame for auto-scroll
-  const autoScrollRef = useRef<number>(null);
-  
-  // Track x position for seamless reset
-  const xPosRef = useRef(0);
-  const draggingRef = useRef(false);
+  // Custom Cursor/Pill Position
+  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
 
-  // Card dimensions + gap
-  const CARD_WIDTH = 155;
-  const GAP = 16;
-  const TOTAL_ITEM_WIDTH = CARD_WIDTH + GAP;
-  
-  // We want to loop when we've scrolled past the first set of logos
-  const LOOP_WIDTH = BRAND_LOGOS.length * TOTAL_ITEM_WIDTH;
+  // Physics / Layout Refs
+  const state = useRef({
+    isDragging: false,
+    startX: 0,
+    currentX: 0,     // The visual translation value
+    itemWidth: 155 + 16, // Card width + gap
+    totalWidth: 0,   // Width of one full set of logos
+  });
 
+  // Initialize positioning
   useEffect(() => {
-    let lastTime = performance.now();
-    const speed = 0.5; // pixels per ms (adjust for auto-scroll speed)
-
-    const animate = (time: number) => {
-      if (!draggingRef.current) {
-        const delta = time - lastTime;
-        xPosRef.current -= (speed * delta) / 16; // Normalize speed
-        
-        // Seamless Loop Logic
-        if (xPosRef.current <= -LOOP_WIDTH) {
-          xPosRef.current += LOOP_WIDTH;
-        } else if (xPosRef.current > 0) {
-          xPosRef.current -= LOOP_WIDTH;
-        }
-
-        controls.set({ x: xPosRef.current });
-      }
-      
-      lastTime = time;
-      autoScrollRef.current = requestAnimationFrame(animate);
-    };
-
-    autoScrollRef.current = requestAnimationFrame(animate);
-
-    return () => {
-      if (autoScrollRef.current) cancelAnimationFrame(autoScrollRef.current);
-    };
-  }, [LOOP_WIDTH, controls]);
-
-  const onDragStart = () => {
-    setIsDragging(true);
-    draggingRef.current = true;
-    document.body.style.cursor = "grabbing";
-  };
-
-  const onDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    setIsDragging(false);
-    draggingRef.current = false;
-    document.body.style.cursor = "";
+    state.current.totalWidth = BRAND_LOGOS.length * state.current.itemWidth;
+    // Start in the middle set
+    state.current.currentX = -state.current.totalWidth;
     
-    // Resume auto-scroll from current position, but ensure we snap/flow correctly if needed.
-    // In this simple continuous loop, we just let the animation loop pick up xPosRef.
+    if (trackRef.current) {
+      trackRef.current.style.transform = `translateX(${state.current.currentX}px)`;
+    }
+  }, []);
+
+  // --- Handlers for Custom Cursor ---
+  const handleMouseMove = useCallback((e: React.MouseEvent | MouseEvent) => {
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      // Update React state for the pill render
+      setCursorPos({ x, y });
+    }
+  }, []);
+
+  // --- Drag Logic (Pointer Events) ---
+  const onPointerDown = (e: React.PointerEvent) => {
+    state.current.isDragging = true;
+    state.current.startX = e.clientX;
+    setIsDragging(true);
+    
+    // Capture pointer to track outside container if needed
+    (e.target as Element).setPointerCapture(e.pointerId);
   };
 
-  const onDrag = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    xPosRef.current += info.delta.x;
+  const onPointerMove = (e: React.PointerEvent) => {
+    // Always update cursor position if hovering (or dragging)
+    handleMouseMove(e);
+
+    if (!state.current.isDragging) return;
+
+    const deltaX = e.clientX - state.current.startX;
+    state.current.startX = e.clientX; // Reset startX for next delta
+    
+    state.current.currentX += deltaX;
+
+    // --- Infinite Loop Teleportation ---
+    // Boundaries: 
+    // We start at -totalWidth.
+    // If we drag right (positive delta) and > 0, we jump back to -totalWidth.
+    // If we drag left (negative delta) and < -2 * totalWidth, we jump forward to -totalWidth.
+    
+    const oneSetWidth = state.current.totalWidth;
+    
+    // Check Right Boundary (Showing start of first set)
+    if (state.current.currentX > 0) {
+      state.current.currentX -= oneSetWidth;
+    }
+    // Check Left Boundary (Showing end of third set)
+    else if (state.current.currentX < -(oneSetWidth * 2)) {
+      state.current.currentX += oneSetWidth;
+    }
+
+    // Apply transform directly for performance
+    if (trackRef.current) {
+      trackRef.current.style.transform = `translateX(${state.current.currentX}px)`;
+    }
+  };
+
+  const onPointerUp = (e: React.PointerEvent) => {
+    state.current.isDragging = false;
+    setIsDragging(false);
+    (e.target as Element).releasePointerCapture(e.pointerId);
   };
 
   return (
-    <div className="w-full relative overflow-hidden group">
-      {/* Title - Positioned above the carousel as requested in layout refactor */}
-      <div className="text-center mb-8">
-         {/* Title is handled by parent, but we ensure spacing here */}
-      </div>
+    <div 
+      ref={containerRef}
+      className="w-full relative overflow-hidden group py-10 cursor-none" // Global cursor-none for section
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+      // We rely on pointer events for the track, but mouse move on container handles pill
+    >
+      {/* Title Spacer (Title is in parent, but ensuring spacing consistency) */}
+      <div className="mb-0" />
 
-      <motion.div
-        ref={containerRef}
+      {/* Draggable Track */}
+      <div
+        ref={trackRef}
         className={cn(
-          "flex gap-4 cursor-grab active:cursor-grabbing",
-          isDragging && "cursor-grabbing"
+          "flex gap-4 touch-pan-y will-change-transform",
+          // While dragging, disable selection and maybe add grabbing style cursor-wise (though we hide native cursor)
+          "select-none" 
         )}
-        drag="x"
-        dragConstraints={{ left: -10000, right: 10000 }} // Infinite drag feeling
-        onDragStart={onDragStart}
-        onDrag={onDrag}
-        onDragEnd={onDragEnd}
-        animate={controls}
-        style={{ width: "max-content" }}
-        whileTap={{ cursor: "grabbing" }}
+        style={{ 
+          // Ensure we can grab it
+          touchAction: "pan-y",
+          cursor: "none" // Force hide native cursor on track too
+        }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+        onPointerLeave={onPointerUp}
       >
         {REPEATED_LOGOS.map((logo, index) => (
           <div
-            // Use index key because we have duplicates
             key={`${logo.id}-${index}`}
-            className="group/card relative flex-shrink-0 w-[155px] h-[208px] bg-white rounded-[20px] flex items-center justify-center border border-black/5 shadow-sm transition-all duration-300 select-none overflow-hidden"
+            className={cn(
+               "relative flex-shrink-0 w-[155px] h-[208px] bg-white rounded-[20px] flex items-center justify-center border border-black/5 shadow-sm overflow-hidden pointer-events-none select-none",
+               // Only the container needs pointer events for dragging, cards should not block
+            )}
           >
             {/* Logo */}
-            <div className="text-gray-400 opacity-60 group-hover/card:opacity-100 transition-opacity duration-300 transform scale-90 pointer-events-none">
+            <div className="text-gray-400 opacity-60 transition-opacity duration-300 transform scale-90">
               {logo.svg}
-            </div>
-
-            {/* Drag Pill (Visible on hover over the track/card) */}
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 opacity-0 group-hover/card:opacity-100 transition-all duration-300 transform translate-y-2 group-hover/card:translate-y-0 pointer-events-none">
-               <div className="bg-[#1a1a1a] text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg whitespace-nowrap">
-                 Drag
-               </div>
             </div>
           </div>
         ))}
-      </motion.div>
+      </div>
+
+      {/* Floating Drag Pill (Custom Cursor) */}
+      <div 
+        className={cn(
+          "absolute top-0 left-0 pointer-events-none z-50 transition-opacity duration-200 ease-out flex items-center justify-center",
+          isHovering ? "opacity-100" : "opacity-0"
+        )}
+        style={{
+          transform: `translate(${cursorPos.x}px, ${cursorPos.y}px)`,
+        }}
+      >
+        {/* Helper wrapper to offset the pill slightly so it's not centered exactly covering the click point if we had scaling, 
+            but centering it on the "cursor" point feels more like a custom cursor. 
+            References usually have it float slightly or be the cursor. 
+            User said "follow mouse coordinates... Place it near the cursor (e.g., +12px)". 
+        */}
+        <div 
+          className={cn(
+            "translate-x-3 translate-y-3 bg-[#1a1a1a] text-white text-[12px] font-bold px-3 py-1.5 rounded-full shadow-lg whitespace-nowrap transition-transform duration-200",
+            isDragging && "scale-90"
+          )}
+        >
+          {isDragging ? "Dragging" : "Drag"}
+        </div>
+      </div>
     </div>
   );
 }
