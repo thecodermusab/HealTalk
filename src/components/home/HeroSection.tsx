@@ -80,7 +80,7 @@ export default function HeroSection() {
                             Made simpler.
                         </h1>
 
-                        <Link href="/book">
+                        <Link href="/onboarding/step-1">
                             <button
                                 className="bg-black text-white text-[18px] font-normal px-10 py-4 hover:bg-gray-900 transition-transform hover:scale-105 shadow-none"
                                 style={{
@@ -88,7 +88,7 @@ export default function HeroSection() {
                                     borderRadius: '50px'
                                 }}
                             >
-                                Book a call
+                                Get Started
                             </button>
                         </Link>
                     </div>

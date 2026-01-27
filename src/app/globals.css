@@ -11,6 +11,7 @@
   --font-logo: "Lastik", Georgia, serif;
   --font-heading: "Switzer", system-ui, sans-serif;
   --font-body: "Inter", system-ui, sans-serif;
+  --font-figtree: var(--font-figtree);
 
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);

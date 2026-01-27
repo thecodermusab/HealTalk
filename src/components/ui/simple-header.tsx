@@ -124,7 +124,7 @@ export function SimpleHeader() {
                     Sign In
                   </Button>
                 </Link>
-                <Link href="/signup">
+                <Link href="/onboarding/step-1">
                   <Button className="h-11 px-6 rounded-full bg-[#d5f567] text-black font-semibold text-[15px] hover:bg-[#c3e555] transition-colors duration-200 shadow-none border-0 focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2">
                     Get Started
                   </Button>
@@ -143,7 +143,7 @@ export function SimpleHeader() {
                 </Button>
               </Link>
             ) : (
-              <Link href="/signup">
+              <Link href="/onboarding/step-1">
                 <Button className="h-10 px-5 rounded-full bg-[#d5f567] text-black font-semibold text-sm hover:bg-[#c3e555] transition-colors duration-200 shadow-none border-0">
                   Get Started
                 </Button>

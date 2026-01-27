@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import SessionProvider from "@/providers/SessionProvider";
-import AppFooter from "@/components/layout/AppFooter";
+
 
 const lastik = localFont({
   src: [{
@@ -37,8 +37,14 @@ const switzer = localFont({
       style: "normal",
     },
   ],
-  variable: "--font-heading",
   fallback: ["system-ui", "sans-serif"],
+});
+
+import { Figtree } from "next/font/google";
+const figtree = Figtree({
+  subsets: ["latin"],
+  variable: "--font-figtree",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -53,10 +59,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${lastik.variable} ${switzer.variable} font-sans antialiased`} suppressHydrationWarning>
+      <body className={`${lastik.variable} ${switzer.variable} ${figtree.variable} font-sans antialiased`} suppressHydrationWarning>
         <SessionProvider>
           {children}
-          <AppFooter />
         </SessionProvider>
       </body>
     </html>
