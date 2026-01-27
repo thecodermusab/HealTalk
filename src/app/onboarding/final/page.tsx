@@ -114,7 +114,19 @@ export default function ChooseGuidePage() {
       <GuideDetailModal 
         guide={selectedGuide} 
         isOpen={!!selectedGuide} 
-        onClose={() => setSelectedGuide(null)} 
+        onClose={() => setSelectedGuide(null)}
+        onNext={() => {
+          if (!selectedGuide) return;
+          const currentIndex = GUIDES.findIndex(g => g.id === selectedGuide.id);
+          const nextIndex = (currentIndex + 1) % GUIDES.length;
+          setSelectedGuide(GUIDES[nextIndex]);
+        }}
+        onPrev={() => {
+          if (!selectedGuide) return;
+          const currentIndex = GUIDES.findIndex(g => g.id === selectedGuide.id);
+          const prevIndex = (currentIndex - 1 + GUIDES.length) % GUIDES.length;
+          setSelectedGuide(GUIDES[prevIndex]);
+        }}
       />
     </div>
   );
