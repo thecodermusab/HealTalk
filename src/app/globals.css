@@ -71,14 +71,14 @@
   --bg-alt-pink: #FFE5F9;
 
   /* Background & Text */
-  --background: #FFFBF8; /* Warm White */
+  --background: #F7F2EB; /* Soft Beige (matching About page) */
   --foreground: #131E0D; /* Dark Green */
   --text-secondary: #408954; /* Green (Links/Muted) */
 
   /* Component Colors */
-  --card: #FFFBF8;
+  --card: #F7F2EB;
   --card-foreground: #131E0D;
-  --popover: #FFFBF8;
+  --popover: #F7F2EB;
   --popover-foreground: #131E0D;
 
   /* Theme Colors */
@@ -119,14 +119,14 @@
 }
 
 .dark {
-  /* Reversed for Dark Mode: Background is Dark Green, Text is Warm White */
+  /* Reversed for Dark Mode: Background is Dark Green, Text is Soft Beige */
   --background: #131E0D;
-  --foreground: #FFFBF8;
-  
+  --foreground: #F7F2EB;
+
   --card: #131E0D;
-  --card-foreground: #FFFBF8;
+  --card-foreground: #F7F2EB;
   --popover: #131E0D;
-  --popover-foreground: #FFFBF8;
+  --popover-foreground: #F7F2EB;
   
   --primary: #FC7D45;
   --primary-foreground: #FFFFFF;

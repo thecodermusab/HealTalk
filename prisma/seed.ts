@@ -26,14 +26,28 @@ async function main() {
     },
   });
 
+  const normalizeEmail = (email: string) => email.trim().toLowerCase();
+  const psychPlain = process.env.PSYCHOLOGIST_PASSWORD || "password123";
+  const patientPlain = process.env.PATIENT_PASSWORD || "password123";
+  const adminPlain = process.env.ADMIN_PASSWORD || "password123";
+  const psychEmail = normalizeEmail(
+    process.env.PSYCHOLOGIST_EMAIL || "ahmet@example.com"
+  );
+  const patientEmail = normalizeEmail(
+    process.env.PATIENT_EMAIL || "john@example.com"
+  );
+  const adminEmail = normalizeEmail(
+    process.env.ADMIN_EMAIL || "admin@example.com"
+  );
+
   // Create psychologist user
-  const hashedPassword = await bcrypt.hash('password123', 10);
+  const psychHashedPassword = await bcrypt.hash(psychPlain, 10);
 
   const psychUser = await prisma.user.create({
     data: {
       name: 'Dr. Ahmet Yılmaz',
-      email: 'ahmet@example.com',
-      password: hashedPassword,
+      email: psychEmail,
+      password: psychHashedPassword,
       role: 'PSYCHOLOGIST',
       psychologist: {
         create: {
@@ -55,11 +69,12 @@ async function main() {
   });
 
   // Create patient user
+  const patientHashedPassword = await bcrypt.hash(patientPlain, 10);
   const patientUser = await prisma.user.create({
     data: {
       name: 'John Doe',
-      email: 'john@example.com',
-      password: hashedPassword,
+      email: patientEmail,
+      password: patientHashedPassword,
       role: 'PATIENT',
       patient: {
         create: {},
@@ -68,11 +83,12 @@ async function main() {
   });
 
   // Create admin user
+  const adminHashedPassword = await bcrypt.hash(adminPlain, 10);
   const adminUser = await prisma.user.create({
     data: {
       name: 'Admin User',
-      email: 'admin@example.com',
-      password: hashedPassword,
+      email: adminEmail,
+      password: adminHashedPassword,
       role: 'ADMIN',
       admin: {
         create: {},
@@ -84,9 +100,9 @@ async function main() {
   console.log({
     hospitals: [hospital1, hospital2],
     users: {
-      psychologist: { email: 'ahmet@example.com', password: 'password123' },
-      patient: { email: 'john@example.com', password: 'password123' },
-      admin: { email: 'admin@example.com', password: 'password123' },
+      psychologist: { email: psychEmail, password: psychPlain },
+      patient: { email: patientEmail, password: patientPlain },
+      admin: { email: adminEmail, password: adminPlain },
     },
   });
 }

@@ -152,31 +152,36 @@ export default function InfiniteLogoCarousel() {
         {/* Carousel Container */}
         <div
           ref={containerRef}
-          className="relative w-full cursor-none"
-          onMouseEnter={() => setIsHovering(true)}
-          onMouseLeave={() => setIsHovering(false)}
+          className="relative w-full overflow-hidden"
         >
-          {/* Draggable Track */}
+          {/* Draggable Track Wrapper */}
           <div
-            ref={trackRef}
-            className="flex gap-6 will-change-transform select-none"
-            style={{ touchAction: "pan-y" }}
+            className="relative w-full h-[213px] cursor-none"
+            onMouseEnter={() => setIsHovering(true)}
+            onMouseLeave={() => setIsHovering(false)}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
             onPointerCancel={onPointerUp}
             onPointerLeave={onPointerUp}
+            style={{ touchAction: "pan-y" }}
           >
-            {INFINITE_LOGOS.map((logo, index) => (
-              <div
-                key={`${logo.id}-${index}`}
-                className="flex-shrink-0 w-[150px] h-[213px] bg-white rounded-[16px] flex items-center justify-center shadow-sm pointer-events-none select-none transition-shadow duration-300 hover:shadow-md border border-black/5"
-              >
-                <div className="text-[#111827] scale-[0.65]">
-                  {logo.svg}
+            {/* Track */}
+            <div
+              ref={trackRef}
+              className="absolute top-0 left-0 flex gap-6 will-change-transform select-none h-full"
+            >
+              {INFINITE_LOGOS.map((logo, index) => (
+                <div
+                  key={`${logo.id}-${index}`}
+                  className="flex-shrink-0 w-[150px] h-[213px] bg-white rounded-[16px] flex items-center justify-center shadow-sm pointer-events-none select-none transition-shadow duration-300 hover:shadow-md border border-black/5"
+                >
+                  <div className="text-[#111827] scale-[0.65]">
+                    {logo.svg}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
           {/* LEFT Edge Fade Gradient */}
@@ -195,18 +200,16 @@ export default function InfiniteLogoCarousel() {
             }}
           />
 
-          {/* Floating Drag Indicator - Follows Cursor */}
+          {/* Floating Drag Indicator - Follows Cursor - No Animations */}
           {isHovering && (
             <div
-              className="absolute top-0 left-0 pointer-events-none z-20 transition-opacity duration-200"
+              className="absolute top-0 left-0 pointer-events-none z-20"
               style={{
                 transform: `translate(${cursorPos.x}px, ${cursorPos.y}px)`,
               }}
             >
-              <div
-                className="translate-x-4 translate-y-4 bg-[#131E0D] text-white text-[20px] font-bold px-8 py-4 rounded-full shadow-xl whitespace-nowrap transition-transform duration-200"
-              >
-                {isDragging ? "Dragging" : "Drag"}
+              <div className="translate-x-3 translate-y-3 bg-[#131E0D] text-white text-[13px] font-semibold px-4 py-2 rounded-full shadow-lg whitespace-nowrap">
+                Drag
               </div>
             </div>
           )}
