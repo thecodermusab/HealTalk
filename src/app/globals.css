@@ -188,6 +188,14 @@
   }
 }
 
+@layer components {
+  .headline-container {
+    position: absolute;
+    bottom: 40px;
+    left: 50px;
+  }
+}
+
 @keyframes accordion-down {
   from {
     height: 0;

@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -24,6 +25,10 @@ const nextConfig: NextConfig = {
   // Optimize bundle
   experimental: {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-accordion', '@radix-ui/react-select'],
+  },
+
+  turbopack: {
+    root: path.resolve(__dirname),
   },
 };
 

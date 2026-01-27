@@ -1,25 +1,17 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import SessionProvider from "@/providers/SessionProvider";
 import AppFooter from "@/components/layout/AppFooter";
 
-const inter = Inter({
-  variable: "--font-body",
-  subsets: ["latin"],
-});
-
 const lastik = localFont({
-  src: [
-    {
-      path: "../../public/fonts/Lastik-Regular.ttf",
-      weight: "400",
-      style: "normal",
-    },
-  ],
+  src: [{
+    path: "../../public/fonts/Lastik-Regular.ttf",
+    weight: "400",
+    style: "normal",
+  }],
   variable: "--font-logo",
-  fallback: ["Georgia", "serif"],
+  display: "swap",
 });
 
 const switzer = localFont({
@@ -61,7 +53,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${lastik.variable} ${switzer.variable} font-sans antialiased`} suppressHydrationWarning>
+      <body className={`${lastik.variable} ${switzer.variable} font-sans antialiased`} suppressHydrationWarning>
         <SessionProvider>
           {children}
           <AppFooter />

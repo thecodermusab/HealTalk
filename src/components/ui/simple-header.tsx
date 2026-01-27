@@ -52,9 +52,16 @@ export function SimpleHeader() {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 w-full pt-4">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <nav className="mx-auto flex h-16 sm:h-[72px] w-full max-w-[1400px] items-center justify-between gap-4 rounded-full bg-white px-6 sm:px-10 shadow-[0_2px_12px_rgba(0,0,0,0.08)] border border-gray-200/50">
+    <header className="w-full z-50">
+      <div className="w-full">
+        <nav className="flex items-center justify-between gap-4 rounded-[16px] bg-white px-6 sm:px-10 shadow-none mx-auto"
+             style={{
+               width: '951px',
+               height: '81px',
+               marginTop: '24px',
+               marginBottom: '0px'
+             }}
+        >
           {/* Brand Logo - Left */}
           <Link href="/" className="flex items-center shrink-0">
             <img
