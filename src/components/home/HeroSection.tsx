@@ -1,32 +1,33 @@
 /* src/components/home/HeroSection.tsx */
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import Link from "next/link";
 
 
 export default function HeroSection() {
     const [isVisible, setIsVisible] = useState(false);
+    const heroSectionStyle = {
+        "--hero-nav-gap": "18px"
+    } as CSSProperties;
 
     useEffect(() => {
         setIsVisible(true);
     }, []); // Updated: 2026-01-27
 
     return (
-        <section className="relative w-full min-h-screen bg-[#F5F1E8] overflow-hidden flex flex-col font-sans text-[#1A3B2F]">
-            
-            {/* 
-              HERO CONTENT CONTAINER
-              - Flexbox layout: Left (55%) and Right (45%)
-              - Min-height: Viewport - Navbar
-            */}
-            {/* 
+        <section
+            className="relative w-full min-h-screen bg-[#F5F1E8] overflow-hidden flex flex-col font-sans text-[#1A3B2F] z-0"
+            style={heroSectionStyle}
+        >
+
+            {/*
               HERO CONTENT CONTAINER
               - Layout: Left (55%) and Right (45%)
-              - Height: Fill remaining viewport (100vh - 105px from navbar)
-              - Margin Top: 0 (Starts immediately after navbar)
+              - Height: Fill remaining viewport (navbar: 78px + top gap: 22px = 100px total)
+              - 18px gap from navbar to video card is applied via video wrapper paddingTop below
             */}
-            <div className="flex w-full h-[calc(100vh-105px)] mt-0">
+            <div className="flex w-full h-[calc(100vh-100px)] mt-0">
                 
                 {/*
                   LEFT COLUMN: Text Content (55%)
@@ -51,7 +52,7 @@ export default function HeroSection() {
                             style={{
                                 fontFamily: 'var(--font-logo)',
                                 fontWeight: 400,
-                                fontSize: '90px',
+                                fontSize: '80px',
                                 lineHeight: 0.95,
                                 color: '#000000'
                             }}
@@ -95,30 +96,32 @@ export default function HeroSection() {
 
                 {/*
                   RIGHT COLUMN: Video Card (45%)
-                  - Padding: Top 13px (to position video at 118px from viewport top)
-                  - Calculation: 118px desired position - 105px navbar = 13px padding
+                  - Width: 580px video card with 45px right offset
+                  - Height: 793px
+                  - Top Padding: 22px (navbar sticky offset) + 18px gap
+                  - Right Padding: 45px (offset from right edge)
                 */}
                 <div
                     className="w-[45%] h-full flex items-start justify-end"
                     style={{
-                        paddingTop: '13px', // Positions video at 118px from viewport top
-                        paddingRight: '60px'
+                        paddingTop: 'calc(22px + var(--hero-nav-gap))',
+                        paddingRight: '45px'
                     }}
                 >
                     <div
-                        className="relative overflow-hidden shadow-none"
+                        className="relative overflow-hidden shadow-sm"
                         style={{
-                            width: '537px', // Exact width: 537px
+                            width: '580px', // Exact width
+                            height: '793px', // Updated height
                             maxWidth: '100%',
-                            height: '718px', // Exact height: 718px
                             borderRadius: '24px',
-                            backgroundColor: '#C8B5E6' // Light purple/lavender background
+                            backgroundColor: '#C8B5E6',
+                            zIndex: 1 // Lower than navbar
                         }}
                     >
                         {/*
                            VIDEO ELEMENT
-                           - Width/Height: 100% of container
-                           - Object-fit: Cover
+                           - Autoplay, loop, muted, playsinline
                         */}
                         <video
                             className="w-full h-full object-cover"

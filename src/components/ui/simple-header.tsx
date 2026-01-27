@@ -12,8 +12,17 @@ import { cn } from "@/lib/utils";
 
 export function SimpleHeader() {
   const [open, setOpen] = React.useState(false);
+  const [isScrolled, setIsScrolled] = React.useState(false);
   const pathname = usePathname();
   const { data: session, status } = useSession();
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const links = [
     {
@@ -38,52 +47,57 @@ export function SimpleHeader() {
       ? "/psychologist/dashboard"
       : "/patient/dashboard";
 
-  const isLinkActive = (href: string) => {
-    if (href === "/") {
-      return pathname === "/";
-    }
-    if (href === "/find-psychologists") {
-      return pathname === "/find-psychologists" || pathname.startsWith("/psychologist/");
-    }
-    if (href === "/about") {
-      return pathname === "/about";
-    }
-    return pathname === href;
-  };
-
   return (
-    <header className="w-full z-50">
-      <div className="w-full">
-        <nav className="flex items-center justify-between gap-4 rounded-[16px] bg-white px-6 sm:px-10 shadow-none mx-auto"
-             style={{
-               width: '951px',
-               height: '81px',
-               marginTop: '24px',
-               marginBottom: '0px'
-             }}
-        >
+    <header className="w-full sticky top-[22px] z-[9999] flex justify-center px-4">
+      <nav
+        className={cn(
+          "flex items-center justify-between rounded-[16px] bg-white/95 backdrop-blur-sm pr-2 sm:pr-4", // Adjusted padding, removed default gap
+          "transition-shadow duration-300",
+          "pl-[30px]", // Exact 30px left padding for logo group
+          isScrolled ? "shadow-lg" : "shadow-md"
+        )}
+        style={{
+          width: '947px',
+          maxWidth: '100%',
+          height: '78px',
+        }}
+      >
           {/* Brand Logo - Left */}
-          <Link href="/" className="flex items-center shrink-0">
-            <img
+          <Link href="/" className="flex items-center shrink-0 gap-0"> {/* gap-0 for no space */}
+            {/* <img
               src="/images/logo.png"
               alt="HealTalk logo"
               className="h-8 sm:h-10 w-auto brightness-0 saturate-100"
               style={{ filter: 'invert(88%) sepia(46%) saturate(549%) hue-rotate(21deg) brightness(103%) contrast(95%)' }}
+            /> */}
+            {/* <span
+              className="font-logo font-normal"
+              style={{
+                fontSize: '20px',
+                color: 'rgb(0, 0, 0)',
+                lineHeight: 1, // Ensure tight fit if needed
+                marginTop: '4px' // Optical alignment usually needed with mixed icon/text
+              }}
+            >
+              ealTalk
+            </span> */}
+            <img
+              src="/images/New_Logo.png"
+              alt="HealTalk logo"
+              className="h-8 sm:h-10 w-auto"
             />
           </Link>
 
           {/* Navigation Links - Center (Desktop) */}
-          <div className="hidden lg:flex items-center justify-center gap-8 flex-1 px-8">
+          <div className="hidden lg:flex items-center justify-center flex-1 px-4" style={{ gap: '27px' }}> {/* Exact 27px gap */}
             {links.map((link) => (
               <Link
                 key={link.label}
                 href={link.href}
                 className={cn(
-                  "text-[15px] font-medium text-gray-900 hover:text-gray-600 transition-colors duration-200 relative",
-                  "after:absolute after:bottom-[-4px] after:left-0 after:right-0 after:h-[2px] after:bg-gray-900 after:scale-x-0 after:transition-transform after:duration-200",
-                  "hover:after:scale-x-100",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 rounded-sm",
-                  isLinkActive(link.href) && "after:scale-x-100"
+                  "text-[15px] font-medium text-gray-900 transition-all duration-200 px-4 py-2 rounded-[20px]",
+                  "hover:bg-[#dcd5cb]",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
                 )}
               >
                 {link.label}
@@ -93,9 +107,6 @@ export function SimpleHeader() {
 
           {/* Right Side Actions (Desktop) */}
           <div className="hidden lg:flex items-center gap-3 shrink-0">
-            {/* Language Switcher */}
-            <LanguageSwitcher />
-
             {/* Auth Buttons */}
             {isAuthenticated ? (
               <Link href={dashboardHref}>
@@ -104,6 +115,9 @@ export function SimpleHeader() {
                 </Button>
               </Link>
             ) : (
+              // Only showing "Book a call" style button (Dashboard/Get Started) based on screenshot reference usually has one primary CTA 
+              // but user said "Update navbar to matching Amby style... Remove language dropdown". 
+              // Keeping existing auth logic but simplifying if needed. For now just removing LanguageSwitcher as requested.
               <>
                 <Link href="/login">
                   <Button className="h-11 px-6 rounded-full bg-white text-black font-medium text-[15px] hover:bg-gray-100 transition-colors duration-200 shadow-none border border-gray-300 focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2">
@@ -121,8 +135,6 @@ export function SimpleHeader() {
 
           {/* Mobile Menu Toggle */}
           <div className="flex lg:hidden items-center gap-3">
-            {/* Mobile Language Switcher */}
-            <LanguageSwitcher />
             {/* CTA Button (Mobile - visible) */}
             {isAuthenticated ? (
               <Link href={dashboardHref}>
@@ -163,8 +175,7 @@ export function SimpleHeader() {
                     <Link
                       key={link.label}
                       className={cn(
-                        "px-4 py-3 text-base font-medium text-gray-900 hover:bg-gray-100 rounded-lg transition-colors",
-                        isLinkActive(link.href) && "bg-gray-100"
+                        "px-4 py-3 text-base font-medium text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
                       )}
                       href={link.href}
                       onClick={() => setOpen(false)}
@@ -186,7 +197,6 @@ export function SimpleHeader() {
             </Sheet>
           </div>
         </nav>
-      </div>
     </header>
   );
 }
