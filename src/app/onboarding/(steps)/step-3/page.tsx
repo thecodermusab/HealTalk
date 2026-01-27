@@ -7,26 +7,30 @@ import { SelectionCard } from "@/components/onboarding/SelectionCard";
 import { NextButton } from "@/components/onboarding/NextButton";
 
 const STYLE_OPTIONS = [
-  "Always positive",
-  "Calm, cool, collected",
-  "Super analytical",
-  "Accountability coach",
-  "High-energy",
+  "Warm and encouraging",
+  "Calm and steady",
+  "Direct and practical",
+  "Goal-focused",
+  "Mindfulness-based",
   "Collaborative",
-  "Results-driven",
-  "Check my work",
-  "Do it all for me"
+  "Trauma-informed",
+  "Reflective listener",
+  "I am not sure yet"
 ];
 
 export default function OnboardingStep3() {
   const router = useRouter();
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+  const maxSelections = 4;
+  const limitReached = selectedOptions.length >= maxSelections;
 
   const handleToggle = (option: string) => {
     setSelectedOptions((prev) =>
       prev.includes(option)
         ? prev.filter((item) => item !== option)
-        : [...prev, option]
+        : prev.length >= maxSelections
+          ? prev
+          : [...prev, option]
     );
   };
   
@@ -41,10 +45,10 @@ export default function OnboardingStep3() {
       {/* Container Padding: Matches Step 1 */}
       <div className="flex-1 flex flex-col items-center pt-[25px] pb-8 px-8 w-full"> 
         <h1 className="text-[20px] font-medium font-figtree text-black text-center mb-2 leading-tight">
-          What style of guidance is best for you?
+          What style of support feels best?
         </h1>
         <p className="text-[#4b5563] text-[15px] font-medium mb-8 text-center">
-          Choose as many as you'd like
+          Choose up to 4
         </p>
 
         {/* Gap 16px */}
@@ -58,6 +62,11 @@ export default function OnboardingStep3() {
             />
           ))}
         </div>
+        {limitReached && (
+          <p className="mt-3 text-xs text-[#4b5563]">
+            You can choose up to 4.
+          </p>
+        )}
       </div>
 
       <NextButton show={selectedOptions.length > 0} onClick={handleNext} />

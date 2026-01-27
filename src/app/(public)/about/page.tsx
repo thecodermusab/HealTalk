@@ -11,44 +11,44 @@ const leaders = [
   {
     id: 1,
     name: "Dr. Ahmet Yılmaz",
-    role: "Chief Medical Officer",
+    role: "Chief Clinical Officer",
     image: "https://images.unsplash.com/photo-1537368910025-700350fe46c7?w=800&q=80",
-    linkedin: "#",
+    linkedin: "https://linkedin.com",
   },
   {
     id: 2,
     name: "Dr. Ayşe Demir",
-    role: "Head of Therapy",
+    role: "Director of Therapy",
     image: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=800&q=80",
-    linkedin: "#",
+    linkedin: "https://linkedin.com",
   },
   {
     id: 3,
     name: "Helle Cecilie Aasen",
-    role: "Managing Director",
+    role: "Head of Care Operations",
     image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&q=80",
-    linkedin: "#",
+    linkedin: "https://linkedin.com",
   },
   {
     id: 4,
     name: "Fredrik Solstad",
     role: "Director of Operations",
     image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=800&q=80",
-    linkedin: "#",
+    linkedin: "https://linkedin.com",
   },
   {
     id: 5,
     name: "Sarah Johnson",
     role: "Clinical Director",
     image: "https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=800&q=80",
-    linkedin: "#",
+    linkedin: "https://linkedin.com",
   },
   {
     id: 6,
     name: "Michael Chen",
     role: "Head of Product",
     image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=800&q=80",
-    linkedin: "#",
+    linkedin: "https://linkedin.com",
   }
 ];
 
@@ -60,16 +60,16 @@ export default function AboutPage() {
   };
 
   return (
-    <div className="bg-[#f7f2eb] min-h-screen font-sans">
+    <div className="min-h-screen font-sans">
       {/* SECTION 1: HERO */}
       <section className="pt-[160px] pb-[40px] px-10">
         <div className="max-w-[1470px] mx-auto">
           {/* HEADLINE */}
           <div className="max-w-[960px] mx-auto text-center mb-[80px]">
             <h1 className="font-logo text-[96px] leading-[1.1] tracking-[-0.04em] text-[#111827]">
-              The talent partner for{" "}
+              About HealTalk, for{" "}
               <span className="relative inline-block">
-                ambitious
+                real
                 <svg
                   viewBox="0 0 358 28"
                   fill="none"
@@ -83,7 +83,7 @@ export default function AboutPage() {
                   />
                 </svg>
               </span>{" "}
-              companies.
+              people.
             </h1>
           </div>
 
@@ -110,7 +110,7 @@ export default function AboutPage() {
            {/* STORY TEXT */}
            <div className="max-w-[960px] mx-auto text-center mb-[80px]">
              <p className="font-heading font-bold text-[32px] leading-[1.15] tracking-[-1.28px] text-[#111827]">
-               We started out back in 2012, as a team of two in Oslo. Our mission was simple, connect the best talent with companies that are pushing their industries forward.
+               HealTalk started with one simple goal: make therapy easy to access, safe to use, and kind at every step. Choose a therapist, book a time, and meet by secure video. We protect your privacy in every session.
              </p>
            </div>
 
@@ -139,7 +139,7 @@ export default function AboutPage() {
           {/* SECTION HEADER */}
           <div className="mb-[80px] text-center">
              <h2 className="font-logo text-[48px] leading-[1.1] tracking-[-1.92px] text-[#111827]">
-               Meet our leaders.
+               Meet our clinical leaders.
              </h2>
           </div>
 

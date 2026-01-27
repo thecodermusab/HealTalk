@@ -5,9 +5,9 @@ import { cn } from "@/lib/utils";
 
 const cards = [
   {
-    title: "Personal",
+    title: "Care",
     description:
-      "People are at the core of what we do, and none of it’s possible without authentic and genuine interactions.",
+      "We listen first and lead with empathy in every session.",
     illustration: (
       <svg viewBox="0 0 200 120" className="w-48 h-32">
         {/* Shadow */}
@@ -29,9 +29,9 @@ const cards = [
     ),
   },
   {
-    title: "Progress",
+    title: "Safety",
     description:
-      "We iterate, learn, and improve continuously—measuring outcomes and raising the bar.",
+      "Privacy and confidentiality are built into everything we do.",
     illustration: (
       <svg viewBox="0 0 200 120" className="w-48 h-32">
         {/* Shadow */}
@@ -46,9 +46,9 @@ const cards = [
     ),
   },
   {
-    title: "Pace",
+    title: "Growth",
     description:
-      "We move with urgency and focus, keeping momentum without sacrificing quality.",
+      "We support steady progress with simple, real-life steps.",
     illustration: (
       <svg viewBox="0 0 200 120" className="w-48 h-32">
         {/* Shadow */}
@@ -63,9 +63,9 @@ const cards = [
     ),
   },
   {
-    title: "Performance",
+    title: "Respect",
     description:
-      "We deliver measurable results and take ownership of outcomes end-to-end.",
+      "We honor each person’s story, identity, and goals.",
     illustration: (
       <svg viewBox="0 0 200 120" className="w-48 h-32">
         {/* Shadows */}
@@ -92,7 +92,7 @@ export default function CoreValuesSection() {
              </span>
           </div>
           <h2 className="font-logo text-[48px] md:text-[56px] leading-[1.1] text-[#131E0D] max-w-[900px] mx-auto">
-            We have four core values that work together to steer our actions and guide our decision-making.
+            Our four values guide how we care for people.
           </h2>
         </div>
 

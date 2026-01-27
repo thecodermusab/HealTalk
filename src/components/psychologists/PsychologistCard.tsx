@@ -20,10 +20,15 @@ interface PsychologistCardProps {
     nextAvailable: string;
     price: number;
     photo?: string;
+    bio?: string;
   };
 }
 
 export default function PsychologistCard({ psychologist }: PsychologistCardProps) {
+  const shortBio = psychologist.bio
+    ? `${psychologist.bio.slice(0, 120)}${psychologist.bio.length > 120 ? "..." : ""}`
+    : "Warm, evidence-based care focused on your needs.";
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -47,7 +52,10 @@ export default function PsychologistCard({ psychologist }: PsychologistCardProps
         {psychologist.credentials}
       </p>
       <p className="text-sm text-text-secondary mb-3">
-        {psychologist.experience} years experience
+        {psychologist.experience} years of experience
+      </p>
+      <p className="text-sm text-text-secondary mb-4">
+        {shortBio}
       </p>
 
       {/* Rating */}
@@ -98,12 +106,12 @@ export default function PsychologistCard({ psychologist }: PsychologistCardProps
         <div className="flex gap-2">
           <Link href={`/psychologist/${psychologist.id}`}>
             <Button variant="outline" size="sm" className="border-primary text-primary hover:bg-primary/10">
-              View
+              View profile
             </Button>
           </Link>
           <Link href={`/psychologist/${psychologist.id}?book=true`}>
             <Button size="sm" className="bg-primary hover:bg-primary/90 text-black">
-              Book Now
+              Book session
             </Button>
           </Link>
         </div>

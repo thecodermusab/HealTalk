@@ -2,9 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { MenuToggle } from "@/components/ui/menu-toggle";
@@ -13,7 +11,6 @@ import { cn } from "@/lib/utils";
 export function SimpleHeader() {
   const [open, setOpen] = React.useState(false);
   const [isScrolled, setIsScrolled] = React.useState(false);
-  const pathname = usePathname();
   const { data: session, status } = useSession();
 
   React.useEffect(() => {
@@ -64,23 +61,6 @@ export function SimpleHeader() {
       >
           {/* Brand Logo - Left */}
           <Link href="/" className="flex items-center shrink-0 gap-0"> {/* gap-0 for no space */}
-            {/* <img
-              src="/images/logo.png"
-              alt="HealTalk logo"
-              className="h-8 sm:h-10 w-auto brightness-0 saturate-100"
-              style={{ filter: 'invert(88%) sepia(46%) saturate(549%) hue-rotate(21deg) brightness(103%) contrast(95%)' }}
-            /> */}
-            {/* <span
-              className="font-logo font-normal"
-              style={{
-                fontSize: '20px',
-                color: 'rgb(0, 0, 0)',
-                lineHeight: 1, // Ensure tight fit if needed
-                marginTop: '4px' // Optical alignment usually needed with mixed icon/text
-              }}
-            >
-              ealTalk
-            </span> */}
             <img
               src="/images/New_Logo.png"
               alt="HealTalk logo"
@@ -115,9 +95,6 @@ export function SimpleHeader() {
                 </Button>
               </Link>
             ) : (
-              // Only showing "Book a call" style button (Dashboard/Get Started) based on screenshot reference usually has one primary CTA 
-              // but user said "Update navbar to matching Amby style... Remove language dropdown". 
-              // Keeping existing auth logic but simplifying if needed. For now just removing LanguageSwitcher as requested.
               <>
                 <Link href="/login">
                   <Button className="h-11 px-6 rounded-full bg-white text-black font-medium text-[15px] hover:bg-gray-100 transition-colors duration-200 shadow-none border border-gray-300 focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2">
@@ -175,7 +152,8 @@ export function SimpleHeader() {
                     <Link
                       key={link.label}
                       className={cn(
-                        "px-4 py-3 text-base font-medium text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                        "px-4 py-3 text-base font-medium text-gray-900 rounded-lg transition-colors",
+                        "hover:bg-[#dcd5cb]"
                       )}
                       href={link.href}
                       onClick={() => setOpen(false)}
@@ -186,7 +164,7 @@ export function SimpleHeader() {
                   {!isAuthenticated && (
                     <Link
                       href="/login"
-                      className="px-4 py-3 text-base font-medium text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                      className="px-4 py-3 text-base font-medium text-gray-900 hover:bg-[#dcd5cb] rounded-lg transition-colors"
                       onClick={() => setOpen(false)}
                     >
                       Sign In

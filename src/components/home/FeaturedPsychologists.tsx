@@ -17,20 +17,19 @@ export default function FeaturedPsychologists() {
     <section className="bg-background py-16 md:py-32">
       <div className="mx-auto max-w-7xl border-t border-border px-6">
         <span className="text-caption -ml-6 -mt-3.5 block w-max bg-background px-6">
-          Our Team
+          Our Therapists
         </span>
 
         <div className="mt-12 gap-4 sm:grid sm:grid-cols-2 md:mt-24">
           <div className="sm:w-2/5">
             <h2 className="text-3xl font-bold sm:text-4xl">
-              Meet Our Licensed Psychologists
+              Meet our licensed psychologists
             </h2>
           </div>
           <div className="mt-6 sm:mt-0">
             <p className="text-muted-foreground">
-              Our team of experienced psychologists is dedicated to providing compassionate,
-              evidence-based care. Each specialist brings unique expertise to help you navigate
-              life's challenges and achieve lasting mental wellness.
+              Each therapist offers warm, evidence-based care. Find someone who
+              understands your needs and helps you feel better over time.
             </p>
           </div>
         </div>
@@ -74,7 +73,7 @@ export default function FeaturedPsychologists() {
                       </div>
                     </div>
                     <span className="text-primary inline-block translate-y-8 text-sm tracking-wide opacity-0 transition-all duration-500 hover:underline group-hover:translate-y-0 group-hover:opacity-100">
-                      View Profile →
+                      View profile →
                     </span>
                   </div>
                 </div>
@@ -89,7 +88,7 @@ export default function FeaturedPsychologists() {
             href="/find-psychologists"
             className="inline-flex items-center gap-2 rounded-full bg-primary px-8 py-3 text-sm font-medium text-white transition-all hover:bg-primary/90 hover:shadow-lg"
           >
-            Browse All Psychologists
+            Browse all therapists
           </Link>
         </div>
       </div>

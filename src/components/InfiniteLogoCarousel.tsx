@@ -142,11 +142,11 @@ export default function InfiniteLogoCarousel() {
   };
 
   return (
-    <section className="relative py-16 px-6 bg-[#F7F2EB] overflow-hidden">
+    <section className="relative py-16 px-6 bg-background overflow-hidden">
       <div className="w-full max-w-[1470px] mx-auto">
         {/* Heading */}
         <h2 className="text-[36px] md:text-[40px] font-heading font-bold text-center mb-14 text-[#111827] tracking-tight">
-          Trusted by the creme de la creme.
+          Trusted by teams who care about mental health.
         </h2>
 
         {/* Carousel Container */}
@@ -188,7 +188,7 @@ export default function InfiniteLogoCarousel() {
           <div
             className="absolute top-0 left-0 h-full w-[120px] pointer-events-none z-10"
             style={{
-              background: "linear-gradient(to right, #F7F2EB 0%, transparent 100%)"
+              background: "linear-gradient(to right, var(--background) 0%, transparent 100%)"
             }}
           />
 
@@ -196,7 +196,7 @@ export default function InfiniteLogoCarousel() {
           <div
             className="absolute top-0 right-0 h-full w-[120px] pointer-events-none z-10"
             style={{
-              background: "linear-gradient(to left, #F7F2EB 0%, transparent 100%)"
+              background: "linear-gradient(to left, var(--background) 0%, transparent 100%)"
             }}
           />
 

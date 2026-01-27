@@ -17,7 +17,7 @@ export default function HeroSection() {
 
     return (
         <section
-            className="relative w-full min-h-screen bg-[#F5F1E8] overflow-hidden flex flex-col font-sans text-[#1A3B2F] z-0"
+            className="relative w-full min-h-screen bg-background overflow-hidden flex flex-col font-sans text-[#1A3B2F] z-0"
             style={heroSectionStyle}
         >
 
@@ -74,10 +74,10 @@ export default function HeroSection() {
                                             zIndex: 0
                                         }}
                                     />
-                                </span> people.
+                                </span> therapist.
                             </span>
                             <br />
-                            Made simpler.
+                            Made simple.
                         </h1>
 
                         <Link href="/onboarding/step-1">
@@ -88,7 +88,7 @@ export default function HeroSection() {
                                     borderRadius: '50px'
                                 }}
                             >
-                                Get Started
+                                Get started
                             </button>
                         </Link>
                     </div>
@@ -111,8 +111,8 @@ export default function HeroSection() {
                     <div
                         className="relative overflow-hidden shadow-sm"
                         style={{
-                            width: '580px', // Exact width
-                            height: '793px', // Updated height
+                            width: '568px', // Exact width
+                            height: '760px', // Updated height
                             maxWidth: '100%',
                             borderRadius: '24px',
                             backgroundColor: '#C8B5E6',

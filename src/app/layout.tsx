@@ -61,7 +61,9 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${lastik.variable} ${switzer.variable} ${figtree.variable} font-sans antialiased`} suppressHydrationWarning>
         <SessionProvider>
-          {children}
+          <div className="min-h-screen w-full bg-background">
+            {children}
+          </div>
         </SessionProvider>
       </body>
     </html>

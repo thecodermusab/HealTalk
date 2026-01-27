@@ -23,38 +23,38 @@ interface FeaturesAccordionProps {
 const defaultFeatures: FeatureItem[] = [
   {
     id: 1,
-    title: "Secure Video Consultations",
+    title: "Secure video sessions",
     image: "https://images.unsplash.com/photo-1588196749597-9ff075ee6b5b?w=800&h=600&fit=crop",
     description:
-      "Connect with licensed psychologists through our HIPAA-compliant video platform. Experience face-to-face therapy from the comfort of your home with end-to-end encryption ensuring your privacy and confidentiality at all times.",
+      "Meet with licensed psychologists by secure video. Your sessions are private, encrypted, and easy to join from home.",
   },
   {
     id: 2,
-    title: "Licensed & Experienced Professionals",
+    title: "Licensed therapists",
     image: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800&h=600&fit=crop",
     description:
-      "All our psychologists are licensed professionals with verified credentials and extensive experience. Each specialist is carefully vetted and partnered with leading hospitals, ensuring you receive the highest quality mental health care.",
+      "Every therapist is licensed and verified. You get trusted care with real clinical experience.",
   },
   {
     id: 3,
     title: "Flexible Scheduling",
     image: "https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=800&h=600&fit=crop",
     description:
-      "Book appointments that fit your schedule. With availability from morning to evening, including weekends, you can find a time that works for you. No more waiting weeks for an appointment - many psychologists offer same-day or next-day sessions.",
+      "Book times that work for you, including evenings and weekends. Many therapists have openings within days.",
   },
   {
     id: 4,
-    title: "Comprehensive Specializations",
+    title: "Many specialties",
     image: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=800&h=600&fit=crop",
     description:
-      "Whether you're dealing with anxiety, depression, trauma, relationship issues, or any other mental health concern, our diverse team of specialists can help. We offer expertise in child psychology, family therapy, addiction counseling, and more.",
+      "Find help for anxiety, depression, trauma, relationships, and more. Choose a specialist who fits your needs.",
   },
   {
     id: 5,
-    title: "Evidence-Based Approaches",
+    title: "Proven methods",
     image: "https://images.unsplash.com/photo-1559757175-5700dde675bc?w=800&h=600&fit=crop",
     description:
-      "Our psychologists use proven therapeutic methods including Cognitive Behavioral Therapy (CBT), EMDR, psychodynamic therapy, and mindfulness-based approaches. Receive treatment backed by scientific research and tailored to your unique needs.",
+      "Therapy is grounded in proven methods like CBT, EMDR, and mindfulness. Care is tailored to you.",
   },
 ];
 
@@ -71,7 +71,7 @@ export default function FeaturesAccordion({ features = defaultFeatures }: Featur
             Why Choose HealTalk?
           </h2>
           <p className="text-lg text-text-secondary">
-            Professional mental health support designed around your needs, delivered with care and expertise.
+            Professional care built around your needs, with clear steps and kind support.
           </p>
         </div>
 

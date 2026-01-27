@@ -67,22 +67,20 @@ export default function WhyChooseHealTalk() {
                 Flexible Scheduling
               </h3>
               <p className="mb-4 text-sm leading-relaxed text-background/90">
-                Balance therapy with real life. Choose from flexible
-                appointments, including evenings and weekends, and learn at your
-                own pace.
+                Balance therapy with real life. Choose times that work for you,
+                including evenings and weekends.
               </p>
               <p className="text-sm leading-relaxed text-background/90">
-                Whether you're working or studying, customize a schedule that
-                fits your needs.
+                You can change your schedule anytime.
               </p>
             </div>
             <button
               type="button"
               onClick={() => router.push("/find-psychologists")}
               className="mt-8 inline-flex w-fit items-center gap-2 rounded-full bg-success px-6 py-3 text-sm font-semibold text-background shadow-md transition-all duration-300 hover:bg-success/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background/80 focus-visible:ring-offset-2 focus-visible:ring-offset-secondary"
-              aria-label="Start a free trial"
+              aria-label="Find a therapist"
             >
-              Start Free Trial
+              Find a therapist
               <ArrowRight className="h-4 w-4" strokeWidth={2.5} />
             </button>
           </div>

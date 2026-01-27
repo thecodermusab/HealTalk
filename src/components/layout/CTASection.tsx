@@ -8,28 +8,27 @@ export default function CTASection() {
     <div className="px-6 pb-12 pt-14 text-center md:px-12 lg:px-16 lg:pt-16">
       {/* Logo */}
       <div className="flex justify-center pb-6">
-        <div className="flex items-center justify-center">
+        <Link href="/" className="flex items-center justify-center">
           <Image
-            src="/images/logo.png"
+            src="/images/New_Logo.png"
             alt="HealTalk logo"
-            width={56}
-            height={56}
-            className="h-14 w-auto"
-            style={{ filter: 'invert(88%) sepia(46%) saturate(549%) hue-rotate(21deg) brightness(103%) contrast(95%)' }}
+            width={140}
+            height={48}
+            className="h-12 w-auto"
           />
-        </div>
+        </Link>
       </div>
 
       {/* Headline */}
       <h2 className="text-[32px] font-bold leading-tight text-[#1f2937] md:text-[40px] lg:text-[46px]">
-        Book An Appointment Today
+        Book a session that fits your life
       </h2>
 
       {/* Subtitle */}
       <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-[#667085] md:text-lg">
-        Book an appointment with our handpicked mental health and wellness experts
+        Talk with a licensed therapist in a safe, private space
         <br className="hidden sm:block" />
-        whenever or wherever you want!
+        on your schedule.
       </p>
 
       {/* CTA Button */}
@@ -38,7 +37,7 @@ export default function CTASection() {
           size="lg"
           className="mt-8 h-12 rounded-full bg-primary px-7 text-base font-semibold text-black shadow-none transition-colors hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background has-[>svg]:px-7"
         >
-          Book Appointment
+          Find a therapist
           <ArrowRight className="size-5" />
         </Button>
       </Link>

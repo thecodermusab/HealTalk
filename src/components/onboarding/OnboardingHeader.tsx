@@ -1,3 +1,5 @@
+import Image from "next/image";
+import Link from "next/link";
 import { User } from "lucide-react";
 
 interface OnboardingHeaderProps {
@@ -7,45 +9,17 @@ interface OnboardingHeaderProps {
 export function OnboardingHeader({ progress }: OnboardingHeaderProps) {
   return (
     <div className="w-full max-w-xl mx-auto flex flex-col items-center gap-6 pt-8 pb-4">
-      {/* Logo mark - Leaf/Plant style */}
-      <div className="text-[#34D399]">
-         {/* Simple custom SVG to match the "Leaf" logo in screenshot */}
-        <svg
-          width="32"
-          height="32"
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className="text-[#1ca55e]" 
-        >
-          <path
-            d="M12 21C12 21 16 16.5 16 11C16 7 14 5 12 5C10 5 8 7 8 11C8 16.5 12 21 12 21Z"
-            fill="currentColor"
+      {/* HealTalk logo */}
+      <div className="flex items-center justify-center">
+        <Link href="/" className="inline-flex items-center">
+          <Image
+            src="/images/New_Logo.png"
+            alt="HealTalk logo"
+            width={140}
+            height={40}
+            className="h-8 w-auto"
           />
-          <path
-            d="M12 21V11"
-            stroke="white"
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-          <path
-            d="M12 5C12 5 8 3 6 5C4 7 5 10 8 11"
-            stroke="currentColor"
-            strokeWidth="2" 
-            strokeLinecap="round"
-            strokeLinejoin="round" 
-            fillOpacity="0"
-          />
-          <path 
-             d="M12 5C12 5 16 3 18 5C20 7 19 10 16 11"
-             stroke="currentColor" 
-             strokeWidth="2"
-             strokeLinecap="round"
-             strokeLinejoin="round"
-             fillOpacity="0"
-          />
-          <circle cx="12" cy="3" r="1.5" fill="currentColor"/>
-        </svg>
+        </Link>
       </div>
 
       {/* Progress Row */}

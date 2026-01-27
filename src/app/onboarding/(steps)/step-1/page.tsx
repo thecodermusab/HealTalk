@@ -8,24 +8,28 @@ import { NextButton } from "@/components/onboarding/NextButton";
 
 // The options match the screenshot exact order
 const OPTIONS = [
-  "Get financial advice from a pro",
-  "Plan for the future",
-  "Make progress towards goals",
-  "Develop better habits with money",
-  "Get organized",
-  "Increase my net worth",
-  "Get my finances on track",
+  "Manage stress or anxiety",
+  "Feel more balanced",
+  "Work on relationships",
+  "Build healthier habits",
+  "Get support during a life change",
+  "Heal from past experiences",
+  "I am not sure where to start",
 ];
 
 export default function OnboardingStep1() {
   const router = useRouter();
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+  const maxSelections = 4;
+  const limitReached = selectedOptions.length >= maxSelections;
 
   const handleToggle = (option: string) => {
     setSelectedOptions((prev) =>
       prev.includes(option)
         ? prev.filter((item) => item !== option)
-        : [...prev, option]
+        : prev.length >= maxSelections
+          ? prev
+          : [...prev, option]
     );
 
     // Prompt mentions Reuse template for step 2.
@@ -52,10 +56,10 @@ export default function OnboardingStep1() {
       */}
       <div className="flex-1 flex flex-col items-center pt-[25px] pb-8 px-8 w-full"> 
         <h1 className="text-[20px] font-medium font-figtree text-black text-center mb-2 leading-tight">
-          Why are you thinking about joining Fruitful?
+          Why are you thinking about joining HealTalk?
         </h1>
         <p className="text-[#4b5563] text-[15px] font-medium mb-8 text-center">
-          Choose as many as you'd like
+          Choose up to 4
         </p>
 
         {/* Gap 16px */}
@@ -69,6 +73,11 @@ export default function OnboardingStep1() {
             />
           ))}
         </div>
+        {limitReached && (
+          <p className="mt-3 text-xs text-[#4b5563]">
+            You can choose up to 4.
+          </p>
+        )}
       </div>
 
       <NextButton show={selectedOptions.length > 0} onClick={handleNext} />

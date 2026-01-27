@@ -9,43 +9,40 @@ export default function Footer({ withShell = true }: FooterProps) {
   const contactInfo = [
     {
       icon: <Phone className="size-4" />,
-      text: "602-774-4735",
-      href: "tel:6027744735",
+      text: "1-800-555-0145",
+      href: "tel:18005550145",
     },
     {
       icon: <MapPin className="size-4" />,
-      text: "11022 South 51st Street Suite 105 Phoenix, AZ 85044",
-      href: "#",
+      text: "Online care, available nationwide",
+      href: "/contact",
     },
     {
       icon: <Mail className="size-4" />,
-      text: "hello@unifiedui.com",
-      href: "mailto:hello@unifiedui.com",
+      text: "support@healtalk.com",
+      href: "mailto:support@healtalk.com",
     },
   ];
 
   const navigateLinks = [
-    { title: "Services", href: "#" },
-    { title: "Success Stories", href: "#" },
-    { title: "Our Team", href: "#" },
-    { title: "Discover", href: "#" },
-    { title: "Care", href: "#" },
-    { title: "Download App", href: "#" },
+    { title: "About", href: "/about" },
+    { title: "Find Psychologists", href: "/find-psychologists" },
+    { title: "Client Stories", href: "/#testimonials" },
+    { title: "Contact", href: "/contact" },
   ];
 
   const solutionLinks = [
-    { title: "Get in Touch", href: "#" },
-    { title: "Technology", href: "#" },
-    { title: "Who're We?", href: "#" },
-    { title: "Expertise", href: "#" },
+    { title: "Privacy Policy", href: "/privacy" },
+    { title: "Terms", href: "/terms" },
+    { title: "Sign In", href: "/login" },
+    { title: "Create Account", href: "/signup" },
   ];
 
   const discoverLinks = [
-    { title: "Latest News", href: "#" },
-    { title: "New Arrivals", href: "#" },
-    { title: "Solution", href: "#" },
-    { title: "Gain Profession", href: "#" },
-    { title: "Career", href: "#" },
+    { title: "How It Works", href: "/onboarding/step-1" },
+    { title: "Book a Session", href: "/find-psychologists" },
+    { title: "Privacy & Confidentiality", href: "/privacy" },
+    { title: "Terms of Service", href: "/terms" },
   ];
 
   const socialLinks = [
@@ -64,18 +61,38 @@ export default function Footer({ withShell = true }: FooterProps) {
           <div>
             <h3 className="text-base font-semibold text-[#1f2937]">Contact</h3>
             <div className="mt-4 space-y-4">
-              {contactInfo.map((item, i) => (
-                <a
-                  key={i}
-                  href={item.href}
-                  className="flex items-start gap-3 text-sm text-[#667085] transition-colors hover:text-[#1f2937]"
-                >
-                  <div className="mt-0.5 flex size-9 items-center justify-center rounded-full border border-[#e7eaf2] bg-white text-[#5b61e7]">
-                    {item.icon}
-                  </div>
-                  <span className="leading-relaxed">{item.text}</span>
-                </a>
-              ))}
+              {contactInfo.map((item, i) => {
+                const content = (
+                  <>
+                    <div className="mt-0.5 flex size-9 items-center justify-center rounded-full border border-[#e7eaf2] bg-white text-[#5b61e7]">
+                      {item.icon}
+                    </div>
+                    <span className="leading-relaxed">{item.text}</span>
+                  </>
+                );
+
+                if (item.href.startsWith("/")) {
+                  return (
+                    <Link
+                      key={i}
+                      href={item.href}
+                      className="flex items-start gap-3 text-sm text-[#667085] transition-colors hover:text-[#1f2937]"
+                    >
+                      {content}
+                    </Link>
+                  );
+                }
+
+                return (
+                  <a
+                    key={i}
+                    href={item.href}
+                    className="flex items-start gap-3 text-sm text-[#667085] transition-colors hover:text-[#1f2937]"
+                  >
+                    {content}
+                  </a>
+                );
+              })}
             </div>
           </div>
 
@@ -157,15 +174,18 @@ export default function Footer({ withShell = true }: FooterProps) {
       {/* Bottom Bar */}
       <div className="px-6 py-6 text-xs text-[#667085] md:px-12 lg:px-16">
         <div className="flex flex-col items-start justify-between gap-3 md:flex-row md:items-center">
-          <span>&copy;Copyright UnifiedUI.com All rights reserved.2024</span>
+          <span>HealTalk — private, supportive therapy, on your schedule.</span>
           <div className="flex flex-wrap items-center gap-6">
-            <a href="#" className="transition-colors hover:text-[#1f2937]">
-              Privacy &amp; Policy
-            </a>
-            <a href="#" className="transition-colors hover:text-[#1f2937]">
-              Terms &amp; Condition
-            </a>
+            <Link href="/privacy" className="transition-colors hover:text-[#1f2937]">
+              Privacy Policy
+            </Link>
+            <Link href="/terms" className="transition-colors hover:text-[#1f2937]">
+              Terms
+            </Link>
           </div>
+        </div>
+        <div className="mt-3 text-[11px] text-[#667085]">
+          © {new Date().getFullYear()} HealTalk. All rights reserved.
         </div>
       </div>
     </>

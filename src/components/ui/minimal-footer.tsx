@@ -13,47 +13,47 @@ export function MinimalFooter() {
 
   const company = [
     {
-      title: "About Us",
-      href: "#about",
+      title: "About",
+      href: "/about",
     },
     {
       title: "Our Psychologists",
       href: "/find-psychologists",
     },
     {
-      title: "How It Works",
-      href: "#how-it-works",
+      title: "Client Stories",
+      href: "/#testimonials",
     },
     {
       title: "Privacy Policy",
-      href: "#privacy",
+      href: "/privacy",
     },
     {
-      title: "Terms of Service",
-      href: "#terms",
+      title: "Terms",
+      href: "/terms",
     },
   ];
 
   const resources = [
     {
       title: "Get Started",
-      href: "/signup",
+      href: "/onboarding/step-1",
     },
     {
       title: "Sign In",
       href: "/login",
     },
     {
-      title: "Help Center",
-      href: "#help",
+      title: "Find a Therapist",
+      href: "/find-psychologists",
     },
     {
-      title: "Contact Support",
-      href: "#contact",
+      title: "Contact",
+      href: "/contact",
     },
     {
-      title: "FAQs",
-      href: "#faq",
+      title: "Create Account",
+      href: "/signup",
     },
   ];
 
@@ -88,14 +88,14 @@ export function MinimalFooter() {
           <div className="col-span-6 flex flex-col gap-5 md:col-span-4">
             <Link href="/" className="w-max opacity-25 flex items-center gap-2">
               <img
-                src="/images/logo.png"
+                src="/images/New_Logo.png"
                 alt="HealTalk logo"
                 className="h-8 w-auto"
               />
             </Link>
             <p className="text-muted-foreground max-w-sm font-mono text-sm text-balance">
-              Connecting you with licensed psychologists for professional mental health support.
-              Your journey to wellness starts here.
+              Private, supportive therapy with licensed psychologists.
+              Start when you feel ready.
             </p>
             <div className="flex gap-2">
               {socialLinks.map((item, i) => (

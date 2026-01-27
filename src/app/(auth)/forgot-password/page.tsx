@@ -17,9 +17,9 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex">
+    <div className="flex flex-1">
       {/* Left Side - Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-12 bg-card">
+      <div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-12 bg-background">
         <div className="w-full max-w-md">
           {/* Back to Login */}
           <Link href="/login" className="flex items-center gap-2 text-sm text-primary hover:underline mb-8">
@@ -30,7 +30,7 @@ export default function ForgotPasswordPage() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 mb-8">
             <img
-              src="/images/logo.png"
+              src="/images/New_Logo.png"
               alt="HealTalk logo"
               className="h-10 w-auto"
             />
@@ -42,7 +42,7 @@ export default function ForgotPasswordPage() {
                 Forgot Password?
               </h1>
               <p className="text-text-secondary mb-8">
-                No worries! Enter your email and we'll send you reset instructions
+                No worries. Enter your email and we will send reset instructions.
               </p>
 
               {/* Reset Form */}
@@ -114,10 +114,10 @@ export default function ForgotPasswordPage() {
             <Mail size={48} className="text-background" />
           </div>
           <h2 className="text-4xl font-bold mb-6">
-            We've Got You Covered
+            We are here to help
           </h2>
           <p className="text-xl text-background/90">
-            Password resets are quick and secure. You'll be back to your sessions in no time.
+            Resetting your password is quick and secure.
           </p>
         </div>
       </div>

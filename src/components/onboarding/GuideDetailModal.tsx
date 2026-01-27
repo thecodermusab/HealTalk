@@ -2,6 +2,7 @@
 
 import React, { useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { X, Volume2, ArrowLeft, ArrowRight } from "lucide-react";
 
 interface Guide {
@@ -95,7 +96,7 @@ export function GuideDetailModal({ guide, isOpen, onClose, onNext, onPrev }: Gui
                 {guide.name}
               </h2>
               <p className="text-[15px] font-medium text-gray-500 mb-3">
-                CFP® Professional
+                Licensed Therapist
               </p>
               
               {/* Traits Row */}
@@ -111,18 +112,21 @@ export function GuideDetailModal({ guide, isOpen, onClose, onNext, onPrev }: Gui
             {/* Body Paragraph */}
             <div className="text-[15px] leading-[1.6] text-[#4b5563] space-y-4 pr-4">
               <p>
-                {guide.name.split(' ')[0]} has 12 years of financial planning and advising experience. She's all about empowering people to make savvy decisions and unlock a-ha moments on their way to hitting their financial goals.
+                {guide.name.split(' ')[0]} has 12 years of clinical experience supporting adults through anxiety, stress, and life changes. Their style is warm, clear, and focused on small steps that add up.
               </p>
               <p>
-                She previously worked at Capital Asset Management Group, Motley Fool Wealth Management, and several boutique firms. Outside of work, {guide.name.split(' ')[0]} loves traveling, all things Beyoncé, and hanging with her husband and dog Smokey.
+                They have worked in community clinics and private practice. Outside of work, {guide.name.split(' ')[0]} enjoys nature walks, journaling, and time with family.
               </p>
             </div>
 
             {/* CTA Button */}
             <div className="mt-auto w-full flex justify-center pb-2">
-              <button className="w-[354px] h-[60px] bg-black text-white rounded-full font-semibold text-[16px] flex items-center justify-center hover:bg-gray-900 transition-colors active:scale-[0.99]">
-                Work with {guide.name.split(' ')[0]}
-              </button>
+              <Link
+                href="/signup"
+                className="w-[354px] h-[60px] bg-black text-white rounded-full font-semibold text-[16px] flex items-center justify-center hover:bg-gray-900 transition-colors active:scale-[0.99]"
+              >
+                Book a session with {guide.name.split(' ')[0]}
+              </Link>
             </div>
 
           </div>

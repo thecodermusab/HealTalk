@@ -35,20 +35,20 @@ const MosaicGrid = () => {
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full h-full lg:h-[418px] lg:grid-rows-2">
       {/* Row 1: Founding Year - Full Width */}
       <StatCard
-        label="Founding year"
-        value="2012"
+        label="Sessions supported"
+        value="18k+"
         className="md:col-span-2 lg:row-span-1 bg-[#ced4fc] min-h-[200px] lg:min-h-0 h-full" // Pastel Periwinkle
       />
 
       {/* Row 2: Employees & Happiness */}
       <StatCard
-        label="Number of employees"
-        value="70"
+        label="Licensed psychologists"
+        value="120+"
         className="bg-[#ffe1f9] min-h-[200px] lg:min-h-0 h-full" // Pastel Pink
       />
       <StatCard
-        label="Client happiness"
-        value="4.7/5"
+        label="Client satisfaction"
+        value="4.8/5"
         className="bg-[#d4f2c4] min-h-[200px] lg:min-h-0 h-full" // Pastel Green
       />
     </div>

@@ -1,5 +1,11 @@
 import dynamic from "next/dynamic";
 import HeroSection from "@/components/home/HeroSection";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "HealTalk | Online Therapy & Licensed Psychologists",
+  description: "Find a therapist you trust. Private, supportive care on your schedule.",
+};
 
 // Lazy load components that are below the fold
 const FeaturesAccordion = dynamic(() => import("@/components/home/FeaturesAccordion"), {

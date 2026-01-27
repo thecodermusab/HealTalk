@@ -1,13 +1,18 @@
 "use client";
 
+import AppFooter from "@/components/layout/AppFooter";
+
 export default function OnboardingRootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <div className="w-full font-heading">
-      {children}
+    <div className="flex min-h-screen flex-col font-heading">
+      <div className="flex-1">
+        {children}
+      </div>
+      <AppFooter />
     </div>
   );
 }

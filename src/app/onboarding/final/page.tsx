@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { GuideCard } from "@/components/onboarding/GuideCard";
 import { GuideDetailModal } from "@/components/onboarding/GuideDetailModal";
 
@@ -11,38 +12,38 @@ const GUIDES = [
     id: 1,
     name: "Naima Bush",
     imageSrc: "/images/portrait-1.png",
-    traits: ["🌟 Cheerful", "🤝 Supportive", "🧩 Collaborative"]
+    traits: ["🌿 Calm", "🤝 Supportive", "🧠 Practical"]
   },
   {
     id: 2,
     name: "Mary Rush",
     imageSrc: "/images/portrait-2.png",
-    traits: ["🎉 Motivating", "🚀 Fun", "📚 Educational"] // Adjusted based on visual guess or prompt
+    traits: ["💛 Warm", "🫶 Empathetic", "🧩 Collaborative"]
   },
   {
     id: 3,
     name: "Alli Hershey",
     imageSrc: "/images/portrait-3.png",
-    traits: ["🤝 Trustworthy", "🎉 Fun", "❤️ Empathetic"]
+    traits: ["🌟 Encouraging", "🧘 Mindful", "💬 Direct"]
   },
   // Repeating for demo
   {
     id: 4,
     name: "Naima Bush",
     imageSrc: "/images/portrait-1.png",
-    traits: ["🌟 Cheerful", "🤝 Supportive", "🧩 Collaborative"]
+    traits: ["🌿 Calm", "🤝 Supportive", "🧠 Practical"]
   },
   {
     id: 5,
     name: "Mary Rush",
     imageSrc: "/images/portrait-2.png",
-    traits: ["🎉 Motivating", "🚀 Fun", "📚 Educational"]
+    traits: ["💛 Warm", "🫶 Empathetic", "🧩 Collaborative"]
   },
   {
     id: 6,
     name: "Alli Hershey",
     imageSrc: "/images/portrait-3.png",
-    traits: ["🤝 Trustworthy", "🎉 Fun", "❤️ Empathetic"]
+    traits: ["🌟 Encouraging", "🧘 Mindful", "💬 Direct"]
   }
 ];
 
@@ -52,32 +53,31 @@ export default function ChooseGuidePage() {
   const [selectedGuide, setSelectedGuide] = React.useState<typeof GUIDES[0] | null>(null);
 
   return (
-    // Single page background color/gradient across entire viewport
-    <div className="min-h-screen w-full bg-[#D7ECE5] flex flex-col items-center">
+    <div className="min-h-screen w-full flex flex-col items-center">
       {/* Header Section */}
       <div className="flex flex-col items-center pt-[64px] pb-[56px] px-4 w-full">
         {/* Logo Icon */}
-        <div className="mb-[32px] text-[#2D8B5E]">
-             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-[#1ca55e]">
-                <path d="M12 21C12 21 16 16.5 16 11C16 7 14 5 12 5C10 5 8 7 8 11C8 16.5 12 21 12 21Z" fill="currentColor"/>
-                <path d="M12 21V11" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-                <path d="M12 5C12 5 8 3 6 5C4 7 5 10 8 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fillOpacity="0"/>
-                <path d="M12 5C12 5 16 3 18 5C20 7 19 10 16 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fillOpacity="0"/>
-                <circle cx="12" cy="3" r="1.5" fill="currentColor"/>
-              </svg>
+        <div className="mb-[32px]">
+          <Link href="/" className="inline-flex items-center">
+            <img
+              src="/images/New_Logo.png"
+              alt="HealTalk logo"
+              className="h-8 w-auto"
+            />
+          </Link>
         </div>
 
         <h1 className="text-[32px] font-semibold text-[#1A1A1A] text-center mb-2 leading-tight font-sans">
-          Choose your Guide
+          Choose your therapist
         </h1>
         <p className="text-[16px] font-normal text-[#1A1A1A] text-center font-sans">
-          They’re all skilled and supportive CFP® Professionals
+          Each one is licensed and supportive.
         </p>
       </div>
 
       {/* Grid Section */}
-      <div className="w-full flex justify-center pb-20">
-        <div className="grid gap-[15px]"
+      <div className="w-full flex justify-center pb-20 px-6 lg:px-[233px]">
+        <div className="grid gap-[15px] justify-center"
              style={{
                gridTemplateColumns: "repeat(3, 320px)",
              }}

@@ -8,23 +8,23 @@ import Image from "next/image";
 const testimonials = [
   {
     id: 1,
-    text: "Working with PsyConnect was a true game changer for us. Software developers are in great demand across all industries today and we struggled to get any in process. They supported us at all stages of the process and guided our hiring teams to improve.",
-    name: "Arne Eirik Nielsen",
-    role: "Team Lead Cloud, Easee",
+    text: "HealTalk made it easy to find a therapist I trust. I feel calmer and more steady after each session.",
+    name: "Arne N.",
+    role: "Client",
     image: "/images/portrait-1.png",
   },
   {
     id: 2,
-    text: "The platform is seamless and the care feels premium. I found the right specialist quickly and felt supported every step. It truly transformed how I approach mental wellness daily.",
-    name: "Nora Malik",
-    role: "Project Manager, TechCorp",
+    text: "I booked a session in minutes and the video visit felt private and safe. The support is real.",
+    name: "Nora M.",
+    role: "Client",
     image: "/images/portrait-2.png",
   },
   {
     id: 3,
-    text: "I was skeptical about online consultations, but the doctor was professional, attentive, and provided accurate diagnosis. Highly recommend the service to anyone seeking quality care.",
-    name: "Sarah Ahmed",
-    role: "Software Engineer",
+    text: "I was unsure at first, but my therapist listened and gave me simple tools I could use right away.",
+    name: "Sarah A.",
+    role: "Client",
     image: "/images/portrait-3.png",
   },
 ];
@@ -43,7 +43,7 @@ export default function Testimonials() {
   const activeTestimonial = testimonials[activeIndex];
 
   return (
-    <section className="py-24 bg-[#F6F2EA] flex flex-col items-center font-sans text-[#121E0D]">
+    <section id="testimonials" className="py-24 bg-[#F6F2EA] flex flex-col items-center font-sans text-[#121E0D]">
       <div className="w-full max-w-[1400px] px-4 flex flex-col items-center">
         
         {/* Title: Centered, Switzer 700 */}

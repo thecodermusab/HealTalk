@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { specializations, hospitals, cities } from "@/lib/data";
@@ -19,6 +19,31 @@ export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
 
   const languages = ["Turkish", "English", "Arabic", "Kurdish"];
+
+  const filters = useMemo(
+    () => ({
+      specializations: selectedSpecializations,
+      hospitals: selectedHospitals,
+      city: selectedCity,
+      rating: selectedRating,
+      availability: selectedAvailability,
+      priceRange,
+      languages: selectedLanguages,
+    }),
+    [
+      selectedSpecializations,
+      selectedHospitals,
+      selectedCity,
+      selectedRating,
+      selectedAvailability,
+      priceRange,
+      selectedLanguages,
+    ]
+  );
+
+  useEffect(() => {
+    onFilterChange?.(filters);
+  }, [filters, onFilterChange]);
 
   const handleClearAll = () => {
     setSelectedSpecializations([]);
@@ -205,7 +230,10 @@ export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
       </div>
 
       {/* Apply Button */}
-      <Button className="w-full bg-primary hover:bg-primary/90 text-background">
+      <Button
+        className="w-full bg-primary hover:bg-primary/90 text-background"
+        onClick={() => onFilterChange?.(filters)}
+      >
         Apply Filters
       </Button>
     </div>

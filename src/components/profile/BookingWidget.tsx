@@ -23,7 +23,7 @@ export default function BookingWidget({ price }: BookingWidgetProps) {
   return (
     <div className="bg-card border-2 border-primary rounded-2xl p-6 shadow-lg sticky top-24">
       <h3 className="text-2xl font-bold text-foreground mb-6">
-        Book an Appointment
+        Book a session
       </h3>
 
       {/* Calendar (Simplified placeholder) */}

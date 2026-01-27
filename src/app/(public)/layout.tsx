@@ -4,10 +4,12 @@ import AppFooter from "@/components/layout/AppFooter";
 
 export default function PublicLayout({ children }: { children: ReactNode }) {
   return (
-    <>
+    <div className="flex min-h-screen flex-col">
       <Navbar />
-      {children}
+      <div className="flex-1">
+        {children}
+      </div>
       <AppFooter />
-    </>
+    </div>
   );
 }

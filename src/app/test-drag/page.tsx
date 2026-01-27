@@ -5,7 +5,7 @@ import InfiniteLogoCarousel from "@/components/InfiniteLogoCarousel";
 
 export default function TestDragPage() {
   return (
-    <div className="min-h-screen p-8 bg-gray-100">
+    <div className="min-h-screen p-8 bg-background">
       <h1 className="text-4xl font-bold mb-8 text-center">Drag Test Page</h1>
 
       {/* NEW: Infinite Logo Carousel Demo */}

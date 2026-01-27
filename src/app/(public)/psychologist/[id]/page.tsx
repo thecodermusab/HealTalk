@@ -5,6 +5,12 @@ import ReviewsSection from "@/components/profile/ReviewsSection";
 import BookingWidget from "@/components/profile/BookingWidget";
 import { psychologists, reviews } from "@/lib/data";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Psychologist Profile | HealTalk",
+  description: "View therapist details, specialties, and book a session.",
+};
 
 interface PageProps {
   params: Promise<{
@@ -23,7 +29,7 @@ export default async function PsychologistProfilePage({ params }: PageProps) {
   const psychologistReviews = reviews.filter(r => r.psychologistId === psychologist.id);
 
   return (
-    <main className="min-h-screen bg-background pt-20">
+    <main className="min-h-screen pt-20">
       {/* Hero Banner */}
       <ProfileHero psychologist={psychologist} />
 
