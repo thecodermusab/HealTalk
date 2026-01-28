@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 
-const navItems = [
+const psychologistNavItems = [
   { label: "Dashboard", href: "/psychologist/dashboard", icon: LayoutDashboard },
   { label: "Appointments", href: "/psychologist/dashboard/appointments", icon: CalendarDays },
   { label: "Patients", href: "/psychologist/dashboard/patients", icon: Users },
@@ -25,8 +25,19 @@ const navItems = [
   { label: "Settings", href: "/psychologist/dashboard/settings", icon: Settings },
 ];
 
+const patientNavItems = [
+  { label: "Dashboard", href: "/patient/dashboard", icon: LayoutDashboard },
+  { label: "Appointments", href: "/patient/dashboard/appointments", icon: CalendarDays },
+  { label: "Messages", href: "/patient/dashboard/messages", icon: MessageSquare },
+  { label: "Favorites", href: "/patient/dashboard/favorites", icon: Users },
+  { label: "Payments", href: "/patient/dashboard/payments", icon: BarChart2 },
+  { label: "Settings", href: "/patient/dashboard/settings", icon: Settings },
+];
+
 export function NewSidebar() {
   const pathname = usePathname();
+  const isPatient = pathname?.startsWith("/patient");
+  const navItems = isPatient ? patientNavItems : psychologistNavItems;
 
   return (
     <aside className="w-[260px] h-screen fixed left-0 top-0 bg-white border-r border-[#E6EAF2] flex flex-col z-30 hidden lg:flex">
@@ -43,7 +54,7 @@ export function NewSidebar() {
       {/* Nav */}
       <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
-          const isActive = pathname === item.href || (item.href !== "/psychologist/dashboard" && pathname?.startsWith(item.href));
+          const isActive = pathname === item.href || (item.href !== "/psychologist/dashboard" && item.href !== "/patient/dashboard" && pathname?.startsWith(item.href));
           return (
             <Link
               key={item.href}
