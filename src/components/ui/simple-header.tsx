@@ -45,7 +45,7 @@ export function SimpleHeader() {
       : "/patient/dashboard";
 
   return (
-    <header className="w-full sticky top-[22px] z-[9999] flex justify-center px-4">
+    <header className="w-full fixed top-[22px] z-[9999] flex justify-center px-4">
       <nav
         className={cn(
           "flex items-center justify-between rounded-[16px] bg-white/95 backdrop-blur-sm pr-2 sm:pr-4", // Adjusted padding, removed default gap

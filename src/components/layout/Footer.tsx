@@ -5,7 +5,7 @@ type FooterProps = {
   withShell?: boolean;
 };
 
-export default function Footer({ withShell = true }: FooterProps) {
+export default function Footer({ withShell = true, theme = "light" }: FooterProps & { theme?: "light" | "dark" }) {
   const contactInfo = [
     {
       icon: <Phone className="size-4" />,
@@ -52,6 +52,13 @@ export default function Footer({ withShell = true }: FooterProps) {
     { title: "Twitter", href: "https://twitter.com" },
   ];
 
+  // Theme-based colors
+  const textColorPrimary = theme === "dark" ? "text-white" : "text-[#1f2937]";
+  const textColorSecondary = theme === "dark" ? "text-white/70" : "text-[#667085]";
+  const hoverColor = theme === "dark" ? "hover:text-white" : "hover:text-[#1f2937]";
+  const borderColor = theme === "dark" ? "border-white/10" : "border-[#e7eaf2]";
+  const iconBorder = theme === "dark" ? "border-white/20 bg-white/5 text-white" : "border-[#e7eaf2] bg-white text-[#5b61e7]";
+
   const content = (
     <>
       {/* Footer Links Grid */}
@@ -59,12 +66,12 @@ export default function Footer({ withShell = true }: FooterProps) {
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 lg:gap-6">
           {/* Contact Column */}
           <div>
-            <h3 className="text-base font-semibold text-[#1f2937]">Contact</h3>
+            <h3 className={`text-base font-semibold ${textColorPrimary}`}>Contact</h3>
             <div className="mt-4 space-y-4">
               {contactInfo.map((item, i) => {
                 const content = (
                   <>
-                    <div className="mt-0.5 flex size-9 items-center justify-center rounded-full border border-[#e7eaf2] bg-white text-[#5b61e7]">
+                    <div className={`mt-0.5 flex size-9 items-center justify-center rounded-full border ${iconBorder}`}>
                       {item.icon}
                     </div>
                     <span className="leading-relaxed">{item.text}</span>
@@ -76,7 +83,7 @@ export default function Footer({ withShell = true }: FooterProps) {
                     <Link
                       key={i}
                       href={item.href}
-                      className="flex items-start gap-3 text-sm text-[#667085] transition-colors hover:text-[#1f2937]"
+                      className={`flex items-start gap-3 text-sm ${textColorSecondary} transition-colors ${hoverColor}`}
                     >
                       {content}
                     </Link>
@@ -87,7 +94,7 @@ export default function Footer({ withShell = true }: FooterProps) {
                   <a
                     key={i}
                     href={item.href}
-                    className="flex items-start gap-3 text-sm text-[#667085] transition-colors hover:text-[#1f2937]"
+                    className={`flex items-start gap-3 text-sm ${textColorSecondary} transition-colors ${hoverColor}`}
                   >
                     {content}
                   </a>
@@ -98,13 +105,13 @@ export default function Footer({ withShell = true }: FooterProps) {
 
           {/* Navigate Column */}
           <div>
-            <h3 className="text-base font-semibold text-[#1f2937]">Navigate</h3>
+            <h3 className={`text-base font-semibold ${textColorPrimary}`}>Navigate</h3>
             <ul className="mt-4 space-y-2">
               {navigateLinks.map((link, i) => (
                 <li key={i}>
                   <Link
                     href={link.href}
-                    className="text-sm text-[#667085] transition-colors hover:text-[#1f2937]"
+                    className={`text-sm ${textColorSecondary} transition-colors ${hoverColor}`}
                   >
                     {link.title}
                   </Link>
@@ -115,13 +122,13 @@ export default function Footer({ withShell = true }: FooterProps) {
 
           {/* Solution Column */}
           <div>
-            <h3 className="text-base font-semibold text-[#1f2937]">Solution</h3>
+            <h3 className={`text-base font-semibold ${textColorPrimary}`}>Solution</h3>
             <ul className="mt-4 space-y-2">
               {solutionLinks.map((link, i) => (
                 <li key={i}>
                   <Link
                     href={link.href}
-                    className="text-sm text-[#667085] transition-colors hover:text-[#1f2937]"
+                    className={`text-sm ${textColorSecondary} transition-colors ${hoverColor}`}
                   >
                     {link.title}
                   </Link>
@@ -132,13 +139,13 @@ export default function Footer({ withShell = true }: FooterProps) {
 
           {/* Discover Column */}
           <div>
-            <h3 className="text-base font-semibold text-[#1f2937]">Discover</h3>
+            <h3 className={`text-base font-semibold ${textColorPrimary}`}>Discover</h3>
             <ul className="mt-4 space-y-2">
               {discoverLinks.map((link, i) => (
                 <li key={i}>
                   <Link
                     href={link.href}
-                    className="text-sm text-[#667085] transition-colors hover:text-[#1f2937]"
+                    className={`text-sm ${textColorSecondary} transition-colors ${hoverColor}`}
                   >
                     {link.title}
                   </Link>
@@ -149,7 +156,7 @@ export default function Footer({ withShell = true }: FooterProps) {
 
           {/* Follow Us Column */}
           <div>
-            <h3 className="text-base font-semibold text-[#1f2937]">Follow Us</h3>
+            <h3 className={`text-base font-semibold ${textColorPrimary}`}>Follow Us</h3>
             <ul className="mt-4 space-y-2">
               {socialLinks.map((link, i) => (
                 <li key={i}>
@@ -157,7 +164,7 @@ export default function Footer({ withShell = true }: FooterProps) {
                     href={link.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm text-[#667085] transition-colors hover:text-[#1f2937]"
+                    className={`text-sm ${textColorSecondary} transition-colors ${hoverColor}`}
                   >
                     {link.title}
                   </a>
@@ -169,22 +176,22 @@ export default function Footer({ withShell = true }: FooterProps) {
       </div>
 
       {/* Bottom Bar Divider */}
-      <div className="border-t border-[#e7eaf2]" />
+      <div className={`border-t ${borderColor}`} />
 
       {/* Bottom Bar */}
-      <div className="px-6 py-6 text-xs text-[#667085] md:px-12 lg:px-16">
+      <div className={`px-6 py-6 text-xs ${textColorSecondary} md:px-12 lg:px-16`}>
         <div className="flex flex-col items-start justify-between gap-3 md:flex-row md:items-center">
           <span>HealTalk — private, supportive therapy, on your schedule.</span>
           <div className="flex flex-wrap items-center gap-6">
-            <Link href="/privacy" className="transition-colors hover:text-[#1f2937]">
+            <Link href="/privacy" className={`transition-colors ${hoverColor}`}>
               Privacy Policy
             </Link>
-            <Link href="/terms" className="transition-colors hover:text-[#1f2937]">
+            <Link href="/terms" className={`transition-colors ${hoverColor}`}>
               Terms
             </Link>
           </div>
         </div>
-        <div className="mt-3 text-[11px] text-[#667085]">
+        <div className={`mt-3 text-[11px] ${textColorSecondary}`}>
           © {new Date().getFullYear()} HealTalk. All rights reserved.
         </div>
       </div>
@@ -195,10 +202,13 @@ export default function Footer({ withShell = true }: FooterProps) {
     return content;
   }
 
+  const bgClass = theme === "dark" ? "bg-[#061b0f]" : "bg-background";
+  const borderClass = theme === "dark" ? "border-[#061b0f]" : "border-[#e7eaf2]";
+
   return (
     <section className="w-full bg-background pt-16 md:pt-20">
       <div className="w-full">
-        <div className="rounded-[40px] border border-[#e7eaf2] bg-background overflow-hidden">
+        <div className={`rounded-[40px] border ${borderClass} ${bgClass} overflow-hidden`}>
           {content}
         </div>
       </div>

@@ -167,8 +167,15 @@
     @apply border-border outline-ring/50;
   }
   html, body {
-    @apply m-0 p-0 bg-background text-foreground;
+    margin: 0;
+    padding: 0;
+    background-color: var(--background);
+    color: var(--foreground);
     font-family: var(--font-body), system-ui, -apple-system, sans-serif;
+  }
+  
+  body {
+    overflow-x: hidden;
   }
 
   h1, h2, h3, h4, h5, h6 {

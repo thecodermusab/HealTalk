@@ -23,7 +23,7 @@ const Testimonials = dynamic(() => import("@/components/home/Testimonials"), {
 
 export default function Home() {
   return (
-    <main>
+    <main className="m-0 p-0 w-full overflow-x-hidden">
       <HeroSection />
       <FeaturesAccordion />
       <Testimonials />
