@@ -12,7 +12,6 @@ export default function OnboardingRootLayout({
       <div className="flex-1">
         {children}
       </div>
-      <AppFooter />
     </div>
   );
 }

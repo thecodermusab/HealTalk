@@ -72,7 +72,7 @@ export default function SignUpPage() {
     formData.confirmPassword.trim().length > 0;
 
   return (
-    <div className="flex flex-1 w-full items-center justify-center px-4 py-16 font-sans">
+    <div className="flex flex-1 w-full items-center justify-center px-4 py-16 font-sans mb-16">
       {/* 
          Main Card Container 
          Size: 800px x 696px

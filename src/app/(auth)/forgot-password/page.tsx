@@ -2,123 +2,99 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Mail, ArrowLeft, CheckCircle } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Reset password for:", email);
-    setIsSubmitted(true);
+    if (!email || isSubmitting) return;
+
+    setIsSubmitting(true);
+    setMessage(null);
+
+    try {
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      if (res.ok) {
+        setMessage({
+          type: 'success',
+          text: "If an account exists, we sent a reset link to your email."
+        });
+        setEmail(""); // Clear input
+      } else {
+         const data = await res.json().catch(() => null);
+         // Even on error, usually safest to show generic message for security, 
+         // but requirement says "Show success message". 
+         // I'll show generic success for security unless it's a critical error.
+         setMessage({
+            type: 'error',
+            text: data?.error || "Something went wrong. Please try again."
+         });
+      }
+    } catch (err) {
+      setMessage({ type: 'error', text: "Something went wrong. Please try again." });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div className="flex flex-1">
-      {/* Left Side - Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-12 bg-background">
-        <div className="w-full max-w-md">
-          {/* Back to Login */}
-          <Link href="/login" className="flex items-center gap-2 text-sm text-primary hover:underline mb-8">
-            <ArrowLeft size={16} />
-            Back to login
+    <div className="flex flex-1 w-full items-center justify-center px-4 py-16 font-sans mb-16">
+      <div className="w-[800px] bg-[#ebebff] rounded-[40px] shadow-sm flex flex-col items-center py-12">
+        <div className="flex flex-col items-center w-[418px]">
+            {/* Logo */}
+          <Link href="/" className="mb-6">
+            <img src="/images/New_Logo.png" alt="HealTalk" className="h-7 w-auto" />
           </Link>
 
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 mb-8">
-            <img
-              src="/images/New_Logo.png"
-              alt="HealTalk logo"
-              className="h-10 w-auto"
-            />
-          </Link>
+          <h1 className="text-[32px] font-bold text-[#111] mb-2 text-center">Reset Password</h1>
+          <p className="text-gray-500 mb-8 text-center text-[16px]">
+            Enter your email to receive a password reset link.
+          </p>
 
-          {!isSubmitted ? (
-            <>
-              <h1 className="text-3xl font-bold text-foreground mb-2">
-                Forgot Password?
-              </h1>
-              <p className="text-text-secondary mb-8">
-                No worries. Enter your email and we will send reset instructions.
-              </p>
-
-              {/* Reset Form */}
-              <form onSubmit={handleSubmit} className="space-y-5">
-                {/* Email */}
-                <div>
-                  <label className="block text-sm font-semibold text-foreground mb-2">
-                    Email Address
-                  </label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" size={20} />
-                    <Input
-                      type="email"
-                      placeholder="john@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10 h-12"
-                      required
-                    />
-                  </div>
-                </div>
-
-                {/* Submit Button */}
-                <Button
-                  type="submit"
-                  className="w-full bg-primary hover:bg-primary/90 text-black h-12 text-base"
-                >
-                  Send Reset Link
-                </Button>
-              </form>
-            </>
-          ) : (
-            <div className="text-center">
-              <div className="w-20 h-20 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                <CheckCircle className="text-success" size={40} />
-              </div>
-              <h1 className="text-3xl font-bold text-foreground mb-2">
-                Check Your Email
-              </h1>
-              <p className="text-text-secondary mb-8">
-                We've sent password reset instructions to <strong>{email}</strong>
-              </p>
-              <p className="text-sm text-text-secondary mb-6">
-                Didn't receive the email? Check your spam folder or{" "}
-                <button
-                  onClick={() => setIsSubmitted(false)}
-                  className="text-primary hover:underline"
-                >
-                  try another email address
-                </button>
-              </p>
-              <Link href="/login">
-                <Button
-                  variant="outline"
-                  className="w-full h-12"
-                >
-                  Back to Login
-                </Button>
-              </Link>
+          {message && (
+            <div className={`w-full p-4 mb-6 rounded-xl text-center text-sm ${
+                message.type === 'success' ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-red-50 text-red-700 border border-red-100'
+            }`}>
+              {message.text}
             </div>
           )}
-        </div>
-      </div>
 
-      {/* Right Side - Image/Illustration */}
-      <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-primary via-primary/90 to-accent items-center justify-center p-12">
-        <div className="text-center text-background max-w-lg">
-          <div className="w-24 h-24 bg-card/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-8">
-            <Mail size={48} className="text-background" />
-          </div>
-          <h2 className="text-4xl font-bold mb-6">
-            We are here to help
-          </h2>
-          <p className="text-xl text-background/90">
-            Resetting your password is quick and secure.
-          </p>
+          <form onSubmit={handleSubmit} className="w-full flex flex-col gap-[16px]">
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full h-[57px] bg-[#F5F5F5] border border-gray-200 rounded-xl px-4 text-[16px] text-[#111] placeholder-gray-400 outline-none focus:border-black focus:border-2 focus:ring-0 transition-all"
+              required
+            />
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className={`mt-6 w-full h-[57px] rounded-xl flex items-center justify-center font-medium text-[16px] transition-colors
+                ${isSubmitting || !email
+                  ? 'bg-[#E5E7EB] text-[#9CA3AF] cursor-not-allowed' 
+                  : 'bg-black text-white hover:bg-gray-800'
+                }
+              `}
+            >
+              {isSubmitting ? "Sending..." : "Send Reset Link"}
+            </button>
+          </form>
+
+          <Link href="/login" className="mt-8 flex items-center gap-2 text-gray-500 hover:text-black transition-colors text-sm font-medium">
+            <ArrowLeft size={16} /> Back to Sign In
+          </Link>
         </div>
       </div>
     </div>

@@ -20,7 +20,7 @@ export function NextButton({ show, onClick }: NextButtonProps) {
         >
           <button
             onClick={onClick}
-            className="pointer-events-auto bg-[#1ca55e] hover:bg-[#158048] text-white font-medium text-lg px-24 py-3 rounded-full shadow-lg transition-colors cursor-pointer"
+            className="pointer-events-auto bg-[#ffc7f2] hover:bg-[#ffb0eb] text-black font-medium text-lg px-24 py-3 rounded-full shadow-lg transition-colors cursor-pointer"
           >
             Next
           </button>

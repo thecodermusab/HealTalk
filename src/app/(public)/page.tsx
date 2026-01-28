@@ -20,6 +20,9 @@ const WhyChoosePsyConnect = dynamic(() => import("@/components/home/WhyChoosePsy
 const Testimonials = dynamic(() => import("@/components/home/Testimonials"), {
   loading: () => <div className="h-96" />
 });
+const PricingSection = dynamic(() => import("@/components/home/PricingSection"), {
+  loading: () => <div className="h-96" />
+});
 
 export default function Home() {
   return (
@@ -29,6 +32,7 @@ export default function Home() {
       <Testimonials />
       <FeaturedPsychologists />
       <WhyChoosePsyConnect />
+      <PricingSection />
     </main>
   );
 }
