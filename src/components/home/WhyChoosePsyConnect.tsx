@@ -28,21 +28,29 @@ export default function WhyChooseHealTalk() {
         </h2>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 lg:grid-rows-2">
-          <div className="group flex flex-col rounded-2xl border border-border/80 bg-card p-6 shadow-md transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg">
-            <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-full border border-border">
-              <UserCheck className="h-5 w-5 text-secondary" strokeWidth={1.5} />
+          {/* Licensed Professionals -> #ffc7f2 */}
+          <div 
+            className="group flex flex-col rounded-2xl border border-border/80 p-6 shadow-md transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg"
+            style={{ backgroundColor: '#ffc7f2' }}
+          >
+            <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-full border border-black/10">
+              <UserCheck className="h-5 w-5 text-black/80" strokeWidth={1.5} />
             </div>
-            <h3 className="mb-3 text-lg font-semibold text-foreground lg:text-xl">
+            <h3 className="mb-3 text-lg font-semibold text-black lg:text-xl">
               Licensed Professionals
             </h3>
-            <p className="text-sm leading-relaxed text-text-secondary">
+            <p className="text-sm leading-relaxed text-black/70">
               Learn from licensed psychologists with real-world clinical
               experience, proven methods, and compassionate care designed for
               your needs.
             </p>
           </div>
 
-          <div className="group flex flex-col rounded-2xl border border-border/80 bg-card p-6 shadow-md transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg">
+          {/* Confidential & Secure -> #fffbf9 */}
+          <div 
+            className="group flex flex-col rounded-2xl border border-border/80 p-6 shadow-md transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg"
+            style={{ backgroundColor: '#fffbf9' }}
+          >
             <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-full border border-border">
               <Shield className="h-5 w-5 text-secondary" strokeWidth={1.5} />
             </div>
@@ -55,29 +63,33 @@ export default function WhyChooseHealTalk() {
             </p>
           </div>
 
-          <div className="flex flex-col justify-between rounded-2xl bg-gradient-to-b from-secondary to-primary p-6 shadow-lg lg:row-span-2 lg:p-7">
+          {/* Flexible Scheduling -> #c4eab2 (was dark gradient, now light green) */}
+          <div 
+            className="flex flex-col justify-between rounded-2xl p-6 shadow-lg lg:row-span-2 lg:p-7"
+            style={{ backgroundColor: '#c4eab2' }}
+          >
             <div>
-              <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-full border border-background/40">
+              <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-full border border-black/10">
                 <Calendar
-                  className="h-5 w-5 text-background"
+                  className="h-5 w-5 text-black/80"
                   strokeWidth={1.5}
                 />
               </div>
-              <h3 className="mb-4 text-lg font-semibold text-background lg:text-xl">
+              <h3 className="mb-4 text-lg font-semibold text-black lg:text-xl">
                 Flexible Scheduling
               </h3>
-              <p className="mb-4 text-sm leading-relaxed text-background/90">
+              <p className="mb-4 text-sm leading-relaxed text-black/70">
                 Balance therapy with real life. Choose times that work for you,
                 including evenings and weekends.
               </p>
-              <p className="text-sm leading-relaxed text-background/90">
+              <p className="text-sm leading-relaxed text-black/70">
                 You can change your schedule anytime.
               </p>
             </div>
             <button
               type="button"
               onClick={() => router.push("/find-psychologists")}
-              className="mt-8 inline-flex w-fit items-center gap-2 rounded-full bg-success px-6 py-3 text-sm font-semibold text-background shadow-md transition-all duration-300 hover:bg-success/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background/80 focus-visible:ring-offset-2 focus-visible:ring-offset-secondary"
+              className="mt-8 inline-flex w-fit items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-black shadow-md transition-all duration-300 hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
               aria-label="Find a therapist"
             >
               Find a therapist
@@ -85,14 +97,18 @@ export default function WhyChooseHealTalk() {
             </button>
           </div>
 
-          <div className="group flex flex-col rounded-2xl border border-border/80 bg-card p-6 shadow-md transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg lg:col-span-2 lg:p-7">
-            <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-full border border-border">
-              <Target className="h-5 w-5 text-secondary" strokeWidth={1.5} />
+          {/* Comprehensive Specializations -> #c7c7ff */}
+          <div 
+            className="group flex flex-col rounded-2xl border border-border/80 p-6 shadow-md transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg lg:col-span-2 lg:p-7"
+            style={{ backgroundColor: '#c7c7ff' }}
+          >
+            <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-full border border-black/10">
+              <Target className="h-5 w-5 text-black/80" strokeWidth={1.5} />
             </div>
-            <h3 className="mb-3 text-lg font-semibold text-foreground lg:text-xl">
+            <h3 className="mb-3 text-lg font-semibold text-black lg:text-xl">
               Comprehensive Specializations
             </h3>
-            <p className="text-sm leading-relaxed text-text-secondary">
+            <p className="text-sm leading-relaxed text-black/70">
               Access psychologists specializing in anxiety, trauma,
               relationships, and more, with practical care you can apply right
               away.
