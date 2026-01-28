@@ -1,13 +1,14 @@
 "use client";
 
-import { PricingCards } from "@/components/ui/pricing-cards";
+import { PricingCards, PricingTier } from "@/components/ui/pricing-cards";
 
-const tiers = [
+const tiers: PricingTier[] = [
     {
         name: "SELF",
         price: 99,
         interval: "per session",
         description: "For individuals seeking personal growth and support",
+        backgroundColor: "#c7c7ff",
         features: [
             { name: "50-minute video session", included: true },
             { name: "Chat with therapist", included: true },
@@ -19,6 +20,7 @@ const tiers = [
         cta: {
             text: "Get started",
             href: "/signup",
+            variant: "hero"
         }
     },
     {
@@ -26,7 +28,7 @@ const tiers = [
         price: 349,
         interval: "monthly",
         description: "Comprehensive care plan for continuous progress",
-        highlight: true,
+        backgroundColor: "#c4eab2",
         features: [
             { name: "4 sessions per month", included: true },
             { name: "Unlimited messaging", included: true },
@@ -38,6 +40,7 @@ const tiers = [
         cta: {
             text: "Start subscription",
             href: "/signup?plan=ongoing",
+            variant: "hero"
         }
     },
 ];
@@ -47,8 +50,8 @@ export default function PricingSection() {
         <PricingCards 
             tiers={tiers}
             className="gap-6"
-            containerClassName="py-12"
-            sectionClassName="bg-background"
+            containerClassName=""
+            sectionClassName="bg-background pt-8 pb-8 md:pt-12 md:pb-12"
         />
     );
 }

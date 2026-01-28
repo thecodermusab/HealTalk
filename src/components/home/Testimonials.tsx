@@ -43,7 +43,7 @@ export default function Testimonials() {
   const activeTestimonial = testimonials[activeIndex];
 
   return (
-    <section id="testimonials" className="py-24 bg-[#F6F2EA] flex flex-col items-center font-sans text-[#121E0D]">
+    <section id="testimonials" className="pt-12 pb-12 bg-[#F6F2EA] flex flex-col items-center font-sans text-[#121E0D]">
       <div className="w-full max-w-[1400px] px-4 flex flex-col items-center">
         
         {/* Title: Centered, Switzer 700 */}

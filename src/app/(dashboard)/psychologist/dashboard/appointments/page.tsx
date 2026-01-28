@@ -131,18 +131,24 @@ export default function PsychologistAppointmentsPage() {
                 <div className="flex flex-col gap-2">
                   {activeTab === "upcoming" ? (
                     <>
-                      <Button className="bg-primary hover:bg-primary/90">
-                        Start Session
-                      </Button>
-                      <Button variant="outline">Reschedule</Button>
-                      <Link href="/psychologist/dashboard/messages">
+                      <Link href={`/psychologist/dashboard/messages?chatId=${appointment.id}&action=call`}>
+                        <Button className="bg-primary hover:bg-primary/90">
+                          Start Session
+                        </Button>
+                      </Link>
+                      <Link href={`/psychologist/dashboard/messages?chatId=${appointment.id}&action=reschedule`}>
+                        <Button variant="outline">Reschedule</Button>
+                      </Link>
+                      <Link href={`/psychologist/dashboard/messages?chatId=${appointment.id}`}>
                         <Button variant="ghost">Message Patient</Button>
                       </Link>
                     </>
                   ) : (
                     <>
-                      <Button variant="outline">View Notes</Button>
-                      <Link href="/psychologist/dashboard/messages">
+                      <Link href="/psychologist/dashboard/report">
+                        <Button variant="outline">View Notes</Button>
+                      </Link>
+                      <Link href={`/psychologist/dashboard/messages?chatId=${appointment.id}`}>
                         <Button variant="outline">Follow Up</Button>
                       </Link>
                     </>

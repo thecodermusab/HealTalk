@@ -109,10 +109,10 @@ const IllustrationCard = () => {
 
 export default function WhoAreWeSection() {
   return (
-    <section className="py-[120px] px-10">
+    <section className="py-[48px] px-10">
       <div className="max-w-[1470px] mx-auto">
         {/* Title */}
-        <div className="text-center mb-[80px]">
+        <div className="text-center mb-[48px]">
           <h2 className="font-logo text-[64px] md:text-[80px] leading-tight tracking-[-0.02em] text-[#131E0D]">
             So who are we?
           </h2>

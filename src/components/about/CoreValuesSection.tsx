@@ -82,10 +82,10 @@ const cards = [
 
 export default function CoreValuesSection() {
   return (
-    <section className="py-[96px] px-10">
+    <section className="py-[48px] px-10">
       <div className="max-w-[1470px] mx-auto">
         {/* Header */}
-        <div className="text-center mb-[80px]">
+        <div className="text-center mb-[48px]">
           <div className="inline-block px-4 py-1 mb-6 border border-[#131E0D]/10 rounded-full bg-[#fdfbf7]">
              <span className="font-heading text-xs font-bold tracking-widest uppercase text-[#131E0D]/70">
                Driven by Principle

@@ -152,41 +152,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     </>
   );
 
+  // DashboardShell (in layout.tsx) now handles the visual sidebar and margins.
+  // This component now strictly handles Auth checks to preserve business logic.
+  
   return (
-    <div className="min-h-screen bg-transparent">
-      <div className="flex">
-        {/* Desktop Sidebar */}
-        <aside className="hidden lg:flex flex-col w-64 border-r border-border bg-card fixed left-0 top-0 bottom-0">
-          <SidebarContent />
-        </aside>
-
-        {/* Mobile Header */}
-        <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-card border-b border-border z-50 flex items-center justify-between px-4">
-          <div className="flex items-center gap-2">
-            <User className="text-primary" size={24} />
-            <span className="font-semibold text-foreground">{userName}</span>
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </Button>
-        </div>
-
-        {/* Mobile Sidebar */}
-        {mobileMenuOpen && (
-          <aside className="lg:hidden fixed inset-0 top-16 bg-card z-40 flex flex-col border-r border-border">
-            <SidebarContent />
-          </aside>
-        )}
-
-        {/* Main Content */}
-        <main className="flex-1 lg:ml-64 p-6 lg:p-8 pt-24 lg:pt-8">
-          {children}
-        </main>
-      </div>
+    <div className="min-h-full">
+       {/* Content is already wrapped by DashboardShell's layout */}
+       {children}
     </div>
   );
 }

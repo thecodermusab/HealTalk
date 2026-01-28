@@ -14,7 +14,7 @@ const psychologistImages = [
 
 export default function FeaturedPsychologists() {
   return (
-    <section className="bg-background py-16 md:py-32">
+    <section className="bg-background pt-8 pb-8 md:pt-12 md:pb-12">
       <div className="mx-auto max-w-7xl border-t border-border px-6">
         <span className="text-caption -ml-6 -mt-3.5 block w-max bg-background px-6">
           Our Therapists
@@ -86,9 +86,44 @@ export default function FeaturedPsychologists() {
         <div className="mt-12 text-center md:mt-16">
           <Link
             href="/find-psychologists"
-            className="inline-flex items-center gap-2 rounded-full bg-primary px-8 py-3 text-sm font-medium text-white transition-all hover:bg-primary/90 hover:shadow-lg"
+            className="group relative rounded-full border border-white/20 hover:brightness-110 active:scale-95 transition-all duration-300"
+            style={{
+                width: 'fit-content',
+                height: '53px',
+                background: 'rgba(190, 200, 185, 0.35)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                display: 'inline-flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                paddingLeft: '24px',
+                paddingRight: '4.5px',
+                gap: '16px',
+            }}
           >
-            Browse all therapists
+             <span 
+                className="text-black/95" 
+                style={{ 
+                    fontFamily: '"Helvetica Now", Helvetica, Arial, sans-serif',
+                    fontSize: '16px',
+                    fontWeight: 400,
+                    whiteSpace: 'nowrap'
+                }}
+            >
+              Browse all therapists
+            </span>
+            <div 
+                className="flex items-center justify-center rounded-full bg-[#d9e7c8] text-black transition-transform duration-300 group-hover:scale-105"
+                style={{
+                  width: '44px',
+                  height: '44px',
+                  flexShrink: 0
+                }}
+            >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ color: "#0b0f0c" }}>
+                  <path d="M7 17L17 7M17 7H8M17 7V16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+            </div>
           </Link>
         </div>
       </div>

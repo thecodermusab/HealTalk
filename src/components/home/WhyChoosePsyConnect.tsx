@@ -13,7 +13,7 @@ export default function WhyChooseHealTalk() {
   const router = useRouter();
 
   return (
-    <section className="w-full bg-background py-16 lg:py-20">
+    <section className="w-full bg-background pt-8 pb-8 lg:pt-12 lg:pb-12">
       <div className="mx-auto max-w-[1140px] px-6 lg:px-8">
         <div className="mb-5 inline-flex items-center rounded-full border border-border bg-card px-4 py-1.5">
           <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-text-secondary">
@@ -89,11 +89,45 @@ export default function WhyChooseHealTalk() {
             <button
               type="button"
               onClick={() => router.push("/find-psychologists")}
-              className="mt-8 inline-flex w-fit items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-black shadow-md transition-all duration-300 hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+              className="mt-8 self-center group relative rounded-full border border-white/20 shadow-[0_10px_30px_rgba(0,0,0,0.20)] hover:brightness-110 active:scale-95 transition-all duration-300"
+              style={{
+                width: 'fit-content',
+                height: '53px',
+                background: 'rgba(190, 200, 185, 0.35)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                display: 'inline-flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                paddingLeft: '24px',
+                paddingRight: '4.5px',
+                gap: '16px',
+              }}
               aria-label="Find a therapist"
             >
-              Find a therapist
-              <ArrowRight className="h-4 w-4" strokeWidth={2.5} />
+              <span 
+                className="text-black/95" 
+                style={{ 
+                    fontFamily: '"Helvetica Now", Helvetica, Arial, sans-serif',
+                    fontSize: '16px',
+                    fontWeight: 400,
+                    whiteSpace: 'nowrap'
+                }}
+              >
+                Find a therapist
+              </span>
+              <div 
+                className="flex items-center justify-center rounded-full bg-[#d9e7c8] text-black transition-transform duration-300 group-hover:scale-105"
+                style={{
+                  width: '44px',
+                  height: '44px',
+                  flexShrink: 0
+                }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ color: "#0b0f0c" }}>
+                  <path d="M7 17L17 7M17 7H8M17 7V16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
             </button>
           </div>
 

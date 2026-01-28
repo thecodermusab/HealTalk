@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import crypto from "crypto";
+import nodemailer from "nodemailer";
 
 export async function POST(req: Request) {
   try {
@@ -30,15 +31,32 @@ export async function POST(req: Request) {
       },
     });
 
-    // Mock Email Sending (For Development/Instruction)
-    // In production, use Nodemailer or Resend
     const resetUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/reset-password?token=${token}`;
-    console.log("==================================================================");
-    console.log("               FORGOT PASSWORD RESET LINK (MOCK)                  ");
-    console.log("------------------------------------------------------------------");
-    console.log(`Email: ${email}`);
-    console.log(`Link:  ${resetUrl}`);
-    console.log("==================================================================");
+    const emailServer = process.env.EMAIL_SERVER;
+    const emailFrom = process.env.EMAIL_FROM || "support@healtalk.com";
+
+    if (emailServer) {
+      const transporter = nodemailer.createTransport(emailServer);
+      await transporter.sendMail({
+        from: emailFrom,
+        to: email,
+        subject: "Reset your HealTalk password",
+        text: `Reset your password: ${resetUrl}`,
+        html: `
+          <p>Hello,</p>
+          <p>You requested a password reset for HealTalk.</p>
+          <p><a href="${resetUrl}">Click here to reset your password</a></p>
+          <p>If you did not request this, you can ignore this email.</p>
+        `,
+      });
+    } else {
+      console.log("==================================================================");
+      console.log("               FORGOT PASSWORD RESET LINK (MOCK)                  ");
+      console.log("------------------------------------------------------------------");
+      console.log(`Email: ${email}`);
+      console.log(`Link:  ${resetUrl}`);
+      console.log("==================================================================");
+    }
 
     return NextResponse.json({ message: "If an account exists, a reset link has been sent." }, { status: 200 });
   } catch (error) {

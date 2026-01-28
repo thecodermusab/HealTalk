@@ -11,46 +11,54 @@ import { AboutSlideshow } from "@/components/about/AboutSlideshow";
 const leaders = [
   {
     id: 1,
-    name: "Dr. Ahmet Yılmaz",
-    role: "Chief Clinical Officer",
-    image: "https://images.unsplash.com/photo-1537368910025-700350fe46c7?w=800&q=80",
-    linkedin: "https://linkedin.com",
+    name: "Mr. Musab Mohamed",
+    role: "CEO / Partner",
+    image: "/images/Me.png",
+    socialUrl: "https://www.instagram.com/maahir.03?igsh=anY3cXUzanhwNTNj&utm_source=qr",
+    socialLabel: "Instagram"
   },
   {
     id: 2,
-    name: "Dr. Ayşe Demir",
-    role: "Director of Therapy",
-    image: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=800&q=80",
-    linkedin: "https://linkedin.com",
+    name: "Mss. Ugbad Bashir Barre",
+    role: "Client Director",
+    image: "/images/Mustaf.png",
+    socialUrl: "https://instagram.com",
+    socialLabel: "Instagram"
   },
   {
     id: 3,
-    name: "Helle Cecilie Aasen",
+    name: "Mss. Radia Ahmed Abdirahman",
     role: "Head of Care Operations",
-    image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&q=80",
-    linkedin: "https://linkedin.com",
+    image: "/images/ciro.png",
+    socialUrl: "https://instagram.com",
+    socialLabel: "Instagram"
   },
   {
     id: 4,
-    name: "Fredrik Solstad",
+    name: "Mss. Sabirin Ali Isack",
     role: "Director of Operations",
-    image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=800&q=80",
-    linkedin: "https://linkedin.com",
+    image: "/images/koonfur.png",
+    socialUrl: "https://instagram.com",
+    socialLabel: "Instagram"
   },
   {
     id: 5,
-    name: "Sarah Johnson",
-    role: "Clinical Director",
-    image: "https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=800&q=80",
-    linkedin: "https://linkedin.com",
+    name: "Mr. Abdulkadir Mohamed Abdi",
+    role: "Head of People",
+    image: "/images/koonfur.png",
+    socialUrl: "https://instagram.com",
+    socialLabel: "Instagram"
   },
+  /*
   {
     id: 6,
     name: "Michael Chen",
     role: "Head of Product",
     image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=800&q=80",
-    linkedin: "https://linkedin.com",
+    socialUrl: "https://linkedin.com",
+    socialLabel: "LinkedIn"
   }
+  */
 ];
 
 export default function AboutPage() {
@@ -63,10 +71,10 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen font-sans">
       {/* SECTION 1: HERO */}
-      <section className="pt-[160px] pb-[40px] px-10">
+      <section className="pt-[160px] pb-[32px] px-10">
         <div className="max-w-[1470px] mx-auto">
           {/* HEADLINE */}
-          <div className="max-w-[960px] mx-auto text-center mb-[80px]">
+          <div className="max-w-[960px] mx-auto text-center mb-[48px]">
             <h1 className="font-logo text-[96px] leading-[1.1] tracking-[-0.04em] text-[#111827]">
               About HealTalk, for{" "}
               <span className="relative inline-block">
@@ -90,7 +98,7 @@ export default function AboutPage() {
 
           {/* HERO IMAGE */}
           {/* HERO SLIDESHOW */}
-          <div className="mb-[80px]">
+          <div className="mb-[48px]">
              <AboutSlideshow />
           </div>
 
@@ -101,10 +109,10 @@ export default function AboutPage() {
       <InfiniteLogoCarousel />
 
       {/* SECTION 2: STORY & VIDEO */}
-      <section className="py-[80px] px-10">
+      <section className="py-[48px] px-10">
         <div className="max-w-[1470px] mx-auto">
            {/* STORY TEXT */}
-           <div className="max-w-[960px] mx-auto text-center mb-[80px]">
+           <div className="max-w-[960px] mx-auto text-center mb-[48px]">
              <p className="font-heading font-bold text-[32px] leading-[1.15] tracking-[-1.28px] text-[#111827]">
                HealTalk started with one simple goal: make therapy easy to access, safe to use, and kind at every step. Choose a therapist, book a time, and meet by secure video. We protect your privacy in every session.
              </p>
@@ -130,10 +138,10 @@ export default function AboutPage() {
       </section>
 
       {/* SECTION 3: LEADERS (Refined Pixel-Perfect) */}
-      <section className="py-[80px] px-10">
+      <section className="py-[48px] px-10">
         <div className="max-w-[1470px] mx-auto">
           {/* SECTION HEADER */}
-          <div className="mb-[80px] text-center">
+          <div className="mb-[48px] text-center">
              <h2 className="font-logo text-[48px] leading-[1.1] tracking-[-1.92px] text-[#111827]">
                Meet our clinical leaders.
              </h2>
@@ -211,11 +219,11 @@ export default function AboutPage() {
                              {leader.role}
                          </p>
                          <a 
-                           href={leader.linkedin}
+                           href={leader.socialUrl}
                            className="inline-block border-b border-black text-xs font-bold uppercase tracking-wide hover:border-transparent transition-colors text-[#111827]"
                            onClick={(e) => e.stopPropagation()} 
                          >
-                           LinkedIn
+                           {leader.socialLabel}
                          </a>
                       </div>
                     </div>

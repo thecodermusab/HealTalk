@@ -1,12 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { Search, Send, Paperclip, MoreVertical, Circle } from "lucide-react";
+import { Search, Send, Paperclip, MoreVertical, Circle, Video } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { VideoCallPanel } from "@/components/dashboard/messages/VideoCallPanel";
+import { useSearchParams } from "next/navigation";
 
-export default function PsychologistMessagesPage() {
+function MessagesContent() {
+  const searchParams = useSearchParams();
+  const chatIdParam = searchParams.get("chatId");
+  
   const chats = [
     {
       id: 1,
@@ -39,11 +45,39 @@ export default function PsychologistMessagesPage() {
     ],
   };
 
-  const [selectedChatId, setSelectedChatId] = useState<number | null>(chats[0]?.id ?? null);
+  const [selectedChatId, setSelectedChatId] = useState<number | null>(() => {
+    if (chatIdParam) {
+      const id = parseInt(chatIdParam);
+      if (chats.find(c => c.id === id)) return id;
+    }
+    return chats[0]?.id ?? null;
+  });
+  
+  // Update state if URL param changes while on page
+  useEffect(() => {
+    if (chatIdParam) {
+       const id = parseInt(chatIdParam);
+       if (chats.find(c => c.id === id)) {
+         setSelectedChatId(id);
+       }
+    }
+  }, [chatIdParam]);
+
   const [messageInput, setMessageInput] = useState("");
+  const [isInCall, setIsInCall] = useState(false);
 
   const activeChat = chats.find((chat) => chat.id === selectedChatId);
   const messages = selectedChatId ? threadByChatId[selectedChatId] ?? [] : [];
+
+  // Handle URL actions
+  useEffect(() => {
+    const action = searchParams.get("action");
+    if (action === "call") {
+      setIsInCall(true);
+    } else if (action === "reschedule") {
+      setMessageInput("Hi, I'd like to request a reschedule for our upcoming appointment.");
+    }
+  }, [searchParams]);
 
   const handleSendMessage = () => {
     if (!messageInput.trim()) {
@@ -55,158 +89,157 @@ export default function PsychologistMessagesPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col h-[calc(100vh-8rem)]">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Messages</h1>
-          <p className="text-text-secondary">Chat with your patients</p>
-        </div>
-
-        <div className="flex-1 flex bg-card border border-border rounded-xl overflow-hidden">
-          <div className="w-80 border-r border-border flex flex-col">
-            <div className="p-4 border-b border-border">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" size={18} />
-                <Input placeholder="Search patients..." className="pl-10" />
+      <div className={cn(
+         "flex gap-6", 
+         isInCall ? "items-start justify-center" : "flex-col h-[calc(100vh-8rem)]"
+      )}>
+        
+        {/* MESSAGES CONTAINER */}
+        <div 
+           className={cn(
+             "flex flex-col bg-card border border-border rounded-xl overflow-hidden transition-all duration-300",
+             isInCall 
+               ? "w-[433px] h-[719px] shrink-0" // Fixed size when in call
+               : "flex-1 h-full w-full"         // Full size when in normal mode
+           )}
+        >
+          {/* Main Layout of Chat (Sidebar + Content) */}
+          <div className="flex flex-1 overflow-hidden">
+             
+             {/* Chat List Sidebar */}
+            <div className={cn(
+                "border-r border-border flex flex-col w-80",
+                isInCall && "hidden" 
+            )}>
+              <div className="p-4 border-b border-border">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" size={18} />
+                  <Input placeholder="Search..." className="pl-10" />
+                </div>
               </div>
-            </div>
 
-            <div className="flex-1 overflow-y-auto">
-              {chats.length === 0 && (
-                <div className="p-6 text-sm text-text-secondary">
-                  No messages yet.
-                </div>
-              )}
-              {chats.map((chat) => (
-                <button
-                  key={chat.id}
-                  onClick={() => setSelectedChatId(chat.id)}
-                  className={`w-full p-4 flex items-start gap-3 hover:bg-background transition-colors border-b border-border ${
-                    selectedChatId === chat.id ? "bg-primary/5" : ""
-                  }`}
-                >
-                  <div className="relative flex-shrink-0">
-                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                      <span className="font-bold text-primary">
-                        {chat.patient[0]}
-                      </span>
-                    </div>
-                    {chat.online && (
-                      <Circle
-                        className="absolute bottom-0 right-0 text-success fill-success"
-                        size={12}
-                      />
-                    )}
-                  </div>
-
-                  <div className="flex-1 text-left overflow-hidden">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-semibold text-foreground truncate">
-                        {chat.patient}
-                      </span>
-                      {chat.unread > 0 && (
-                        <span className="bg-primary text-background text-xs rounded-full px-2 py-0.5 ml-2">
-                          {chat.unread}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-sm text-text-secondary truncate">
-                      {chat.lastMessage}
-                    </p>
-                    <span className="text-xs text-text-secondary">
-                      {chat.timestamp}
-                    </span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex-1 flex flex-col">
-            <div className="p-4 border-b border-border flex items-center justify-between">
-              {activeChat ? (
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <span className="font-bold text-primary">
-                      {activeChat.patient[0]}
-                    </span>
-                  </div>
-                  <div>
-                    <div className="font-semibold text-foreground">
-                      {activeChat.patient}
-                    </div>
-                    <div className="text-xs text-text-secondary">
-                      {activeChat.online ? "Online" : "Offline"}
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-sm text-text-secondary">Select a conversation</div>
-              )}
-              <Button variant="ghost" size="sm">
-                <MoreVertical size={20} />
-              </Button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
-              {messages.length === 0 && (
-                <div className="text-sm text-text-secondary">
-                  No messages in this conversation yet.
-                </div>
-              )}
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex ${
-                    message.sender === "psychologist" ? "justify-end" : "justify-start"
-                  }`}
-                >
-                  <div
-                    className={`max-w-md px-4 py-3 rounded-2xl ${
-                      message.sender === "psychologist"
-                        ? "bg-primary text-background rounded-br-sm"
-                        : "bg-background text-foreground rounded-bl-sm"
+              <div className="flex-1 overflow-y-auto">
+                {chats.map((chat) => (
+                  <button
+                    key={chat.id}
+                    onClick={() => setSelectedChatId(chat.id)}
+                    className={`w-full p-4 flex items-start gap-3 hover:bg-background transition-colors border-b border-border ${
+                      selectedChatId === chat.id ? "bg-primary/5" : ""
                     }`}
                   >
-                    <p className="text-sm leading-relaxed">{message.text}</p>
-                    <span
-                      className={`text-xs mt-1 block ${
-                        message.sender === "psychologist"
-                          ? "text-background/70"
-                          : "text-text-secondary"
-                      }`}
-                    >
-                      {message.timestamp}
-                    </span>
-                  </div>
-                </div>
-              ))}
+                    <div className="relative flex-shrink-0">
+                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                        <span className="font-bold text-primary">{chat.patient[0]}</span>
+                      </div>
+                      {chat.online && (
+                        <Circle className="absolute bottom-0 right-0 text-success fill-success" size={12} />
+                      )}
+                    </div>
+                    <div className="flex-1 text-left overflow-hidden">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-semibold text-foreground truncate">{chat.patient}</span>
+                      </div>
+                      <p className="text-sm text-text-secondary truncate">{chat.lastMessage}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
 
-            <div className="p-4 border-t border-border">
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm">
-                  <Paperclip size={20} />
-                </Button>
-                <Input
-                  placeholder="Type a message..."
-                  value={messageInput}
-                  onChange={(event) => setMessageInput(event.target.value)}
-                  onKeyDown={(event) => event.key === "Enter" && handleSendMessage()}
-                  className="flex-1"
-                  disabled={!activeChat}
-                />
-                <Button
-                  onClick={handleSendMessage}
-                  className="bg-primary hover:bg-primary/90"
-                  disabled={!messageInput.trim() || !activeChat}
-                >
-                  <Send size={18} />
-                </Button>
+            {/* Chat Content */}
+            <div className="flex-1 flex flex-col min-w-0">
+              {/* Chat Header */}
+              <div className="p-4 border-b border-border flex items-center justify-between">
+                {activeChat ? (
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                      <span className="font-bold text-primary">{activeChat.patient[0]}</span>
+                    </div>
+                    <div>
+                      <div className="font-semibold text-foreground">{activeChat.patient}</div>
+                      <div className="text-xs text-text-secondary">
+                        {activeChat.online ? "Online" : "Offline"}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div>Select a chat</div>
+                )}
+                
+                <div className="flex gap-2">
+                   {/* Video Call Button */}
+                   <Button 
+                     variant="ghost" 
+                     size="icon" 
+                     className={cn("text-gray-500 hover:text-primary hover:bg-primary/10", isInCall && "text-primary bg-primary/10")}
+                     onClick={() => setIsInCall(!isInCall)}
+                     title="Start Video Call"
+                   >
+                     <Video size={20} />
+                   </Button>
+                   <Button variant="ghost" size="icon">
+                     <MoreVertical size={20} />
+                   </Button>
+                </div>
+              </div>
+
+              {/* Messages Area */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {messages.map((message) => (
+                  <div key={message.id} className={`flex ${message.sender === "psychologist" ? "justify-end" : "justify-start"}`}>
+                    <div className={`max-w-[85%] px-4 py-3 rounded-2xl ${
+                      message.sender === "psychologist" ? "bg-primary text-background rounded-br-sm" : "bg-background text-foreground rounded-bl-sm"
+                    }`}>
+                      <p className="text-sm leading-relaxed">{message.text}</p>
+                      <span className={`text-xs mt-1 block ${message.sender === "psychologist" ? "text-background/70" : "text-text-secondary"}`}>
+                        {message.timestamp}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Input Area */}
+              <div className="p-4 border-t border-border">
+                <div className="flex items-center gap-2">
+                  <Button variant="ghost" size="icon" className="shrink-0">
+                    <Paperclip size={20} />
+                  </Button>
+                  <Input
+                    placeholder="Type..."
+                    value={messageInput}
+                    onChange={(e) => setMessageInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+                    className="flex-1"
+                  />
+                  <Button onClick={handleSendMessage} size="icon" className="shrink-0">
+                    <Send size={18} />
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
         </div>
+
+        {/* MEETING PANEL */}
+        {isInCall && (
+            <div className="w-[712px] h-[729px] shrink-0">
+                <VideoCallPanel 
+                   roomName={`healtalk-${selectedChatId}`} 
+                   onEndCall={() => setIsInCall(false)}
+                />
+            </div>
+        )}
+
       </div>
     </DashboardLayout>
+  );
+}
+
+export default function PsychologistMessagesPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <MessagesContent />
+    </Suspense>
   );
 }
