@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import InfiniteLogoCarousel from "@/components/InfiniteLogoCarousel";
 import WhoAreWeSection from "@/components/about/WhoAreWeSection";
 import CoreValuesSection from "@/components/about/CoreValuesSection";
+import { AboutSlideshow } from "@/components/about/AboutSlideshow";
 
 const leaders = [
   {
@@ -88,14 +89,9 @@ export default function AboutPage() {
           </div>
 
           {/* HERO IMAGE */}
-          <div className="w-full max-w-[1386px] mx-auto h-[400px] lg:h-[778px] rounded-[24px] overflow-hidden mb-[80px] relative shadow-sm border border-black/5">
-             <Image 
-                src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1600&q=80"
-                alt="HealTalk Team"
-                fill
-                className="object-cover"
-                priority
-             />
+          {/* HERO SLIDESHOW */}
+          <div className="mb-[80px]">
+             <AboutSlideshow />
           </div>
 
         </div>
