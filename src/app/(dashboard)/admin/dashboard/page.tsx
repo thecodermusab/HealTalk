@@ -1,6 +1,9 @@
+"use client";
+
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { Users, Building, Calendar, TrendingUp, AlertCircle, CheckCircle } from "lucide-react";
+import { Users, Building, Calendar, TrendingUp, AlertCircle, CheckCircle, Activity, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 export default function AdminDashboardHome() {
   const platformStats = {
@@ -21,28 +24,31 @@ export default function AdminDashboardHome() {
       id: 1,
       type: "approval",
       text: "Dr. Ayşe Demir approved",
+      subtext: "Application reviewed and accepted",
       time: "2 hours ago",
       icon: CheckCircle,
-      bgClass: "bg-success/10",
-      iconClass: "text-success"
+      bg: "bg-[#E6F8F3]",
+      color: "text-[#20C997]"
     },
     {
       id: 2,
       type: "registration",
       text: "New hospital added: Memorial Ankara",
+      subtext: "Pending verification",
       time: "5 hours ago",
       icon: Building,
-      bgClass: "bg-primary/10",
-      iconClass: "text-primary"
+      bg: "bg-[#EEF0FF]",
+      color: "text-[#5B6CFF]"
     },
     {
       id: 3,
       type: "pending",
       text: "3 psychologists awaiting approval",
+      subtext: "Action required",
       time: "Yesterday",
       icon: AlertCircle,
-      bgClass: "bg-accent/10",
-      iconClass: "text-accent"
+      bg: "bg-[#FFF5EB]",
+      color: "text-[#FF9F43]"
     },
   ];
 
@@ -54,101 +60,111 @@ export default function AdminDashboardHome() {
 
   return (
     <DashboardLayout>
-      <div>
+      <div className="space-y-6">
         {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
+        <div className="mb-2">
+          <h1 className="text-3xl font-bold text-gray-900 mb-1">
             Admin Dashboard
           </h1>
-          <p className="text-text-secondary">Platform overview and management</p>
+          <p className="text-gray-500">Platform overview and management</p>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Link href="/admin/dashboard/psychologists">
-            <div className="bg-card border border-border rounded-xl p-6 hover:shadow-lg transition-shadow cursor-pointer">
-              <div className="flex items-center justify-between mb-2">
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                  <Users className="text-primary" size={24} />
+            <div className="bg-white border border-[#E6EAF2] rounded-[16px] p-6 hover:shadow-[0_8px_24px_rgba(17,24,39,0.06)] hover:border-[#5B6CFF] transition-all cursor-pointer group h-full">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-[#EEF0FF] rounded-xl flex items-center justify-center group-hover:bg-[#5B6CFF] transition-colors">
+                  <Users className="text-[#5B6CFF] group-hover:text-white transition-colors" size={24} />
                 </div>
                 {platformStats.pendingApprovals > 0 && (
-                  <span className="px-2 py-1 bg-accent text-background text-xs font-semibold rounded-full">
+                  <span className="px-2.5 py-1 bg-[#FFF5EB] text-[#FF9F43] text-xs font-bold rounded-full">
                     {platformStats.pendingApprovals} pending
                   </span>
                 )}
               </div>
-              <div className="text-3xl font-bold text-foreground mb-1">
+              <div className="text-3xl font-bold text-gray-900 mb-1">
                 {platformStats.totalPsychologists}
               </div>
-              <div className="text-sm text-text-secondary">Total Psychologists</div>
-              <div className="text-xs text-success mt-1">
-                {platformStats.activePsychologists} active
+              <div className="text-sm text-gray-500 font-medium">Total Psychologists</div>
+              <div className="text-xs text-[#20C997] font-bold mt-2 flex items-center gap-1">
+                <CheckCircle size={12} /> {platformStats.activePsychologists} active
               </div>
             </div>
           </Link>
 
-          <div className="bg-card border border-border rounded-xl p-6">
-            <div className="flex items-center justify-between mb-2">
-              <div className="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center">
-                <Users className="text-secondary" size={24} />
+          <div className="bg-white border border-[#E6EAF2] rounded-[16px] p-6 h-full">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 bg-[#E6F8F3] rounded-xl flex items-center justify-center">
+                <Users className="text-[#20C997]" size={24} />
               </div>
             </div>
-            <div className="text-3xl font-bold text-foreground mb-1">
+            <div className="text-3xl font-bold text-gray-900 mb-1">
               {platformStats.totalPatients.toLocaleString()}
             </div>
-            <div className="text-sm text-text-secondary">Total Patients</div>
-            <div className="text-xs text-success mt-1">
-              {platformStats.activePatients} active this month
+            <div className="text-sm text-gray-500 font-medium">Total Patients</div>
+            <div className="text-xs text-[#20C997] font-bold mt-2 flex items-center gap-1">
+               <ArrowUpRight size={12} /> {platformStats.activePatients} active this month
             </div>
           </div>
 
           <Link href="/admin/dashboard/hospitals">
-            <div className="bg-card border border-border rounded-xl p-6 hover:shadow-lg transition-shadow cursor-pointer">
-              <div className="flex items-center justify-between mb-2">
-                <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center">
-                  <Building className="text-accent" size={24} />
+            <div className="bg-white border border-[#E6EAF2] rounded-[16px] p-6 hover:shadow-[0_8px_24px_rgba(17,24,39,0.06)] hover:border-[#5B6CFF] transition-all cursor-pointer group h-full">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-[#F4F7FF] rounded-xl flex items-center justify-center group-hover:bg-[#5B6CFF] transition-colors">
+                  <Building className="text-[#5B6CFF] group-hover:text-white transition-colors" size={24} />
                 </div>
               </div>
-              <div className="text-3xl font-bold text-foreground mb-1">
+              <div className="text-3xl font-bold text-gray-900 mb-1">
                 {platformStats.totalHospitals}
               </div>
-              <div className="text-sm text-text-secondary">Partner Hospitals</div>
+              <div className="text-sm text-gray-500 font-medium">Partner Hospitals</div>
             </div>
           </Link>
 
-          <div className="bg-card border border-border rounded-xl p-6">
-            <div className="flex items-center justify-between mb-2">
-              <div className="w-12 h-12 bg-success/10 rounded-lg flex items-center justify-center">
-                <Calendar className="text-success" size={24} />
+          <div className="bg-white border border-[#E6EAF2] rounded-[16px] p-6 h-full">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 bg-[#FFF5EB] rounded-xl flex items-center justify-center">
+                <Calendar className="text-[#FF9F43]" size={24} />
               </div>
             </div>
-            <div className="text-3xl font-bold text-foreground mb-1">
+            <div className="text-3xl font-bold text-gray-900 mb-1">
               {platformStats.totalAppointments.toLocaleString()}
             </div>
-            <div className="text-sm text-text-secondary">Total Appointments</div>
-            <div className="text-xs text-success mt-1">
-              {platformStats.thisMonthAppointments} this month
+            <div className="text-sm text-gray-500 font-medium">Total Appointments</div>
+            <div className="text-xs text-[#20C997] font-bold mt-2 flex items-center gap-1">
+               <ArrowUpRight size={12} /> {platformStats.thisMonthAppointments} this month
             </div>
           </div>
         </div>
 
         {/* Revenue Card */}
-        <div className="bg-gradient-to-r from-primary via-primary/90 to-accent rounded-2xl p-8 mb-8 text-background">
-          <div className="flex items-center gap-3 mb-4">
-            <TrendingUp size={32} />
-            <div>
-              <div className="text-sm text-background/80">Total Platform Revenue</div>
-              <div className="text-4xl font-bold">₺{platformStats.totalRevenue.toLocaleString()}</div>
+        <div className="bg-gradient-to-r from-[#5B6CFF] to-[#8090FF] rounded-[24px] p-8 text-white shadow-xl shadow-blue-500/20 relative overflow-hidden">
+          <div className="absolute right-0 top-0 w-64 h-64 bg-white/10 rounded-full translate-x-1/2 -translate-y-1/2 blur-2xl pointer-events-none" />
+          
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+            <div className="flex items-center gap-4">
+                <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+                    <TrendingUp size={32} className="text-white" />
+                </div>
+                <div>
+                <div className="text-blue-100 font-medium mb-1">Total Platform Revenue</div>
+                <div className="text-4xl font-bold">₺{platformStats.totalRevenue.toLocaleString()}</div>
+                </div>
             </div>
-          </div>
-          <div className="flex items-center gap-8 text-sm">
-            <div>
-              <div className="text-background/80">This Month</div>
-              <div className="text-xl font-bold">₺{platformStats.thisMonthRevenue.toLocaleString()}</div>
-            </div>
-            <div>
-              <div className="text-background/80">Growth</div>
-              <div className="text-xl font-bold">+12.5%</div>
+            
+            <div className="flex items-center gap-10 bg-white/10 backdrop-blur-sm px-8 py-4 rounded-2xl border border-white/10">
+                <div>
+                <div className="text-blue-100 text-sm mb-1">This Month</div>
+                <div className="text-2xl font-bold">₺{platformStats.thisMonthRevenue.toLocaleString()}</div>
+                </div>
+                <div className="h-10 w-px bg-white/20" />
+                <div>
+                <div className="text-blue-100 text-sm mb-1">Growth</div>
+                <div className="text-2xl font-bold flex items-center gap-1">
+                    +12.5% <ArrowUpRight size={20} />
+                </div>
+                </div>
             </div>
           </div>
         </div>
@@ -156,23 +172,26 @@ export default function AdminDashboardHome() {
         {/* Two Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Top Psychologists */}
-          <div className="bg-card border border-border rounded-xl p-6">
-            <h3 className="text-xl font-bold text-foreground mb-6">Top Psychologists This Month</h3>
+          <div className="bg-white border border-[#E6EAF2] rounded-[16px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)]">
+            <div className="flex items-center justify-between mb-6">
+                 <h3 className="text-lg font-bold text-gray-900">Top Psychologists</h3>
+                 <span className="text-xs font-bold text-[#5B6CFF] bg-[#EEF0FF] px-2 py-1 rounded">This Month</span>
+            </div>
             <div className="space-y-4">
               {topPsychologists.map((psy, index) => (
-                <div key={psy.id} className="flex items-center gap-4">
-                  <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="font-bold text-primary">#{index + 1}</span>
+                <div key={psy.id} className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer group">
+                  <div className="w-10 h-10 bg-[#EEF0FF] rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-[#5B6CFF] transition-colors">
+                    <span className="font-bold text-[#5B6CFF] group-hover:text-white">#{index + 1}</span>
                   </div>
                   <div className="flex-1">
-                    <div className="font-semibold text-foreground">{psy.name}</div>
-                    <div className="text-sm text-text-secondary">
-                      {psy.appointments} appointments • {psy.rating} ★
+                    <div className="font-bold text-gray-900">{psy.name}</div>
+                    <div className="text-xs text-gray-500 font-medium">
+                      {psy.appointments} appointments • <span className="text-[#FF9F43]">{psy.rating} ★</span>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-bold text-foreground">₺{psy.earnings.toLocaleString()}</div>
-                    <div className="text-xs text-text-secondary">earnings</div>
+                    <div className="font-bold text-gray-900">₺{psy.earnings.toLocaleString()}</div>
+                    <div className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">earnings</div>
                   </div>
                 </div>
               ))}
@@ -180,18 +199,19 @@ export default function AdminDashboardHome() {
           </div>
 
           {/* Recent Activity */}
-          <div className="bg-card border border-border rounded-xl p-6">
-            <h3 className="text-xl font-bold text-foreground mb-6">Recent Activity</h3>
-            <div className="space-y-4">
+          <div className="bg-white border border-[#E6EAF2] rounded-[16px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)]">
+            <h3 className="text-lg font-bold text-gray-900 mb-6">Recent Activity</h3>
+            <div className="space-y-6">
               {recentActivities.map((activity) => (
-                <div key={activity.id} className="flex items-start gap-3">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${activity.bgClass}`}>
-                    <activity.icon className={activity.iconClass} size={16} />
+                <div key={activity.id} className="flex items-start gap-4">
+                  <div className={cn("w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0", activity.bg)}>
+                    <activity.icon className={activity.color} size={18} />
                   </div>
-                  <div className="flex-1">
-                    <div className="text-sm font-medium text-foreground">{activity.text}</div>
-                    <div className="text-xs text-text-secondary">{activity.time}</div>
+                  <div className="flex-1 pt-1">
+                    <div className="text-sm font-bold text-gray-900">{activity.text}</div>
+                    <div className="text-xs text-gray-500 mt-0.5">{activity.subtext}</div>
                   </div>
+                  <div className="text-xs text-gray-400 font-medium whitespace-nowrap pt-1">{activity.time}</div>
                 </div>
               ))}
             </div>

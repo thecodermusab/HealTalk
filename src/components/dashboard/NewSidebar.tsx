@@ -34,10 +34,21 @@ const patientNavItems = [
   { label: "Settings", href: "/patient/dashboard/settings", icon: Settings },
 ];
 
+const adminNavItems = [
+  { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
+  { label: "Psychologists", href: "/admin/dashboard/psychologists", icon: Users },
+  { label: "Hospitals", href: "/admin/dashboard/hospitals", icon: Users },
+  { label: "Settings", href: "/admin/dashboard/settings", icon: Settings },
+];
+
 export function NewSidebar() {
   const pathname = usePathname();
   const isPatient = pathname?.startsWith("/patient");
-  const navItems = isPatient ? patientNavItems : psychologistNavItems;
+  const isAdmin = pathname?.startsWith("/admin");
+  
+  let navItems = psychologistNavItems;
+  if (isPatient) navItems = patientNavItems;
+  if (isAdmin) navItems = adminNavItems;
 
   return (
     <aside className="w-[260px] h-screen fixed left-0 top-0 bg-white border-r border-[#E6EAF2] flex flex-col z-30 hidden lg:flex">
@@ -54,7 +65,7 @@ export function NewSidebar() {
       {/* Nav */}
       <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
-          const isActive = pathname === item.href || (item.href !== "/psychologist/dashboard" && item.href !== "/patient/dashboard" && pathname?.startsWith(item.href));
+          const isActive = pathname === item.href || (item.href !== "/psychologist/dashboard" && item.href !== "/patient/dashboard" && item.href !== "/admin/dashboard" && pathname?.startsWith(item.href));
           return (
             <Link
               key={item.href}

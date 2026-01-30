@@ -90,31 +90,29 @@ function MessagesContent() {
   return (
     <DashboardLayout>
       <div className={cn(
-         "flex gap-6", 
-         isInCall ? "items-start justify-center" : "flex-col h-[calc(100vh-8rem)]"
+         "flex gap-6 h-[calc(100vh-8rem)]", // Fixed height to fill remaining space
+         isInCall ? "items-start justify-center" : "flex-col"
       )}>
         
         {/* MESSAGES CONTAINER */}
         <div 
            className={cn(
-             "flex flex-col bg-card border border-border rounded-xl overflow-hidden transition-all duration-300",
+             "flex bg-white border border-[#E6EAF2] rounded-[24px] overflow-hidden shadow-sm transition-all duration-300",
              isInCall 
-               ? "w-[433px] h-[719px] shrink-0" // Fixed size when in call
-               : "flex-1 h-full w-full"         // Full size when in normal mode
+               ? "w-[400px] h-[600px] flex-col shrink-0" 
+               : "flex-1 h-full w-full flex-row"
            )}
         >
-          {/* Main Layout of Chat (Sidebar + Content) */}
-          <div className="flex flex-1 overflow-hidden">
-             
-             {/* Chat List Sidebar */}
-            <div className={cn(
-                "border-r border-border flex flex-col w-80",
-                isInCall && "hidden" 
-            )}>
-              <div className="p-4 border-b border-border">
+           {/* Chats List Side */}
+           <div className={cn(
+               "border-r border-[#E6EAF2] flex flex-col transition-all duration-300",
+               isInCall ? "hidden" : "w-80"
+           )}>
+              <div className="p-6 border-b border-[#E6EAF2]">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Messages</h2>
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" size={18} />
-                  <Input placeholder="Search..." className="pl-10" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                  <Input placeholder="Search patients..." className="pl-10 bg-gray-50 border-gray-200 focus:bg-white transition-colors rounded-xl" />
                 </div>
               </div>
 
@@ -123,107 +121,122 @@ function MessagesContent() {
                   <button
                     key={chat.id}
                     onClick={() => setSelectedChatId(chat.id)}
-                    className={`w-full p-4 flex items-start gap-3 hover:bg-background transition-colors border-b border-border ${
-                      selectedChatId === chat.id ? "bg-primary/5" : ""
-                    }`}
+                    className={cn(
+                        "w-full p-4 flex items-start gap-4 transition-all border-b border-gray-50 hover:bg-gray-50 text-left relative",
+                        selectedChatId === chat.id ? "bg-[#F4F7FF] before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-[#5B6CFF]" : ""
+                    )}
                   >
                     <div className="relative flex-shrink-0">
-                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                        <span className="font-bold text-primary">{chat.patient[0]}</span>
+                      <div className={cn(
+                          "w-12 h-12 rounded-[14px] flex items-center justify-center text-lg font-bold shadow-sm",
+                          selectedChatId === chat.id ? "bg-[#5B6CFF] text-white" : "bg-[#EEF0FF] text-[#5B6CFF]"
+                      )}>
+                        {chat.patient.split(" ")[0][0]}
                       </div>
                       {chat.online && (
-                        <Circle className="absolute bottom-0 right-0 text-success fill-success" size={12} />
+                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-white rounded-full flex items-center justify-center">
+                            <Circle className="text-[#20C997] fill-[#20C997] w-2.5 h-2.5" />
+                        </div>
                       )}
                     </div>
-                    <div className="flex-1 text-left overflow-hidden">
+                    <div className="flex-1 overflow-hidden">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="font-semibold text-foreground truncate">{chat.patient}</span>
+                        <span className={cn("font-bold truncate", selectedChatId === chat.id ? "text-[#5B6CFF]" : "text-gray-900")}>
+                            {chat.patient}
+                        </span>
+                        <span className="text-[10px] text-gray-400 font-medium">{chat.timestamp}</span>
                       </div>
-                      <p className="text-sm text-text-secondary truncate">{chat.lastMessage}</p>
+                      <p className={cn("text-xs truncate", selectedChatId === chat.id ? "text-gray-600 font-medium" : "text-gray-500")}>
+                          {chat.lastMessage}
+                      </p>
                     </div>
                   </button>
                 ))}
               </div>
-            </div>
+           </div>
 
-            {/* Chat Content */}
-            <div className="flex-1 flex flex-col min-w-0">
-              {/* Chat Header */}
-              <div className="p-4 border-b border-border flex items-center justify-between">
+           {/* Chat Content Side */}
+           <div className="flex-1 flex flex-col min-w-0 bg-white">
+              {/* Header */}
+              <div className="h-[88px] flex items-center justify-between px-8 border-b border-[#E6EAF2]">
                 {activeChat ? (
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <span className="font-bold text-primary">{activeChat.patient[0]}</span>
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-[14px] bg-[#EEF0FF] flex items-center justify-center text-[#5B6CFF] font-bold text-lg">
+                      {activeChat.patient.split(" ")[0][0]}
                     </div>
                     <div>
-                      <div className="font-semibold text-foreground">{activeChat.patient}</div>
-                      <div className="text-xs text-text-secondary">
-                        {activeChat.online ? "Online" : "Offline"}
+                      <h3 className="text-lg font-bold text-gray-900">{activeChat.patient}</h3>
+                      <div className="flex items-center gap-2">
+                        <span className={cn("w-2 h-2 rounded-full", activeChat.online ? "bg-[#20C997]" : "bg-gray-300")} />
+                        <span className="text-xs text-gray-500 font-medium">{activeChat.online ? "Online Now" : "Offline"}</span>
                       </div>
                     </div>
                   </div>
                 ) : (
-                  <div>Select a chat</div>
+                  <div className="text-gray-400">Select a chat to start messaging</div>
                 )}
                 
-                <div className="flex gap-2">
-                   {/* Video Call Button */}
+                <div className="flex items-center gap-3">
                    <Button 
-                     variant="ghost" 
-                     size="icon" 
-                     className={cn("text-gray-500 hover:text-primary hover:bg-primary/10", isInCall && "text-primary bg-primary/10")}
+                     variant="outline" 
+                     className="h-10 w-10 p-0 rounded-xl border-gray-200 text-gray-500 hover:text-[#5B6CFF] hover:bg-[#EEF0FF] hover:border-[#5B6CFF]"
                      onClick={() => setIsInCall(!isInCall)}
                      title="Start Video Call"
                    >
-                     <Video size={20} />
+                     <Video size={18} />
                    </Button>
-                   <Button variant="ghost" size="icon">
-                     <MoreVertical size={20} />
+                   <Button variant="ghost" className="h-10 w-10 p-0 rounded-xl hover:bg-gray-50 text-gray-400">
+                     <MoreVertical size={18} />
                    </Button>
                 </div>
               </div>
 
               {/* Messages Area */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {messages.map((message) => (
-                  <div key={message.id} className={`flex ${message.sender === "psychologist" ? "justify-end" : "justify-start"}`}>
-                    <div className={`max-w-[85%] px-4 py-3 rounded-2xl ${
-                      message.sender === "psychologist" ? "bg-primary text-background rounded-br-sm" : "bg-background text-foreground rounded-bl-sm"
-                    }`}>
-                      <p className="text-sm leading-relaxed">{message.text}</p>
-                      <span className={`text-xs mt-1 block ${message.sender === "psychologist" ? "text-background/70" : "text-text-secondary"}`}>
-                        {message.timestamp}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+              <div className="flex-1 overflow-y-auto p-8 space-y-6 bg-[#FAFBFC]">
+                {messages.map((message) => {
+                    const isMe = message.sender === "psychologist";
+                    return (
+                      <div key={message.id} className={cn("flex w-full", isMe ? "justify-end" : "justify-start")}>
+                        <div className={cn(
+                            "max-w-[70%] p-4 shadow-sm",
+                            isMe 
+                                ? "bg-[#5B6CFF] text-white rounded-[20px] rounded-tr-none" 
+                                : "bg-white text-gray-700 border border-[#E6EAF2] rounded-[20px] rounded-tl-none"
+                        )}>
+                          <p className="text-sm leading-relaxed">{message.text}</p>
+                          <span className={cn("text-[10px] block mt-1.5 text-right opacity-80", isMe ? "text-blue-100" : "text-gray-400")}>
+                            {message.timestamp}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                })}
               </div>
 
               {/* Input Area */}
-              <div className="p-4 border-t border-border">
-                <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="icon" className="shrink-0">
+              <div className="p-6 bg-white border-t border-[#E6EAF2]">
+                <div className="flex items-center gap-3 bg-gray-50 p-2 rounded-[16px] border border-[#E6EAF2]">
+                  <Button variant="ghost" size="icon" className="text-gray-400 hover:text-gray-600 rounded-xl hover:bg-white hover:shadow-sm">
                     <Paperclip size={20} />
                   </Button>
                   <Input
-                    placeholder="Type..."
+                    placeholder="Type your message..."
                     value={messageInput}
                     onChange={(e) => setMessageInput(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-                    className="flex-1"
+                    className="flex-1 bg-transparent border-none shadow-none focus-visible:ring-0 placeholder:text-gray-400"
                   />
-                  <Button onClick={handleSendMessage} size="icon" className="shrink-0">
+                  <Button onClick={handleSendMessage} className="bg-[#5B6CFF] hover:bg-[#4a5ae0] text-white h-10 w-10 rounded-[12px] p-0 shadow-md shadow-blue-500/20">
                     <Send size={18} />
                   </Button>
                 </div>
               </div>
-            </div>
-          </div>
+           </div>
         </div>
 
         {/* MEETING PANEL */}
         {isInCall && (
-            <div className="w-[712px] h-[729px] shrink-0">
+            <div className="flex-1 h-[720px] bg-black rounded-[24px] overflow-hidden shadow-2xl relative">
                 <VideoCallPanel 
                    roomName={`healtalk-${selectedChatId}`} 
                    onEndCall={() => setIsInCall(false)}
