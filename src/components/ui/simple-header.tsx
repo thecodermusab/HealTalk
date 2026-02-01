@@ -173,7 +173,7 @@ export function SimpleHeader() {
                         key={link.label}
                         href={link.href}
                         className={cn(
-                          "text-[15px] font-medium text-gray-900 transition-all duration-200 px-4 py-2 rounded-[20px]",
+                          "text-[15px] font-medium text-gray-900 transition-all duration-200 px-4 py-2 rounded-[20px] whitespace-nowrap",
                           "hover:bg-[#dcd5cb]",
                           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2",
                           isResourcesOpen && "bg-[#dcd5cb]"
@@ -194,7 +194,7 @@ export function SimpleHeader() {
                     key={link.label}
                     href={link.href}
                     className={cn(
-                      "text-[15px] font-medium text-gray-900 transition-all duration-200 px-4 py-2 rounded-[20px]",
+                      "text-[15px] font-medium text-gray-900 transition-all duration-200 px-4 py-2 rounded-[20px] whitespace-nowrap",
                       "hover:bg-[#dcd5cb]",
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
                     )}

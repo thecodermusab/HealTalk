@@ -1,14 +1,29 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Psychologist } from "@/lib/mock-data";
-import { Info, Mail, Phone, Video } from "lucide-react";
+import { Info, Mail, Phone, Video, Calendar, Clock, CheckCircle } from "lucide-react";
+import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import BookingCalendar from "./BookingCalendar";
 
 interface ConnectCardProps {
   therapist: Psychologist;
 }
 
 export default function ConnectCard({ therapist }: ConnectCardProps) {
+  const router = useRouter();
+  const [date, setDate] = useState<Date | undefined>(undefined);
+  const [time, setTime] = useState<string | undefined>(undefined);
+
+  const handleSlotSelect = (d: Date, t: string) => {
+      setDate(d);
+      setTime(t);
+  };
+
   return (
     <div className="space-y-4 sticky top-24">
         {/* Main Card */}
@@ -16,10 +31,74 @@ export default function ConnectCard({ therapist }: ConnectCardProps) {
         <h3 className="text-xl font-bold text-slate-900 mb-5">Let's Connect</h3>
         
         <div className="space-y-3 mb-6">
-            <Button className="w-full h-12 text-lg font-semibold bg-[#FC7D45] hover:bg-[#e06935] text-white shadow-md shadow-orange-100 transition-all">
-                <Phone size={20} className="mr-2 fill-current" />
-                Book Appointment
-            </Button>
+            <Dialog>
+                <DialogTrigger asChild>
+                    <Button className="w-full h-12 text-lg font-semibold bg-[#FC7D45] hover:bg-[#e06935] text-white shadow-md shadow-orange-100 transition-all">
+                        <Phone size={20} className="mr-2 fill-current" />
+                        Book Appointment
+                    </Button>
+                </DialogTrigger>
+                {/* 900px width as requested, centered by default Dialog component */}
+                <DialogContent className="max-w-[900px] h-[477px] p-0 gap-0 overflow-hidden flex flex-col md:flex-row">
+                    {/* Left Side: Calendar */}
+                    <div className="flex-1 p-6 border-r border-slate-100 bg-white overflow-y-auto">
+                        <BookingCalendar 
+                            onSelectSlot={handleSlotSelect} 
+                            selectedDate={date}
+                            selectedTime={time}
+                        />
+                    </div>
+
+                    {/* Right Side: Summary & Confirm */}
+                    <div className="w-full md:w-[300px] bg-slate-50/50 p-6 flex flex-col h-full">
+                        <div className="mb-6">
+                            <DialogTitle className="text-xl font-bold text-slate-900 mb-1">Book Session</DialogTitle>
+                            <DialogDescription className="text-sm text-slate-500">with {therapist.name}</DialogDescription>
+                        </div>
+                        
+                        <div className="space-y-4 mb-auto">
+                            <div className="bg-white p-3 rounded-xl border border-slate-200/60 shadow-sm">
+                                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Date & Time</span>
+                                <div className="text-slate-900 font-medium flex items-center gap-2">
+                                    <Calendar size={16} className="text-[#FC7D45]" />
+                                    {date && time ? (
+                                        <span>
+                                            {date.toLocaleDateString()} at {time}
+                                        </span>
+                                    ) : (
+                                        <span className="text-slate-400 italic">Select a slot...</span>
+                                    )}
+                                </div>
+                            </div>
+                            
+                            <div className="bg-white p-3 rounded-xl border border-slate-200/60 shadow-sm hidden md:block">
+                                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Fee</span>
+                                <div className="text-slate-900 font-medium">
+                                    {therapist.priceRange.split(' ')[0]} / session
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mt-6">
+                            <Button 
+                                disabled={!date || !time}
+                                onClick={() => {
+                                    if (date && time) {
+                                        router.push(`/checkout?doctor=${encodeURIComponent(therapist.name)}&date=${encodeURIComponent(date.toLocaleDateString())}&time=${encodeURIComponent(time)}&price=${encodeURIComponent(therapist.priceRange.split(' ')[0])}`);
+                                    }
+                                }}
+                                className="w-full h-12 text-base font-bold bg-[#FC7D45] hover:bg-[#e06935] text-white shadow-lg shadow-orange-100 rounded-xl disabled:opacity-50 disabled:shadow-none"
+                            >
+                                Confirm Booking
+                            </Button>
+                            <div className="flex items-center justify-center gap-1.5 text-xs text-slate-400 mt-3">
+                                <CheckCircle size={12} />
+                                <span>Free cancellation 24h before</span>
+                            </div>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
             
             <Button variant="outline" className="w-full h-12 text-base font-medium border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300 transition-all">
                 <Mail size={18} className="mr-2" />

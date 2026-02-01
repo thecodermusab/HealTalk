@@ -23,13 +23,13 @@ function BlogPostContentRenderer({ content }: { content?: BlogPostContent[] }) {
   }
   return (
     <div className="max-w-[720px] mx-auto px-4 md:px-0 mb-20 md:mb-32">
-      <article className="prose prose-lg prose-headings:font-display prose-headings:font-medium prose-p:text-[#1a1a1a] prose-p:leading-relaxed prose-li:text-[#1a1a1a] prose-strong:font-bold prose-strong:text-[#1a1a1a] max-w-none">
+      <article className="max-w-none">
         {content.map((block, index) => {
           switch (block.type) {
             case 'heading':
               return <h2 key={index} className="text-3xl md:text-4xl mt-12 mb-6 text-[#1a1a1a]">{block.value}</h2>;
             case 'paragraph':
-              return <p key={index} className="mb-6 text-lg text-[#1a1a1a]/90">{block.value}</p>;
+              return <p key={index} className="mb-6 text-[24px] font-normal text-[#131E0D] leading-relaxed font-heading">{block.value}</p>;
             case 'list':
               return (
                 <ul key={index} className="my-8 space-y-2 list-none pl-0">

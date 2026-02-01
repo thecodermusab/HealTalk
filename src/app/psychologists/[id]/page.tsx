@@ -1,6 +1,7 @@
 import { psychologists } from "@/lib/mock-data";
 import ProfileHeaderCard from "@/components/psychologists/ProfileHeaderCard";
 import ConnectCard from "@/components/psychologists/ConnectCard";
+import MobileBookingBar from "@/components/psychologists/MobileBookingBar";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, ArrowLeft, Share2, ThumbsUp, Shield, Star, Video, Check, Image as ImageIcon, CreditCard, Building, MapPin, ExternalLink, Calendar, BadgeCheck, Phone, Mail } from "lucide-react";
 import Link from "next/link";
@@ -49,7 +50,7 @@ export default async function PsychologistProfilePage({ params }: PageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFCF8]">
+    <div className="min-h-screen bg-[#FDFCF8] pb-28 lg:pb-0">
          {/* Top Gradient Wash */}
          <div className="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-rose-50/60 to-transparent pointer-events-none" />
 
@@ -374,6 +375,7 @@ export default async function PsychologistProfilePage({ params }: PageProps) {
               </div>
           </div>
       </footer>
+      <MobileBookingBar therapist={therapist} />
     </div>
   );
 }

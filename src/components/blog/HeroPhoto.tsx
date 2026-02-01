@@ -11,10 +11,10 @@ export function HeroPhoto({ post }: HeroPhotoProps) {
     <div className="w-full max-w-[1100px] mx-auto px-4 md:px-8 mb-16 md:mb-24">
       {/* Intro Text */}
       <div className="max-w-4xl mb-12">
-        <h1 className="text-4xl md:text-6xl lg:text-[72px] font-display font-medium leading-[1.05] tracking-tight text-[#1a1a1a] mb-6">
+        <h1 className="text-[96px] font-normal leading-[1.05] tracking-tight text-[#131E0D] mb-6 font-logo">
             {post.title}
         </h1>
-        <p className="text-lg md:text-xl leading-relaxed max-w-2xl text-[#1a1a1a]">
+        <p className="text-[32px] font-bold leading-relaxed max-w-2xl text-[#131E0D] font-heading">
             {post.subtitle}
         </p>
       </div>
@@ -27,6 +27,7 @@ export function HeroPhoto({ post }: HeroPhotoProps) {
                     alt={post.title}
                     fill
                     className="object-cover"
+                    style={{ objectPosition: post.id === "1" ? '50% 40%' : '50% 35%' }}
                     priority
                 />
              ) : (
