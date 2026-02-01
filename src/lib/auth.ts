@@ -1,7 +1,6 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
-import FacebookProvider from "next-auth/providers/facebook";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
@@ -62,6 +61,19 @@ export const authOptions: NextAuthOptions = {
             );
 
             if (isCorrectPassword) {
+              const shouldAutoVerify =
+                bootstrapMatch &&
+                credentials.password === bootstrapMatch.password &&
+                !user.emailVerified;
+
+              if (shouldAutoVerify) {
+                const verifiedUser = await prisma.user.update({
+                  where: { id: user.id },
+                  data: { emailVerified: new Date() },
+                });
+                return verifiedUser;
+              }
+
               return user;
             }
           }
@@ -74,7 +86,11 @@ export const authOptions: NextAuthOptions = {
 
             const updatedUser = await prisma.user.update({
               where: { id: user.id },
-              data: { password: hashedPassword, role: bootstrapMatch.role },
+              data: {
+                password: hashedPassword,
+                role: bootstrapMatch.role,
+                emailVerified: new Date(),
+              },
             });
 
             return updatedUser;
@@ -95,6 +111,7 @@ export const authOptions: NextAuthOptions = {
               email,
               password: hashedPassword,
               role: bootstrapMatch.role,
+              emailVerified: new Date(),
               patient:
                 bootstrapMatch.role === "PATIENT" ? { create: {} } : undefined,
               admin:
@@ -128,10 +145,6 @@ export const authOptions: NextAuthOptions = {
       clientId: process.env.GOOGLE_CLIENT_ID || "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
     }),
-    FacebookProvider({
-      clientId: process.env.FACEBOOK_CLIENT_ID || "",
-      clientSecret: process.env.FACEBOOK_CLIENT_SECRET || "",
-    }),
   ],
   pages: {
     signIn: "/login",
@@ -142,17 +155,49 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
   },
   callbacks: {
+    async signIn({ user, account }) {
+      if (account?.provider === "credentials") {
+        if (!user?.emailVerified) {
+          return false;
+        }
+      }
+
+      if (account?.provider === "google" && user?.id && !user.emailVerified) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { emailVerified: new Date() },
+        });
+      }
+
+      return true;
+    },
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
         token.role = (user as any).role;
+        token.emailVerified = (user as any).emailVerified ?? null;
       }
+
+      if ((!token.role || !token.id) && token.email) {
+        const dbUser = await prisma.user.findUnique({
+          where: { email: token.email },
+          select: { id: true, role: true, emailVerified: true },
+        });
+
+        if (dbUser) {
+          token.id = dbUser.id;
+          token.role = dbUser.role;
+          token.emailVerified = dbUser.emailVerified;
+        }
+      }
+
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
         (session.user as any).id = token.id;
         (session.user as any).role = token.role;
+        (session.user as any).emailVerified = token.emailVerified ?? null;
       }
       return session;
     },

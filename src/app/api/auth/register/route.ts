@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { sendEmail } from "@/lib/email";
+import { buildIdentifier, createToken, hashToken } from "@/lib/tokens";
 
 type RegisterPayload = {
   fullName?: string;
@@ -144,7 +146,51 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.json(user, { status: 201 });
+    const appUrl =
+      process.env.NEXT_PUBLIC_APP_URL ||
+      process.env.NEXTAUTH_URL ||
+      "http://localhost:3000";
+    const rawToken = createToken("verify");
+    const hashedToken = hashToken(rawToken);
+    const identifier = buildIdentifier(email, "verify");
+    const expires = new Date(Date.now() + 1000 * 60 * 60 * 24);
+
+    await prisma.verificationToken.deleteMany({ where: { identifier } });
+    await prisma.verificationToken.create({
+      data: {
+        identifier,
+        token: hashedToken,
+        expires,
+      },
+    });
+
+    const verifyUrl = `${appUrl}/verify-email?token=${encodeURIComponent(
+      rawToken
+    )}`;
+
+    try {
+      await sendEmail({
+        to: email,
+        subject: "Verify your HealTalk email",
+        text: `Welcome to HealTalk! Verify your email: ${verifyUrl}`,
+        html: `
+          <p>Welcome to HealTalk!</p>
+          <p>Please verify your email to activate your account:</p>
+          <p><a href="${verifyUrl}">Verify my email</a></p>
+          <p>If you did not create this account, you can ignore this email.</p>
+        `,
+      });
+    } catch (emailError) {
+      console.error("Verification email error:", emailError);
+    }
+
+    return NextResponse.json(
+      {
+        ...user,
+        verificationRequired: true,
+      },
+      { status: 201 }
+    );
   } catch (error) {
     console.error("Error registering user:", error);
     return NextResponse.json(

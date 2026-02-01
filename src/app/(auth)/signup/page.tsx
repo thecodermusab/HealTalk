@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { Eye, EyeOff } from "lucide-react";
 
@@ -10,18 +9,26 @@ export default function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
     password: "",
     confirmPassword: "",
   });
-  const router = useRouter();
+  const handleGoogleSignIn = async () => {
+    if (isGoogleSubmitting) return;
+    setIsGoogleSubmitting(true);
+    await signIn("google", { callbackUrl: "/oauth-redirect" });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
+
+    setSuccessMessage(null);
 
     if (formData.password !== formData.confirmPassword) {
       setErrorMessage("Passwords do not match. Please try again.");
@@ -50,19 +57,16 @@ export default function SignUpPage() {
       return;
     }
 
-    const result = await signIn("credentials", {
-      redirect: false,
-      email: formData.email,
-      password: formData.password,
+    setFormData({
+      fullName: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
     });
-
-    if (!result || result.error) {
-      setErrorMessage("Account created, but login failed. Please log in.");
-      setIsSubmitting(false);
-      return;
-    }
-
-    router.push("/patient/dashboard");
+    setSuccessMessage(
+      "Account created! Please check your email to verify your account before signing in."
+    );
+    setIsSubmitting(false);
   };
 
   const isFormValid = 
@@ -110,6 +114,32 @@ export default function SignUpPage() {
               {errorMessage}
             </div>
           )}
+
+          {successMessage && (
+            <div className="mb-4 text-center text-sm text-green-600 bg-green-50 p-3 rounded-xl border border-green-100">
+              {successMessage}
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={handleGoogleSignIn}
+            disabled={isGoogleSubmitting}
+            className={`w-full h-[57px] rounded-xl flex items-center justify-center font-medium text-[16px] transition-colors border border-gray-200
+              ${isGoogleSubmitting
+                ? "bg-[#E5E7EB] text-[#9CA3AF] cursor-not-allowed"
+                : "bg-white text-[#111] hover:bg-gray-50"
+              }
+            `}
+          >
+            {isGoogleSubmitting ? "Connecting..." : "Continue with Google"}
+          </button>
+
+          <div className="flex items-center gap-3 my-6">
+            <div className="h-px flex-1 bg-gray-200" />
+            <span className="text-xs uppercase tracking-wide text-gray-400">or</span>
+            <div className="h-px flex-1 bg-gray-200" />
+          </div>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-[14px]">
             {/* Full Name */}

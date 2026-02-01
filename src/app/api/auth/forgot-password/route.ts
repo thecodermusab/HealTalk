@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import crypto from "crypto";
-import nodemailer from "nodemailer";
+import { sendEmail } from "@/lib/email";
+import { buildIdentifier, createToken, hashToken } from "@/lib/tokens";
 
 export async function POST(req: Request) {
   try {
@@ -11,7 +11,8 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 
-    const user = await prisma.user.findUnique({ where: { email } });
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
 
     // Always return ok to prevent user enumeration
     if (!user) {
@@ -19,27 +20,32 @@ export async function POST(req: Request) {
     }
 
     // Generate token
-    const token = crypto.randomBytes(32).toString("hex");
+    const rawToken = createToken("reset");
+    const hashedToken = hashToken(rawToken);
     const expires = new Date(Date.now() + 1000 * 60 * 30); // 30 minutes
+    const identifier = buildIdentifier(normalizedEmail, "reset");
 
     // Store token
+    await prisma.verificationToken.deleteMany({ where: { identifier } });
     await prisma.verificationToken.create({
       data: {
-        identifier: email,
-        token,
+        identifier,
+        token: hashedToken,
         expires,
       },
     });
 
-    const resetUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/reset-password?token=${token}`;
-    const emailServer = process.env.EMAIL_SERVER;
-    const emailFrom = process.env.EMAIL_FROM || "support@healtalk.com";
+    const appUrl =
+      process.env.NEXT_PUBLIC_APP_URL ||
+      process.env.NEXTAUTH_URL ||
+      "http://localhost:3000";
+    const resetUrl = `${appUrl}/reset-password?token=${encodeURIComponent(
+      rawToken
+    )}`;
 
-    if (emailServer) {
-      const transporter = nodemailer.createTransport(emailServer);
-      await transporter.sendMail({
-        from: emailFrom,
-        to: email,
+    try {
+      await sendEmail({
+        to: normalizedEmail,
         subject: "Reset your HealTalk password",
         text: `Reset your password: ${resetUrl}`,
         html: `
@@ -49,13 +55,8 @@ export async function POST(req: Request) {
           <p>If you did not request this, you can ignore this email.</p>
         `,
       });
-    } else {
-      console.log("==================================================================");
-      console.log("               FORGOT PASSWORD RESET LINK (MOCK)                  ");
-      console.log("------------------------------------------------------------------");
-      console.log(`Email: ${email}`);
-      console.log(`Link:  ${resetUrl}`);
-      console.log("==================================================================");
+    } catch (emailError) {
+      console.error("Forgot password email error:", emailError);
     }
 
     return NextResponse.json({ message: "If an account exists, a reset link has been sent." }, { status: 200 });

@@ -49,6 +49,7 @@ async function main() {
       email: psychEmail,
       password: psychHashedPassword,
       role: 'PSYCHOLOGIST',
+      emailVerified: new Date(),
       psychologist: {
         create: {
           credentials: 'PhD, Clinical Psychologist',
@@ -76,6 +77,7 @@ async function main() {
       email: patientEmail,
       password: patientHashedPassword,
       role: 'PATIENT',
+      emailVerified: new Date(),
       patient: {
         create: {},
       },
@@ -90,6 +92,7 @@ async function main() {
       email: adminEmail,
       password: adminHashedPassword,
       role: 'ADMIN',
+      emailVerified: new Date(),
       admin: {
         create: {},
       },
