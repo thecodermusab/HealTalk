@@ -19,7 +19,16 @@
       "Bash(lsof:*)",
       "Bash(curl:*)",
       "Bash(grep:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Skill(gsd:create-roadmap)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\ndocs\\(01-01\\): complete database setup plan\n\nTasks completed: 3/3\n- Database provider decision \\(Neon selected\\)\n- Neon PostgreSQL database provisioned\n- Connection string verified\n\nService: Neon PostgreSQL 17.7 \\(eu-central-1\\)\nDuration: 14 min\n\nSUMMARY: .planning/phases/01-foundation-environment/01-01-SUMMARY.md\nEOF\n\\)\")",
+      "Bash(git commit:*)",
+      "Bash(openssl rand:*)",
+      "Bash(git check-ignore:*)",
+      "Bash(node:*)",
+      "Bash(npm run db:generate:*)",
+      "Bash(npm run db:migrate:*)"
     ]
   }
 }

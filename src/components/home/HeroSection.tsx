@@ -144,18 +144,6 @@ export default function HeroSection() {
                         struggle.
                     </h1>
 
-                    <p 
-                        className="text-white font-sans tracking-wide"
-                        style={{
-                            marginTop: '28px', // 24-32px range
-                            fontFamily: 'Helvetica, Arial, sans-serif',
-                            fontSize: '14px',
-                            lineHeight: '20px',
-                            opacity: 0.9
-                        }}
-                    >
-                        Individual, Couples, & Group Counseling in Nashville, TN
-                    </p>
                 </div>
 
 
