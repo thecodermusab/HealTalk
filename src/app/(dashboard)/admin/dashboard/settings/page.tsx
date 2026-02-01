@@ -1,14 +1,124 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { User, Bell, Shield, Save } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSession } from "next-auth/react";
+
+const splitName = (value: string) => {
+  const trimmed = value.trim();
+  if (!trimmed) return { firstName: "", lastName: "" };
+  const parts = trimmed.split(" ").filter(Boolean);
+  if (parts.length === 1) return { firstName: parts[0], lastName: "" };
+  const lastName = parts.pop() || "";
+  return { firstName: parts.join(" "), lastName };
+};
+
+const getInitials = (firstName: string, lastName: string) => {
+  const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`.trim();
+  return initials ? initials.toUpperCase() : "AD";
+};
 
 export default function AdminSettingsPage() {
+  const { status } = useSession();
   const [activeTab, setActiveTab] = useState("profile");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [profile, setProfile] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    role: "",
+    image: "",
+  });
+
+  useEffect(() => {
+    if (status !== "authenticated") return;
+
+    const loadProfile = async () => {
+      setIsLoading(true);
+      setMessage(null);
+      try {
+        const res = await fetch("/api/user/me");
+        if (!res.ok) {
+          const data = await res.json().catch(() => null);
+          setMessage({
+            type: "error",
+            text: data?.error || "Failed to load admin profile details.",
+          });
+          setIsLoading(false);
+          return;
+        }
+
+        const data = await res.json();
+        const { firstName, lastName } = splitName(data.name || "");
+        setProfile({
+          firstName,
+          lastName,
+          email: data.email || "",
+          role: data.role || "",
+          image: data.image || "",
+        });
+      } catch (error) {
+        setMessage({ type: "error", text: "Failed to load admin profile details." });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadProfile();
+  }, [status]);
+
+  const handleSaveProfile = async () => {
+    if (isSaving) return;
+
+    const fullName = `${profile.firstName} ${profile.lastName}`.trim();
+    if (!fullName) {
+      setMessage({ type: "error", text: "Name is required." });
+      return;
+    }
+
+    setIsSaving(true);
+    setMessage(null);
+
+    try {
+      const res = await fetch("/api/user/me", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: fullName }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        setMessage({
+          type: "error",
+          text: data?.error || "Failed to update profile.",
+        });
+        setIsSaving(false);
+        return;
+      }
+
+      const data = await res.json();
+      const { firstName, lastName } = splitName(data.name || "");
+      setProfile((prev) => ({
+        ...prev,
+        firstName,
+        lastName,
+        email: data.email || prev.email,
+        role: data.role || prev.role,
+        image: data.image || prev.image,
+      }));
+      setMessage({ type: "success", text: "Profile updated successfully." });
+    } catch (error) {
+      setMessage({ type: "error", text: "Failed to update profile." });
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <DashboardLayout>
@@ -59,7 +169,13 @@ export default function AdminSettingsPage() {
                    
                    <div className="flex items-center gap-6 py-4 border-b border-gray-100 mt-8">
                       <div className="w-20 h-20 rounded-full bg-[#EEF0FF] border-2 border-white shadow-md flex items-center justify-center overflow-hidden">
-                         <span className="text-2xl font-bold text-[#5B6CFF]">AD</span>
+                         {profile.image ? (
+                           <img src={profile.image} alt="Profile" className="w-full h-full object-cover" />
+                         ) : (
+                           <span className="text-2xl font-bold text-[#5B6CFF]">
+                             {getInitials(profile.firstName, profile.lastName)}
+                           </span>
+                         )}
                       </div>
                       <div className="flex flex-col gap-2">
                          <div className="flex gap-3">
@@ -69,27 +185,61 @@ export default function AdminSettingsPage() {
                       </div>
                    </div>
 
+                   {message && (
+                     <div
+                       className={`w-full p-4 rounded-xl text-center text-sm border ${
+                         message.type === "success"
+                           ? "bg-green-50 text-green-700 border-green-100"
+                           : "bg-red-50 text-red-700 border-red-100"
+                       }`}
+                     >
+                       {message.text}
+                     </div>
+                   )}
+
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
                          <label className="text-sm font-medium text-gray-700">First Name</label>
-                         <Input defaultValue="Admin" />
+                         <Input
+                           value={profile.firstName}
+                           onChange={(event) =>
+                             setProfile((prev) => ({ ...prev, firstName: event.target.value }))
+                           }
+                           disabled={isLoading}
+                         />
                       </div>
                       <div className="space-y-2">
                          <label className="text-sm font-medium text-gray-700">Last Name</label>
-                         <Input defaultValue="User" />
+                         <Input
+                           value={profile.lastName}
+                           onChange={(event) =>
+                             setProfile((prev) => ({ ...prev, lastName: event.target.value }))
+                           }
+                           disabled={isLoading}
+                         />
                       </div>
                       <div className="space-y-2">
                          <label className="text-sm font-medium text-gray-700">Email Address</label>
-                         <Input defaultValue="admin@healtalk.com" />
+                         <Input value={profile.email} disabled className="bg-gray-50 text-gray-500" />
                       </div>
                       <div className="space-y-2">
                          <label className="text-sm font-medium text-gray-700">Role</label>
-                         <Input defaultValue="Super Administrator" disabled className="bg-gray-50 text-gray-500" />
+                         <Input
+                           value={profile.role || "ADMIN"}
+                           disabled
+                           className="bg-gray-50 text-gray-500"
+                         />
                       </div>
                    </div>
 
                    <div className="pt-4 flex justify-end">
-                      <Button className="bg-[#5B6CFF] hover:bg-[#4a5ae0]">Save Changes</Button>
+                      <Button
+                        className="bg-[#5B6CFF] hover:bg-[#4a5ae0]"
+                        onClick={handleSaveProfile}
+                        disabled={isSaving || isLoading}
+                      >
+                        {isSaving ? "Saving..." : "Save Changes"}
+                      </Button>
                    </div>
                 </div>
               )}

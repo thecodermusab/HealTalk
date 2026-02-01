@@ -163,7 +163,7 @@ export const authOptions: NextAuthOptions = {
       }
 
       if (account?.provider === "google" && user?.id && !user.emailVerified) {
-        await prisma.user.update({
+        await prisma.user.updateMany({
           where: { id: user.id },
           data: { emailVerified: new Date() },
         });
