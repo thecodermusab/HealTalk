@@ -74,9 +74,11 @@ export function PatientNextAppointmentCard() {
             <div className="flex gap-3 relative z-10 mt-auto">
                {nextAppointment ? (
                  <>
-                   <Button className="flex-1 bg-white text-[#5B6CFF] hover:bg-white/90 border-0 font-semibold shadow-sm" size="sm">
-                      Join Session
-                   </Button>
+                   <Link href={`/shared/call/${nextAppointment.id}`} className="flex-1">
+                     <Button className="w-full bg-white text-[#5B6CFF] hover:bg-white/90 border-0 font-semibold shadow-sm" size="sm">
+                        Join Session
+                     </Button>
+                   </Link>
                    <Button className="flex-1 bg-transparent border-2 border-white/80 text-white hover:bg-white/10 hover:text-white font-semibold shadow-sm" size="sm">
                       Reschedule
                    </Button>

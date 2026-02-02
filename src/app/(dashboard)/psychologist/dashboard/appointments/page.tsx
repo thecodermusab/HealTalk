@@ -142,7 +142,7 @@ export default function PsychologistAppointmentsPage() {
                     <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto pt-4 md:pt-0 border-t md:border-t-0 border-gray-100 md:pl-6 md:border-l">
                       {activeTab === "upcoming" ? (
                         <>
-                          <Link href={`/psychologist/dashboard/messages?chatId=${appointment.id}&action=call`}>
+                          <Link href={`/shared/call/${appointment.id}`}>
                             <Button className="w-full sm:w-auto bg-[#5B6CFF] hover:bg-[#4a5ae0] shadow-md shadow-blue-500/20 rounded-[12px] h-10 px-6">
                               Start Session
                             </Button>

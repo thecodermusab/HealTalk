@@ -163,9 +163,11 @@ export default function AppointmentsPage() {
                     <div className="flex flex-col sm:flex-row lg:flex-col gap-3 w-full lg:w-48 pt-4 lg:pt-0 lg:border-l lg:border-gray-100 lg:pl-6">
                       {activeTab === "upcoming" ? (
                         <>
-                          <Button className="w-full bg-[#5B6CFF] hover:bg-[#4a5ae0]">
-                            Join Session
-                          </Button>
+                          <Link href={`/shared/call/${appointment.id}`} className="w-full">
+                            <Button className="w-full bg-[#5B6CFF] hover:bg-[#4a5ae0]">
+                              Join Session
+                            </Button>
+                          </Link>
                           <Button
                             variant="outline"
                             className="w-full border-gray-200 text-gray-600 hover:bg-gray-50"
