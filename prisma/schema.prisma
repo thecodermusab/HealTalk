@@ -186,6 +186,10 @@ model Message {
   psychologistId  String
   senderId        String   // Can be patient or psychologist userId
   content         String   @db.Text
+  attachmentUrl   String?
+  attachmentKey   String?
+  attachmentType  String?
+  attachmentName  String?
   read            Boolean  @default(false)
   createdAt       DateTime @default(now())
 

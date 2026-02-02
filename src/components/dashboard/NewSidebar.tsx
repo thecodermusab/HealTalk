@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { signOut, useSession } from "next-auth/react";
 import {
   LayoutDashboard,
@@ -66,6 +67,7 @@ export function NewSidebar() {
   const { data: session } = useSession();
   const isPatient = pathname?.startsWith("/patient");
   const isAdmin = pathname?.startsWith("/admin");
+  const [unreadCount, setUnreadCount] = useState(0);
   
   let navItems = psychologistNavItems;
   if (isPatient) navItems = patientNavItems;
@@ -75,6 +77,26 @@ export function NewSidebar() {
   const { firstName, lastName } = splitName(userName);
   const userRole = session?.user?.role || "PATIENT";
   const roleLabel = roleLabels[userRole as keyof typeof roleLabels] || "User";
+  const hasMessages = navItems.some((item) => item.label === "Messages");
+
+  useEffect(() => {
+    if (!hasMessages) return;
+
+    const loadUnread = async () => {
+      try {
+        const res = await fetch("/api/messages/unread");
+        if (!res.ok) return;
+        const data = await res.json();
+        setUnreadCount(Number(data?.count || 0));
+      } catch (error) {
+        setUnreadCount(0);
+      }
+    };
+
+    loadUnread();
+    const interval = setInterval(loadUnread, 30000);
+    return () => clearInterval(interval);
+  }, [hasMessages]);
 
   return (
     <aside className="w-[260px] h-screen fixed left-0 top-0 bg-white border-r border-[#E6EAF2] flex flex-col z-30 hidden lg:flex">
@@ -92,6 +114,7 @@ export function NewSidebar() {
       <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
           const isActive = pathname === item.href || (item.href !== "/psychologist/dashboard" && item.href !== "/patient/dashboard" && item.href !== "/admin/dashboard" && pathname?.startsWith(item.href));
+          const showBadge = item.label === "Messages" && unreadCount > 0;
           return (
             <Link
               key={item.href}
@@ -104,7 +127,12 @@ export function NewSidebar() {
               )}
             >
               <item.icon size={20} className={cn(isActive ? "text-[#5B6CFF]" : "text-[#7B8794]")} />
-              {item.label}
+              <span className="flex-1">{item.label}</span>
+              {showBadge && (
+                <span className="ml-auto min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-semibold rounded-full flex items-center justify-center border border-white">
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </span>
+              )}
             </Link>
           );
         })}

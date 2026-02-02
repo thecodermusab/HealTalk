@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useEffect, useState } from "react";
 
 interface NewHeaderProps {
     onMobileMenuClick: () => void;
@@ -32,10 +33,28 @@ const getInitials = (firstName: string, lastName: string) => {
 
 export function NewHeader({ onMobileMenuClick }: NewHeaderProps) {
   const { data: session } = useSession();
+  const [unreadCount, setUnreadCount] = useState(0);
   const userName = session?.user?.name || session?.user?.email || "User";
   const { firstName, lastName } = splitName(userName);
   const userRole = session?.user?.role || "PATIENT";
   const roleLabel = roleLabels[userRole as keyof typeof roleLabels] || "User";
+
+  useEffect(() => {
+    const loadUnread = async () => {
+      try {
+        const res = await fetch("/api/messages/unread");
+        if (!res.ok) return;
+        const data = await res.json();
+        setUnreadCount(Number(data?.count || 0));
+      } catch (error) {
+        setUnreadCount(0);
+      }
+    };
+
+    loadUnread();
+    const interval = setInterval(loadUnread, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <header className="h-[72px] bg-white border-b border-[#E6EAF2] flex items-center justify-between px-6 sticky top-0 z-20">
@@ -65,7 +84,11 @@ export function NewHeader({ onMobileMenuClick }: NewHeaderProps) {
         {/* Notification Bell */}
         <Button size="icon" variant="ghost" className="rounded-full w-10 h-10 bg-gray-50 hover:bg-gray-100 text-gray-600 border border-gray-100 relative">
            <Bell size={18} />
-           <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border border-white" />
+           {unreadCount > 0 && (
+             <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-semibold rounded-full flex items-center justify-center border border-white">
+               {unreadCount > 99 ? "99+" : unreadCount}
+             </span>
+           )}
         </Button>
 
         {/* Profile Block */}

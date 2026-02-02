@@ -36,6 +36,23 @@ export const uploadRouter = {
 
       return { uploadedBy: metadata.userId };
     }),
+  messageAttachment: f({
+    image: { maxFileSize: "10MB", maxFileCount: 1 },
+    "application/pdf": { maxFileSize: "10MB", maxFileCount: 1 },
+  })
+    .middleware(async () => {
+      const session = await requireSession();
+      return { userId: session.user.id };
+    })
+    .onUploadComplete(async ({ metadata, file }) => {
+      return {
+        uploadedBy: metadata.userId,
+        url: file.url,
+        key: file.key,
+        name: (file as any).name,
+        type: (file as any).type,
+      };
+    }),
   credentialDocument: f({
     "application/pdf": { maxFileSize: "10MB", maxFileCount: 1 },
     image: { maxFileSize: "10MB", maxFileCount: 1 },
