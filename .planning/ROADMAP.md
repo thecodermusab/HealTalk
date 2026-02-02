@@ -12,7 +12,7 @@ None (general full-stack web development with Next.js, React, and PostgreSQL)
 
 - [x] **Phase 1: Foundation & Environment** - Set up production infrastructure and dependencies
 - [x] **Phase 2: Authentication System** - Implement Google OAuth and email verification
-- [ ] **Phase 3: Data Migration** - Move from mock data to PostgreSQL database
+- [x] **Phase 3: Data Migration** - Move from mock data to PostgreSQL database
 - [ ] **Phase 4: File Upload System** - Profile pictures and document uploads
 - [ ] **Phase 5: Email Notifications** - Appointment confirmations and reminders
 - [ ] **Phase 6: Video Consultations** - Agora.io integration for live sessions
@@ -83,10 +83,10 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 03-01: Create database seeding script with mock psychologist data
-- [ ] 03-02: Update psychologist listing page to fetch from database
-- [ ] 03-03: Update individual profile pages to use database queries
-- [ ] 03-04: Migrate blog, guides, and podcast data to database
+- [x] 03-01: Create database seeding script with mock psychologist data
+- [x] 03-02: Update psychologist listing page to fetch from database
+- [x] 03-03: Update individual profile pages to use database queries
+- [x] 03-04: Migrate blog, guides, and podcast data to database
 
 ---
 
