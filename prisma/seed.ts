@@ -2,6 +2,9 @@ import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import { hospitalSeedData } from './seeds/hospitals';
 import { psychologistSeedData } from './seeds/psychologists';
+import { blogAuthorSeedData, blogPostSeedData } from './seeds/blog';
+import { guideSeedData } from './seeds/guides';
+import { podcastSeedData } from './seeds/podcasts';
 
 const databaseUrl = process.env.DATABASE_URL || 'postgresql://postgres@localhost:5432/psyconnect?schema=public';
 process.env.DATABASE_URL = databaseUrl;
@@ -184,10 +187,77 @@ async function main() {
   }
   console.log(`Total psychologists seeded: ${seededCount}`);
 
+  // Seed blog authors
+  console.log('\nSeeding blog authors...');
+  const authorMap = new Map();
+  for (const a of blogAuthorSeedData) {
+    const author = await prisma.blogAuthor.upsert({
+      where: { name: a.name },
+      update: {},
+      create: a
+    });
+    authorMap.set(a.name, author.id);
+    console.log(`  ✓ ${a.name}`);
+  }
+
+  // Seed blog posts
+  console.log('\nSeeding blog posts...');
+  for (const post of blogPostSeedData) {
+    const authorId = authorMap.get(post.authorName);
+
+    const blogPost = await prisma.blogPost.create({
+      data: {
+        title: post.title,
+        subtitle: post.subtitle,
+        excerpt: post.excerpt,
+        imageUrl: post.imageUrl,
+        category: post.category,
+        date: post.date,
+        heroType: post.heroType,
+        heroIllustration: post.heroIllustration,
+        theme: post.theme,
+        published: post.published,
+        authorId: authorId,
+        content: {
+          create: post.content.map((c: any, index: number) => ({
+            order: index,
+            type: c.type,
+            value: Array.isArray(c.value) ? JSON.stringify(c.value) : c.value
+          }))
+        }
+      }
+    });
+    console.log(`  ✓ ${post.title}`);
+  }
+
+  // Seed guides
+  console.log('\nSeeding guides...');
+  for (const guide of guideSeedData) {
+    await prisma.guide.upsert({
+      where: { href: guide.href },
+      update: {},
+      create: guide
+    });
+    console.log(`  ✓ ${guide.title}`);
+  }
+
+  // Seed podcast episodes
+  console.log('\nSeeding podcast episodes...');
+  for (const episode of podcastSeedData) {
+    await prisma.podcastEpisode.create({
+      data: episode
+    });
+    console.log(`  ✓ Episode ${episode.episodeNumber}: ${episode.title}`);
+  }
+
   console.log('\n✓ Database seeded successfully!');
   console.log({
     hospitals: hospitalMap.size,
     psychologists: seededCount,
+    blogAuthors: authorMap.size,
+    blogPosts: blogPostSeedData.length,
+    guides: guideSeedData.length,
+    podcasts: podcastSeedData.length,
     bootstrapUsers: {
       psychologist: { email: psychEmail, password: psychPlain },
       patient: { email: patientEmail, password: patientPlain },
