@@ -14,6 +14,7 @@ export type AppointmentRecord = {
   createdAt?: string;
   psychologist?: {
     id: string;
+    credentials?: string;
     user?: { name: string | null; image: string | null };
   } | null;
   patient?: {

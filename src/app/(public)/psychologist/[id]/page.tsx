@@ -35,20 +35,25 @@ async function getPsychologistData(id: string) {
       psychologist: {
         id: parseInt(id), // Keep as number for component compatibility
         name: data.user.name,
+        credentials: data.credentials,
         specialty: data.specializations[0] || 'Clinical Psychologist',
         experience: data.experience,
         rating: data.rating,
         reviewCount: data.reviewCount,
         price: (data.price60 / 100), // Convert cents to dollars
+        hospital: data.hospital?.name || 'Remote Practice',
         location: data.hospital?.location || 'Remote',
+        languages: ['English'], // Default since not in DB yet
+        photo: data.user.image || 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=300&h=300',
         image: data.user.image || 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=300&h=300',
         about: data.bio,
+        bio: data.bio,
         specializations: data.specializations,
         education: [
-          { degree: 'PhD in Clinical Psychology', school: 'University', year: '2005' }
+          { degree: 'PhD in Clinical Psychology', institution: 'University', year: 2005 }
         ],
         certifications: [
-          `License: ${data.licenseNumber}`
+          { name: 'Licensed Psychologist', issuer: 'State Board', year: 2010 }
         ],
       },
       reviews: data.reviews.map((review: any) => ({

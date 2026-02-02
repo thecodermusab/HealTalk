@@ -37,6 +37,7 @@ const switzer = localFont({
       style: "normal",
     },
   ],
+  variable: "--font-switzer",
   fallback: ["system-ui", "sans-serif"],
 });
 

@@ -37,7 +37,6 @@ export const sendEmail = async ({ to, subject, html, text, from }: SendEmailPayl
     from: from || emailFrom,
     to,
     subject,
-    html,
-    text,
-  });
+    html: html || text,
+  } as any);
 };

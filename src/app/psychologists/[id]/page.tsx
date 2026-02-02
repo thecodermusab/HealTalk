@@ -52,7 +52,14 @@ async function getPsychologist(id: string) {
       ],
       photos: ['https://images.unsplash.com/photo-1516357231954-91487b459602?auto=format&fit=crop&q=80&w=600&h=400'],
       insurances: ['Aetna', 'BlueCross', 'Cigna'],
-      testimonials: [],
+      testimonials: [
+        {
+          name: 'Patient',
+          text: 'Excellent care and support.',
+          role: 'Patient',
+          image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=300&h=300'
+        }
+      ],
       education: [
         { degree: 'PhD in Clinical Psychology', school: 'University', year: '2005' }
       ],
