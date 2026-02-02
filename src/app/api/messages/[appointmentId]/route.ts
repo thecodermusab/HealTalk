@@ -12,7 +12,7 @@ const messageSchema = z.object({
 });
 
 interface RouteParams {
-  params: { appointmentId: string };
+  params: Promise<{ appointmentId: string }>;
 }
 
 export async function GET(request: Request, { params }: RouteParams) {
@@ -30,8 +30,10 @@ export async function GET(request: Request, { params }: RouteParams) {
   });
   if (rateLimit) return rateLimit;
 
+  const { appointmentId } = await params;
+
   const appointment = await prisma.appointment.findUnique({
-    where: { id: params.appointmentId },
+    where: { id: appointmentId },
     include: {
       patient: { select: { id: true, userId: true, user: { select: { name: true } } } },
       psychologist: { select: { id: true, userId: true, user: { select: { name: true } } } },
