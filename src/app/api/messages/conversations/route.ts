@@ -49,25 +49,37 @@ export async function GET(request: Request) {
               },
             },
           },
-          messages: {
-            orderBy: { createdAt: "desc" },
-            take: 1,
-          },
         },
         orderBy: { startTime: "desc" },
       });
 
-      // Map to conversation format
-      const conversations = appointments.map((apt) => ({
-        id: apt.id,
-        appointmentId: apt.id,
-        name: apt.psychologist?.user?.name || "Psychologist",
-        image: apt.psychologist?.user?.image,
-        lastMessage: apt.messages[0]?.content || "No messages yet",
-        lastMessageTime: apt.messages[0]?.createdAt || apt.createdAt,
-        unreadCount: 0, // TODO: Implement unread count
-      }));
+      // Get unique psychologists and fetch last message for each
+      const uniquePsychologists = new Map();
 
+      for (const apt of appointments) {
+        if (!uniquePsychologists.has(apt.psychologistId)) {
+          // Get last message with this psychologist
+          const lastMessage = await prisma.message.findFirst({
+            where: {
+              patientId: patient.id,
+              psychologistId: apt.psychologistId,
+            },
+            orderBy: { createdAt: "desc" },
+          });
+
+          uniquePsychologists.set(apt.psychologistId, {
+            id: apt.id,
+            appointmentId: apt.id,
+            name: apt.psychologist?.user?.name || "Psychologist",
+            image: apt.psychologist?.user?.image,
+            lastMessage: lastMessage?.content || "No messages yet",
+            lastMessageTime: lastMessage?.createdAt || apt.createdAt,
+            unreadCount: 0, // TODO: Implement unread count
+          });
+        }
+      }
+
+      const conversations = Array.from(uniquePsychologists.values());
       return NextResponse.json(conversations);
     } else if (psychologist) {
       // For psychologists: Get all appointments with patients
@@ -84,25 +96,37 @@ export async function GET(request: Request) {
               },
             },
           },
-          messages: {
-            orderBy: { createdAt: "desc" },
-            take: 1,
-          },
         },
         orderBy: { startTime: "desc" },
       });
 
-      // Map to conversation format
-      const conversations = appointments.map((apt) => ({
-        id: apt.id,
-        appointmentId: apt.id,
-        name: apt.patient?.user?.name || "Patient",
-        image: apt.patient?.user?.image,
-        lastMessage: apt.messages[0]?.content || "No messages yet",
-        lastMessageTime: apt.messages[0]?.createdAt || apt.createdAt,
-        unreadCount: 0, // TODO: Implement unread count
-      }));
+      // Get unique patients and fetch last message for each
+      const uniquePatients = new Map();
 
+      for (const apt of appointments) {
+        if (!uniquePatients.has(apt.patientId)) {
+          // Get last message with this patient
+          const lastMessage = await prisma.message.findFirst({
+            where: {
+              patientId: apt.patientId,
+              psychologistId: psychologist.id,
+            },
+            orderBy: { createdAt: "desc" },
+          });
+
+          uniquePatients.set(apt.patientId, {
+            id: apt.id,
+            appointmentId: apt.id,
+            name: apt.patient?.user?.name || "Patient",
+            image: apt.patient?.user?.image,
+            lastMessage: lastMessage?.content || "No messages yet",
+            lastMessageTime: lastMessage?.createdAt || apt.createdAt,
+            unreadCount: 0, // TODO: Implement unread count
+          });
+        }
+      }
+
+      const conversations = Array.from(uniquePatients.values());
       return NextResponse.json(conversations);
     }
 
