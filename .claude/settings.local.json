@@ -34,7 +34,10 @@
       "Bash(else)",
       "Bash(fi)",
       "Bash(npx tsc:*)",
-      "Bash(tail:*)"
+      "Bash(tail:*)",
+      "Bash(git status:*)",
+      "Bash(git ls-files:*)",
+      "Bash(done)"
     ]
   }
 }

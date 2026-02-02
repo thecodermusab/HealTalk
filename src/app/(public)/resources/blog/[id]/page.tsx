@@ -31,7 +31,7 @@ async function getBlogPost(id: string) {
     });
     if (!res.ok) return null;
     const data = await res.json();
-    return data.post || null;
+    return data.post ?? data ?? null;
   } catch (error) {
     console.error('Failed to fetch blog post:', error);
     return null;

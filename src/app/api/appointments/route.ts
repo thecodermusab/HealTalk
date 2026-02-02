@@ -138,12 +138,22 @@ export async function POST(request: Request) {
 
     const userId = (session.user as any).id;
 
-    const patient = await prisma.patient.findUnique({
+    let patient = await prisma.patient.findUnique({
       where: { userId },
     });
 
     if (!patient) {
-      return NextResponse.json({ error: "Patient profile not found" }, { status: 404 });
+      const role = (session.user as any).role;
+      if (role && role !== "PATIENT") {
+        return NextResponse.json(
+          { error: "Only patients can book appointments." },
+          { status: 403 }
+        );
+      }
+
+      patient = await prisma.patient.create({
+        data: { userId },
+      });
     }
 
     const psychologist = await prisma.psychologist.findUnique({
