@@ -1,11 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import FilterBar, { FilterState } from "@/components/psychologists/FilterBar";
 import TherapistListCard from "@/components/psychologists/TherapistListCard";
-import { psychologists } from "@/lib/mock-data";
 import { Button } from "@/components/ui/button";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Loader2 } from "lucide-react";
+
+interface PsychologistFromAPI {
+  id: string;
+  userId: string;
+  credentials: string;
+  experience: number;
+  bio: string;
+  specializations: string[];
+  price60: number;
+  price90: number;
+  rating: number;
+  reviewCount: number;
+  user: {
+    name: string;
+    image: string | null;
+  };
+  hospital: {
+    name: string;
+    location: string;
+  } | null;
+}
 
 export default function FindPsychologistsPage() {
   const [filters, setFilters] = useState<FilterState>({
@@ -16,43 +36,92 @@ export default function FindPsychologistsPage() {
     priceRange: [],
     ethnicity: []
   });
+  const [psychologists, setPsychologists] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  useEffect(() => {
+    const fetchPsychologists = async () => {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams({
+          page: page.toString(),
+          limit: '20',
+        });
+
+        // Add specialization filter (use first condition as specialization)
+        if (filters.conditions.length > 0) {
+          params.append('specialization', filters.conditions[0]);
+        }
+
+        const res = await fetch(`/api/psychologists?${params}`);
+        const data = await res.json();
+
+        // Transform API data to match component expectations
+        const transformedData = data.psychologists.map((p: PsychologistFromAPI) => ({
+          id: p.id,
+          name: p.user.name,
+          title: p.credentials,
+          image: p.user.image || 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=300&h=300',
+          verified: true,
+          rating: p.rating,
+          reviewCount: p.reviewCount,
+          location: p.hospital?.location || 'Remote',
+          priceRange: `$${(p.price60 / 100).toFixed(0)} - $${(p.price90 / 100).toFixed(0)}`,
+          languages: ['English'], // Default since not in DB yet
+          conditions: p.specializations,
+          about: p.bio,
+          experience: p.experience,
+          sessionDuration: '50 min',
+          nextAvailable: 'Tomorrow',
+          highlights: [{ icon: "Video", label: "Available Online", color: "bg-green-100 text-green-800" }],
+        }));
+
+        setPsychologists(transformedData);
+        setTotalPages(data.pagination.totalPages);
+      } catch (error) {
+        console.error('Error fetching psychologists:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPsychologists();
+  }, [filters, page]);
 
   const handleApplyFilters = (newFilters: FilterState) => {
     setFilters(newFilters);
+    setPage(1); // Reset to first page when filters change
   };
 
+  // Client-side filtering for filters not yet implemented in API
   const filteredPsychologists = psychologists.filter((psych) => {
-    // Location Filter
+    // Location Filter (client-side for now)
     if (filters.location.length > 0) {
       const isOnlineSelected = filters.location.some(l => l.includes("Online"));
-      const isOnline = psych.highlights?.some(h => h.label === "Available Online") || psych.location.toLowerCase().includes("online");
-      const locationMatch = filters.location.some(l => psych.location.includes(l)); 
+      const isOnline = psych.highlights?.some((h: any) => h.label === "Available Online") || psych.location.toLowerCase().includes("online");
+      const locationMatch = filters.location.some(l => psych.location.includes(l));
 
       if (!((isOnlineSelected && isOnline) || locationMatch)) {
          return false;
       }
     }
 
-    // Condition Filter
-    if (filters.conditions.length > 0) {
-      const hasCondition = filters.conditions.some(c => psych.conditions.includes(c));
-      if (!hasCondition) return false;
-    }
-
-    // Language Filter
+    // Language Filter (client-side for now)
     if (filters.language.length > 0) {
        const hasLanguage = filters.language.some(l => psych.languages.includes(l));
        if (!hasLanguage) return false;
     }
 
-    // Insurance Filter
+    // Insurance Filter (client-side for now)
     if (filters.insurance.length > 0) {
-      if (!psych.insurances) return false; 
-      const hasInsurance = filters.insurance.some(i => psych.insurances?.includes(i));
+      if (!psych.insurances) return false;
+      const hasInsurance = filters.insurance.some((i: string) => psych.insurances?.includes(i));
       if (!hasInsurance) return false;
     }
 
-    // Price Filter
+    // Price Filter (client-side for now)
     if (filters.priceRange.length > 0) {
          const match = psych.priceRange.match(/\$(\d+)/);
          if (match) {
@@ -64,8 +133,6 @@ export default function FindPsychologistsPage() {
          }
     }
 
-     // Ethnicity Filter - Ignored for now as mock data is missing it
-    
     return true;
   });
 
@@ -98,7 +165,12 @@ export default function FindPsychologistsPage() {
 
         {/* Results List */}
         <div className="space-y-4">
-           {filteredPsychologists.length > 0 ? (
+           {loading ? (
+              <div className="text-center py-20">
+                  <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary mb-4" />
+                  <p className="text-slate-500">Loading psychologists...</p>
+              </div>
+           ) : filteredPsychologists.length > 0 ? (
               filteredPsychologists.map((psych) => (
                 <TherapistListCard key={psych.id} therapist={psych} />
               ))
@@ -106,15 +178,20 @@ export default function FindPsychologistsPage() {
                <div className="text-center py-20 text-slate-500 bg-slate-50 rounded-xl border border-slate-100 mt-4">
                    <p className="text-lg font-medium text-slate-700">No psychologists match your current filters.</p>
                    <p className="text-slate-400 text-sm mt-1">Try adjusting your filters or search criteria.</p>
-                   <Button variant="link" onClick={() => setFilters({location:[], insurance:[], language:[], conditions:[], priceRange:[], ethnicity:[]})} className="text-primary mt-4">Clear all filters</Button>
+                   <Button variant="link" onClick={() => { setFilters({location:[], insurance:[], language:[], conditions:[], priceRange:[], ethnicity:[]}); setPage(1); }} className="text-primary mt-4">Clear all filters</Button>
                </div>
            )}
         </div>
-        
+
         {/* Pagination / Load More */}
-        {filteredPsychologists.length > 0 && (
+        {!loading && filteredPsychologists.length > 0 && page < totalPages && (
             <div className="mt-12 text-center pb-12">
-                 <Button variant="outline" size="lg" className="min-w-[200px] border-slate-200 text-slate-600 hover:bg-slate-50">
+                 <Button
+                    variant="outline"
+                    size="lg"
+                    className="min-w-[200px] border-slate-200 text-slate-600 hover:bg-slate-50"
+                    onClick={() => setPage(page + 1)}
+                 >
                     Load More Results
                  </Button>
             </div>
