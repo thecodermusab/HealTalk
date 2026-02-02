@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { parseJson } from "@/lib/validation";
 import { requireRateLimit } from "@/lib/rate-limit";
+import { validateCsrf } from "@/lib/csrf";
 
 const messageSchema = z.object({
   content: z.string().min(1),
@@ -93,6 +94,9 @@ export async function POST(request: Request, { params }: RouteParams) {
     window: "1 m",
   });
   if (rateLimit) return rateLimit;
+
+  const csrfError = validateCsrf(request);
+  if (csrfError) return csrfError;
 
   const appointment = await prisma.appointment.findUnique({
     where: { id: params.appointmentId },

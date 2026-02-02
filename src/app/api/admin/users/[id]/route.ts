@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { parseJson } from "@/lib/validation";
 import { requireRateLimit } from "@/lib/rate-limit";
+import { validateCsrf } from "@/lib/csrf";
 
 const ALLOWED_ROLES = ["PATIENT", "PSYCHOLOGIST", "ADMIN"];
 const ALLOWED_STATUSES = ["ACTIVE", "SUSPENDED", "BANNED"];
@@ -37,6 +38,9 @@ export async function PATCH(
     window: "1 m",
   });
   if (rateLimit) return rateLimit;
+
+  const csrfError = validateCsrf(request);
+  if (csrfError) return csrfError;
 
   const { data: body, error } = await parseJson(request, updateSchema);
   if (error) return error;
@@ -128,6 +132,9 @@ export async function DELETE(
     window: "1 m",
   });
   if (rateLimit) return rateLimit;
+
+  const csrfError = validateCsrf(request);
+  if (csrfError) return csrfError;
 
   await prisma.user.delete({ where: { id: params.id } });
 

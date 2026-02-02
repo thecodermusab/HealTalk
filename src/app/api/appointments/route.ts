@@ -7,6 +7,7 @@ import { appointmentConfirmationEmail } from "@/lib/appointment-emails";
 import { z } from "zod";
 import { parseJson, parseSearchParams } from "@/lib/validation";
 import { requireRateLimit } from "@/lib/rate-limit";
+import { validateCsrf } from "@/lib/csrf";
 
 const appointmentQuerySchema = z.object({
   status: z.enum(["SCHEDULED", "COMPLETED", "CANCELLED", "NO_SHOW"]).optional(),
@@ -120,6 +121,9 @@ export async function POST(request: Request) {
       window: "1 m",
     });
     if (rateLimit) return rateLimit;
+
+    const csrfError = validateCsrf(request);
+    if (csrfError) return csrfError;
 
     const { data: body, error } = await parseJson(request, createAppointmentSchema);
     if (error) return error;

@@ -5,6 +5,7 @@ import { hashToken, parseIdentifier } from "@/lib/tokens";
 import { z } from "zod";
 import { parseJson } from "@/lib/validation";
 import { requireRateLimit } from "@/lib/rate-limit";
+import { validateCsrf } from "@/lib/csrf";
 
 const resetPasswordSchema = z.object({
   token: z.string().min(1),
@@ -20,6 +21,9 @@ export async function POST(req: Request) {
       window: "10 m",
     });
     if (rateLimit) return rateLimit;
+
+    const csrfError = validateCsrf(req);
+    if (csrfError) return csrfError;
 
     const { data, error } = await parseJson(req, resetPasswordSchema);
     if (error) return error;

@@ -5,6 +5,7 @@ import { buildIdentifier, createToken, hashToken } from "@/lib/tokens";
 import { z } from "zod";
 import { parseJson } from "@/lib/validation";
 import { requireRateLimit } from "@/lib/rate-limit";
+import { validateCsrf } from "@/lib/csrf";
 
 const forgotPasswordSchema = z.object({
   email: z.string().email(),
@@ -19,6 +20,9 @@ export async function POST(req: Request) {
       window: "10 m",
     });
     if (rateLimit) return rateLimit;
+
+    const csrfError = validateCsrf(req);
+    if (csrfError) return csrfError;
 
     const { data, error } = await parseJson(req, forgotPasswordSchema);
     if (error) return error;
