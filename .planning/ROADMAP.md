@@ -14,7 +14,7 @@ None (general full-stack web development with Next.js, React, and PostgreSQL)
 - [x] **Phase 2: Authentication System** - Implement Google OAuth and email verification
 - [x] **Phase 3: Data Migration** - Move from mock data to PostgreSQL database
 - [x] **Phase 4: File Upload System** - Profile pictures and document uploads
-- [ ] **Phase 5: Email Notifications** - Appointment confirmations and reminders
+- [x] **Phase 5: Email Notifications** - Appointment confirmations and reminders
 - [ ] **Phase 6: Video Consultations** - Agora.io integration for live sessions
 - [ ] **Phase 7: Real-time Messaging** - Socket.io chat between patients and psychologists
 - [ ] **Phase 8: Payment Processing** - Stripe integration for bookings and payouts
@@ -131,10 +131,10 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 05-01: Set up Resend and create email templates
-- [ ] 05-02: Implement appointment confirmation emails
-- [ ] 05-03: Build reminder system (24h and 1h before appointments)
-- [ ] 05-04: Add cancellation and rescheduling notifications
+- [x] 05-01: Set up Resend and create email templates
+- [x] 05-02: Implement appointment confirmation emails
+- [x] 05-03: Build reminder system (24h and 1h before appointments)
+- [x] 05-04: Add cancellation and rescheduling notifications
 
 ---
 

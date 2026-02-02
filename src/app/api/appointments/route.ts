@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { sendEmail } from "@/lib/email";
+import { appointmentConfirmationEmail } from "@/lib/appointment-emails";
 
 // GET /api/appointments - Get user's appointments
 export async function GET(request: Request) {
@@ -130,8 +132,51 @@ export async function POST(request: Request) {
             hospital: true,
           },
         },
+        patient: {
+          include: {
+            user: {
+              select: { name: true, email: true },
+            },
+          },
+        },
       },
     });
+
+    try {
+      const appUrl =
+        process.env.NEXT_PUBLIC_APP_URL ||
+        process.env.NEXTAUTH_URL ||
+        "http://localhost:3000";
+
+      const payload = {
+        patientName: appointment.patient?.user?.name || "Patient",
+        psychologistName: appointment.psychologist?.user?.name || "Psychologist",
+        startTime: appointment.startTime,
+        endTime: appointment.endTime,
+        type: appointment.type,
+      };
+
+      const patientEmail = appointment.patient?.user?.email;
+      const psychologistEmail = appointment.psychologist?.user?.email;
+
+      if (patientEmail) {
+        const message = appointmentConfirmationEmail({
+          ...payload,
+          appUrl: `${appUrl}/patient/dashboard/appointments`,
+        });
+        await sendEmail({ to: patientEmail, ...message });
+      }
+
+      if (psychologistEmail) {
+        const message = appointmentConfirmationEmail({
+          ...payload,
+          appUrl: `${appUrl}/psychologist/dashboard/appointments`,
+        });
+        await sendEmail({ to: psychologistEmail, ...message });
+      }
+    } catch (emailError) {
+      console.error("Appointment confirmation email error:", emailError);
+    }
 
     return NextResponse.json(appointment, { status: 201 });
   } catch (error) {

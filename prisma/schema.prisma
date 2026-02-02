@@ -157,6 +157,8 @@ model Appointment {
   status          AppointmentStatus @default(SCHEDULED)
   price           Int      // Price in cents
   notes           String?  @db.Text
+  reminder24hSentAt DateTime?
+  reminder1hSentAt  DateTime?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
