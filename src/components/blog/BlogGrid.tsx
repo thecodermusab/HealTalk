@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { BlogCard } from "@/components/blog/BlogCard";
 import { LoadMoreButton } from "@/components/blog/LoadMoreButton";
-import { BlogPost } from "@/lib/mock-blog-data";
+import { BlogPost } from "@/lib/types";
 
 interface BlogGridProps {
   initialPosts: BlogPost[];

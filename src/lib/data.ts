@@ -196,3 +196,37 @@ export const hospitals = [
 
 // Cities list
 export const cities = ["Istanbul", "Ankara", "Izmir", "All Cities"];
+
+// Conditions list for filtering
+export const conditionsList = [
+  "Anxiety Disorders",
+  "Depression",
+  "Trauma & PTSD",
+  "Family Therapy",
+  "Couples Counseling",
+  "Child Psychology",
+  "Addiction",
+  "Panic Disorders",
+  "Stress Management",
+  "Grief Counseling",
+  "Eating Disorders",
+  "OCD",
+  "Bipolar Disorder",
+  "ADHD",
+  "Sleep Disorders",
+  "Anger Management"
+];
+
+// Languages list for filtering
+export const languagesList = [
+  "English",
+  "Turkish",
+  "Arabic",
+  "Spanish",
+  "French",
+  "German",
+  "Mandarin",
+  "Russian",
+  "Italian",
+  "Portuguese"
+];

@@ -1,14 +1,14 @@
 import React from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { GuideItem } from "@/lib/mock-guides-data";
+import { GuideItem } from "@/lib/types";
 
 interface GuideCardProps {
   guide: GuideItem;
 }
 
 export function GuideCard({ guide }: GuideCardProps) {
-  const themeStyles = {
+  const themeStyles: Record<string, string> = {
     lavender: "bg-[#D8D4FE]", // Unsplash/Amby lavender
     green: "bg-[#CCEFD8]",    // Pastel mint green
     cream: "bg-[#FFFBF2]",    // Warm cream

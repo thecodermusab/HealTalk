@@ -1,5 +1,5 @@
 import React from "react";
-import { BlogPost } from "@/lib/mock-blog-data";
+import { BlogPost } from "@/lib/types";
 
 interface HeroIllustrationProps {
   post: BlogPost;

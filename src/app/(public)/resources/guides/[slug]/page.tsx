@@ -1,6 +1,5 @@
 import React from "react";
 import { notFound } from "next/navigation";
-import { GUIDES } from "@/lib/mock-guides-data";
 import { BlogPostLayout } from "@/components/blog/BlogPostLayout";
 import { AuthorBand } from "@/components/blog/AuthorBand";
 
@@ -13,8 +12,23 @@ interface PageProps {
   };
 }
 
-export default function GuideDetailPage({ params }: PageProps) {
-  const guide = GUIDES.find((g) => {
+async function getGuides() {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/guides`, {
+      cache: 'no-store'
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.guides || [];
+  } catch (error) {
+    console.error('Failed to fetch guides:', error);
+    return [];
+  }
+}
+
+export default async function GuideDetailPage({ params }: PageProps) {
+  const guides = await getGuides();
+  const guide = guides.find((g: any) => {
       // Handle both full href matching or just slug matching
       const slugFromHref = g.href.split("/").filter(Boolean).pop();
       return slugFromHref === params.slug;

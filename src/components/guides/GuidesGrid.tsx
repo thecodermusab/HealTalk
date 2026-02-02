@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { GuideCard } from "@/components/guides/GuideCard";
 import { LoadMoreButton } from "@/components/blog/LoadMoreButton"; // Re-using generic load more
-import { GuideItem } from "@/lib/mock-guides-data";
+import { GuideItem } from "@/lib/types";
 
 interface GuidesGridProps {
   initialGuides: GuideItem[];

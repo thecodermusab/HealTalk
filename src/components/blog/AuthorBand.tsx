@@ -1,7 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Author } from "@/lib/mock-blog-data";
+import { Author } from "@/lib/types";
 import { Linkedin } from "lucide-react";
 
 interface AuthorBandProps {

@@ -1,6 +1,5 @@
 import React from "react";
 import { notFound } from "next/navigation";
-import { BLOG_POSTS, BlogPostContent, Author } from "@/lib/mock-blog-data";
 import { BlogPostLayout } from "@/components/blog/BlogPostLayout";
 import { HeroIllustration } from "@/components/blog/HeroIllustration";
 import { HeroPhoto } from "@/components/blog/HeroPhoto";
@@ -10,6 +9,33 @@ interface PageProps {
   params: {
     id: string; // Changed from slug to id
   };
+}
+
+interface BlogPostContent {
+  type: 'heading' | 'paragraph' | 'list' | 'quote';
+  value: string | string[];
+}
+
+interface Author {
+  name: string;
+  role: string;
+  bio: string;
+  imageUrl: string;
+  linkedinUrl: string;
+}
+
+async function getBlogPost(id: string) {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/blog/${id}`, {
+      cache: 'no-store'
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.post || null;
+  } catch (error) {
+    console.error('Failed to fetch blog post:', error);
+    return null;
+  }
 }
 
 // Helper to render content blocks
@@ -58,7 +84,7 @@ function BlogPostContentRenderer({ content }: { content?: BlogPostContent[] }) {
 
 export default async function BlogPostPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
-  const post = BLOG_POSTS.find((p) => p.id === params.id);
+  const post = await getBlogPost(params.id);
 
   if (!post) {
     notFound();

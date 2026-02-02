@@ -7,7 +7,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { conditionsList, languagesList } from "@/lib/mock-data";
+import { conditionsList, languagesList } from "@/lib/data";
 
 export interface FilterState {
   location: string[];

@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
-import { Psychologist } from "@/lib/mock-data";
+import { Psychologist } from "@/lib/types";
 import ConnectCard from "./ConnectCard";
 import { Phone } from "lucide-react";
 

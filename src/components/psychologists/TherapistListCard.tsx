@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Star, MapPin, CheckCircle, Video, Phone, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Psychologist } from "@/lib/mock-data";
+import { Psychologist } from "@/lib/types";
 import Image from "next/image";
 
 interface TherapistListCardProps {
@@ -17,10 +17,10 @@ export default function TherapistListCard({ therapist }: TherapistListCardProps)
       <div className="flex-shrink-0">
         <Link href={`/psychologists/${therapist.id}`}>
             <div className="relative w-full md:w-56 h-48 md:h-full min-h-[200px] rounded-xl overflow-hidden bg-slate-100 cursor-pointer">
-            <Image 
-                src={therapist.image} 
-                alt={therapist.name} 
-                fill 
+            <Image
+                src={therapist.image || therapist.photo || '/images/doctor-1.jpg'}
+                alt={therapist.name || 'Therapist'}
+                fill
                 className="object-cover hover:scale-105 transition-transform duration-500"
             />
             </div>
@@ -49,6 +49,7 @@ export default function TherapistListCard({ therapist }: TherapistListCardProps)
         </div>
 
         {/* Tags Row */}
+        {therapist.conditions && therapist.conditions.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-6">
             {therapist.conditions.slice(0, 3).map((bgItem) => (
                 <span key={bgItem} className="bg-slate-50 text-slate-600 px-4 py-1.5 rounded-full text-sm font-medium border border-slate-200">
@@ -56,6 +57,7 @@ export default function TherapistListCard({ therapist }: TherapistListCardProps)
                 </span>
             ))}
         </div>
+        )}
 
         {/* Highlights Badges */}
         <div className="flex flex-wrap gap-2 mt-auto">
@@ -92,7 +94,7 @@ export default function TherapistListCard({ therapist }: TherapistListCardProps)
                 <span>Available Online</span>
             </div>
              <div className="flex items-center justify-center gap-1 text-sm font-medium text-slate-900 mt-1">
-                <span className="font-bold text-xl">{therapist.priceRange.split(' ')[0]}</span> per session
+                <span className="font-bold text-xl">{therapist.priceRange?.split(' ')[0] || '$50'}</span> per session
             </div>
       </div>
     </div>

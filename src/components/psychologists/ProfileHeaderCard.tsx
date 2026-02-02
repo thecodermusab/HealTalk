@@ -2,7 +2,7 @@
 
 import { BadgeCheck, MapPin, Phone, Mail, Globe, Star } from "lucide-react";
 import Image from "next/image";
-import { Psychologist } from "@/lib/mock-data";
+import { Psychologist } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 
 interface ProfileHeaderCardProps {
@@ -15,9 +15,9 @@ export default function ProfileHeaderCard({ therapist }: ProfileHeaderCardProps)
       {/* Photo Column */}
       <div className="flex-shrink-0 relative mx-auto md:mx-0">
         <div className="relative w-48 h-56 md:w-56 md:h-64 rounded-2xl overflow-hidden shadow-sm border border-slate-100">
-           <Image 
-              src={therapist.image} 
-              alt={therapist.name} 
+           <Image
+              src={therapist.image || therapist.photo || '/images/doctor-1.jpg'}
+              alt={therapist.name || 'Therapist'} 
               fill 
               className="object-cover"
             />
@@ -49,11 +49,14 @@ export default function ProfileHeaderCard({ therapist }: ProfileHeaderCardProps)
         </div>
 
         {/* Quote/Intro */}
+        {therapist.about && (
         <div className="mb-5 italic text-slate-600 leading-relaxed max-w-2xl">
             "{therapist.about.slice(0, 140)}..."
         </div>
+        )}
 
         {/* Specialty Pills */}
+        {therapist.conditions && therapist.conditions.length > 0 && (
         <div className="flex flex-wrap justify-center md:justify-start gap-2 mb-6">
             {therapist.conditions.slice(0, 4).map((tag) => (
                 <span key={tag} className="px-3 py-1.5 bg-slate-100 text-slate-600 text-sm font-medium rounded-full border border-slate-200">
@@ -61,6 +64,7 @@ export default function ProfileHeaderCard({ therapist }: ProfileHeaderCardProps)
                 </span>
             ))}
         </div>
+        )}
 
         {/* Action Buttons Row */}
         <div className="flex flex-wrap justify-center md:justify-start gap-3">

@@ -1,7 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { BlogPost } from "@/lib/mock-blog-data";
+import { BlogPost } from "@/lib/types";
 
 interface BlogCardProps {
   post: BlogPost;
@@ -14,7 +14,7 @@ export function BlogCard({ post }: BlogCardProps) {
         {/* Card Image */}
         <div className="relative w-full aspect-[4/3] overflow-hidden rounded-[16px] bg-gray-100">
              <Image
-                src={post.imageUrl}
+                src={post.imageUrl || '/images/Blog1.png'}
                 alt={post.title}
                 fill
                 className="object-cover transition-transform duration-500 group-hover:scale-105"

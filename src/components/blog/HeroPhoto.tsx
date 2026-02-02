@@ -1,6 +1,6 @@
 import React from "react";
 import Image from "next/image";
-import { BlogPost } from "@/lib/mock-blog-data";
+import { BlogPost } from "@/lib/types";
 
 interface HeroPhotoProps {
   post: BlogPost;

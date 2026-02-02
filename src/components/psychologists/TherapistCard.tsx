@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Star, MapPin, Languages, Calendar, CheckCircle, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Psychologist } from "@/lib/mock-data";
+import { Psychologist } from "@/lib/types";
 import Image from "next/image";
 
 interface TherapistCardProps {
@@ -23,10 +23,10 @@ export default function TherapistCard({ therapist }: TherapistCardProps) {
       {/* Header: Photo & Basic Info */}
       <div className="flex gap-4 mb-4">
         <div className="relative w-20 h-20 rounded-full overflow-hidden flex-shrink-0 border-2 border-background shadow-sm">
-          <Image 
-            src={therapist.image} 
-            alt={therapist.name} 
-            fill 
+          <Image
+            src={therapist.image || therapist.photo || '/images/doctor-1.jpg'}
+            alt={therapist.name || 'Therapist'}
+            fill
             className="object-cover"
           />
         </div>
@@ -57,6 +57,7 @@ export default function TherapistCard({ therapist }: TherapistCardProps) {
       </div>
 
       {/* Tags */}
+      {therapist.conditions && therapist.conditions.length > 0 && (
       <div className="flex flex-wrap gap-2 mb-4">
         {therapist.conditions.slice(0, 3).map((condition) => (
           <span
@@ -72,28 +73,35 @@ export default function TherapistCard({ therapist }: TherapistCardProps) {
             </span>
         )}
       </div>
+      )}
 
       {/* Details Grid */}
       <div className="grid grid-cols-2 gap-y-2 gap-x-4 mb-4 text-sm text-text-secondary">
+        {therapist.languages && therapist.languages.length > 0 && (
         <div className="flex items-center gap-2">
             <Languages size={15} className="text-primary/70" />
             <span className="truncate">{therapist.languages.slice(0, 2).join(", ")}</span>
         </div>
+        )}
+        {therapist.experience && (
         <div className="flex items-center gap-2">
             <Clock size={15} className="text-primary/70" />
             <span>{therapist.experience} years exp.</span>
         </div>
+        )}
+        {therapist.nextAvailable && (
         <div className="flex items-center gap-2 col-span-2">
             <Calendar size={15} className="text-green-600" />
             <span className="text-green-600 font-medium">Available: {therapist.nextAvailable}</span>
         </div>
+        )}
       </div>
 
       {/* Footer: Price & Actions */}
       <div className="mt-auto pt-4 border-t border-border flex items-center justify-between gap-3">
         <div className="flex flex-col">
           <span className="text-xs text-text-secondary">Per session</span>
-          <span className="text-base font-bold text-foreground">{therapist.priceRange}</span>
+          <span className="text-base font-bold text-foreground">{therapist.priceRange || '$50'}</span>
         </div>
         <div className="flex gap-2">
            <Link href={`/psychologists/${therapist.id}`} className="w-full">

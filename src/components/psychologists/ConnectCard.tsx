@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Psychologist } from "@/lib/mock-data";
+import { Psychologist } from "@/lib/types";
 import { Info, Mail, Phone, Video, Calendar, Clock, CheckCircle } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -74,17 +74,18 @@ export default function ConnectCard({ therapist }: ConnectCardProps) {
                             <div className="bg-white p-3 rounded-xl border border-slate-200/60 shadow-sm hidden md:block">
                                 <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Fee</span>
                                 <div className="text-slate-900 font-medium">
-                                    {therapist.priceRange.split(' ')[0]} / session
+                                    {therapist.priceRange?.split(' ')[0] || '$50'} / session
                                 </div>
                             </div>
                         </div>
 
                         <div className="mt-6">
-                            <Button 
+                            <Button
                                 disabled={!date || !time}
                                 onClick={() => {
                                     if (date && time) {
-                                        router.push(`/checkout?doctor=${encodeURIComponent(therapist.name)}&date=${encodeURIComponent(date.toLocaleDateString())}&time=${encodeURIComponent(time)}&price=${encodeURIComponent(therapist.priceRange.split(' ')[0])}`);
+                                        const price = therapist.priceRange?.split(' ')[0] || '$50';
+                                        router.push(`/checkout?doctor=${encodeURIComponent(therapist.name || 'Therapist')}&date=${encodeURIComponent(date.toLocaleDateString())}&time=${encodeURIComponent(time)}&price=${encodeURIComponent(price)}`);
                                     }
                                 }}
                                 className="w-full h-12 text-base font-bold bg-[#FC7D45] hover:bg-[#e06935] text-white shadow-lg shadow-orange-100 rounded-xl disabled:opacity-50 disabled:shadow-none"
@@ -113,7 +114,7 @@ export default function ConnectCard({ therapist }: ConnectCardProps) {
             </div>
             <div className="flex items-center gap-2 text-slate-600">
                  <span className="text-[#FC7D45] font-bold text-lg w-5 flex justify-center">$</span>
-                 <span className="font-bold text-slate-900">{therapist.priceRange.split(' ')[0]}</span>
+                 <span className="font-bold text-slate-900">{therapist.priceRange?.split(' ')[0] || '$50'}</span>
                  <span className="text-slate-500">per session</span>
             </div>
         </div>

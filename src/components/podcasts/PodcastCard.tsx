@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { PodcastEpisode } from "@/lib/mock-podcast-data";
+import { PodcastEpisode } from "@/lib/types";
 import { Play, Youtube } from "lucide-react"; // Using Lucide icons for now
 
 interface PodcastCardProps {

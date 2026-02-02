@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/sheet";
 import { SlidersHorizontal, ChevronDown, ChevronUp, X } from "lucide-react";
 import { useState } from "react";
-import { conditionsList, languagesList } from "@/lib/mock-data";
+import { conditionsList, languagesList } from "@/lib/data";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";

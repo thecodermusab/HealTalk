@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { PodcastCard } from "@/components/podcasts/PodcastCard";
 import { LoadMoreButton } from "@/components/blog/LoadMoreButton";
-import { PodcastEpisode } from "@/lib/mock-podcast-data";
+import { PodcastEpisode } from "@/lib/types";
 
 interface PodcastGridProps {
   initialEpisodes: PodcastEpisode[];
