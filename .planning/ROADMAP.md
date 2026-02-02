@@ -15,7 +15,7 @@ None (general full-stack web development with Next.js, React, and PostgreSQL)
 - [x] **Phase 3: Data Migration** - Move from mock data to PostgreSQL database
 - [x] **Phase 4: File Upload System** - Profile pictures and document uploads
 - [x] **Phase 5: Email Notifications** - Appointment confirmations and reminders
-- [ ] **Phase 6: Video Consultations** - Agora.io integration for live sessions
+- [x] **Phase 6: Video Consultations** - Agora.io integration for live sessions
 - [ ] **Phase 7: Real-time Messaging** - Socket.io chat between patients and psychologists
 - [ ] **Phase 8: Payment Processing** - Stripe integration for bookings and payouts
 - [ ] **Phase 9: Admin Panel** - Psychologist approval and content management
@@ -157,11 +157,11 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 06-01: Set up Agora SDK and token generation API
-- [ ] 06-02: Build video call UI component with controls
-- [ ] 06-03: Implement waiting room and session timer
-- [ ] 06-04: Add screen sharing and call quality indicators
-- [ ] 06-05: Test call handling (reconnection, errors, end session)
+- [x] 06-01: Set up Agora SDK and token generation API
+- [x] 06-02: Build video call UI component with controls
+- [x] 06-03: Implement waiting room and session timer
+- [x] 06-04: Add screen sharing and call quality indicators
+- [x] 06-05: Test call handling (reconnection, errors, end session)
 
 ---
 
