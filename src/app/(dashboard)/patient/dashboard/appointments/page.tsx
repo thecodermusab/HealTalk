@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { Calendar, Clock, Video, CheckCircle } from "lucide-react";
+import { Calendar, Clock, Video, CheckCircle, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -168,6 +168,15 @@ export default function AppointmentsPage() {
                               Join Session
                             </Button>
                           </Link>
+                          <Link href={`/patient/dashboard/messages?appointmentId=${appointment.id}`} className="w-full">
+                            <Button
+                              variant="outline"
+                              className="w-full border-gray-200 text-gray-600 hover:bg-gray-50"
+                            >
+                              <MessageCircle size={16} className="mr-2" />
+                              Send Message
+                            </Button>
+                          </Link>
                           <Button
                             variant="outline"
                             className="w-full border-gray-200 text-gray-600 hover:bg-gray-50"
@@ -189,6 +198,15 @@ export default function AppointmentsPage() {
                           >
                             View Details
                           </Button>
+                          <Link href={`/patient/dashboard/messages?appointmentId=${appointment.id}`} className="w-full">
+                            <Button
+                              variant="outline"
+                              className="w-full border-gray-200 text-gray-600 hover:bg-gray-50"
+                            >
+                              <MessageCircle size={16} className="mr-2" />
+                              Send Message
+                            </Button>
+                          </Link>
                           <Button
                             variant="outline"
                             className="w-full border-[#5B6CFF] text-[#5B6CFF] hover:bg-[#EEF0FF]"

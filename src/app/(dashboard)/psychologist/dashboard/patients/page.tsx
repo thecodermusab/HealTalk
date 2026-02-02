@@ -17,6 +17,8 @@ interface Patient {
   upcomingSessions: number;
   lastSessionDate: string | null;
   nextSessionDate: string | null;
+  lastAppointmentId: string | null;
+  nextAppointmentId: string | null;
 }
 
 export default function PsychologistPatientsPage() {
@@ -175,12 +177,21 @@ export default function PsychologistPatientsPage() {
 
                   {/* Actions */}
                   <div className="flex gap-2">
-                    <Link
-                      href={`/psychologist/dashboard/messages?patientId=${patient.id}`}
-                      className="px-4 py-2 text-sm font-medium text-primary border border-primary rounded-lg hover:bg-primary hover:text-white transition-colors"
-                    >
-                      Message
-                    </Link>
+                    {(patient.nextAppointmentId || patient.lastAppointmentId) ? (
+                      <Link
+                        href={`/psychologist/dashboard/messages?appointmentId=${patient.nextAppointmentId || patient.lastAppointmentId}`}
+                        className="px-4 py-2 text-sm font-medium text-primary border border-primary rounded-lg hover:bg-primary hover:text-white transition-colors"
+                      >
+                        Message
+                      </Link>
+                    ) : (
+                      <button
+                        disabled
+                        className="px-4 py-2 text-sm font-medium text-gray-400 border border-gray-300 rounded-lg cursor-not-allowed opacity-50"
+                      >
+                        Message
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

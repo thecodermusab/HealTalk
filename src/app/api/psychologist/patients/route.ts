@@ -75,6 +75,8 @@ export async function GET(request: Request) {
           upcomingSessions: 0,
           lastSessionDate: null,
           nextSessionDate: null,
+          lastAppointmentId: null,
+          nextAppointmentId: null,
         });
       }
 
@@ -85,6 +87,7 @@ export async function GET(request: Request) {
         patient.completedSessions++;
         if (!patient.lastSessionDate || appointment.startTime > patient.lastSessionDate) {
           patient.lastSessionDate = appointment.startTime;
+          patient.lastAppointmentId = appointment.id;
         }
       }
 
@@ -92,6 +95,7 @@ export async function GET(request: Request) {
         patient.upcomingSessions++;
         if (!patient.nextSessionDate || appointment.startTime < patient.nextSessionDate) {
           patient.nextSessionDate = appointment.startTime;
+          patient.nextAppointmentId = appointment.id;
         }
       }
     });

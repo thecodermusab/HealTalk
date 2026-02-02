@@ -147,7 +147,7 @@ export default function PsychologistAppointmentsPage() {
                               Start Session
                             </Button>
                           </Link>
-                          <Link href={`/psychologist/dashboard/messages?chatId=${appointment.id}&action=reschedule`}>
+                          <Link href={`/psychologist/dashboard/messages?appointmentId=${appointment.id}&action=reschedule`}>
                             <Button variant="outline" className="w-full sm:w-auto rounded-[12px] border-gray-200 text-gray-600 h-10">
                               Reschedule
                             </Button>
@@ -160,7 +160,7 @@ export default function PsychologistAppointmentsPage() {
                               <FileText size={16} /> View Notes
                             </Button>
                           </Link>
-                          <Link href={`/psychologist/dashboard/messages?chatId=${appointment.id}`}>
+                          <Link href={`/psychologist/dashboard/messages?appointmentId=${appointment.id}`}>
                             <Button variant="ghost" className="w-full sm:w-auto rounded-[12px] text-[#5B6CFF] hover:bg-[#EEF0FF] h-10">
                               Follow Up
                             </Button>
