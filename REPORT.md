@@ -1054,6 +1054,7 @@ Required credentials (see `.env.example` for details):
 - `UPLOADTHING_SECRET` - File uploads
 - `STRIPE_SECRET_KEY` - Payments
 - `SENTRY_DSN` - Error tracking
+- `CRON_SECRET` - Protect reminder cron endpoint (optional)
 
 ### Database Schema
 

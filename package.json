@@ -15,6 +15,7 @@
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
+    "cron:reminders": "tsx scripts/cron/appointment-reminders.ts",
     "db:update-passwords": "tsx prisma/update-passwords.ts",
     "db:inspect-users": "tsx prisma/inspect-users.ts"
   },
