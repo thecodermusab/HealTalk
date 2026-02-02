@@ -251,12 +251,20 @@ model Review {
   psychologistId  String
   rating          Int      // 1-5
   comment         String   @db.Text
+  status          ReviewStatus @default(APPROVED)
+  moderatedAt     DateTime?
   helpful         Int      @default(0)
   notHelpful      Int      @default(0)
   createdAt       DateTime @default(now())
 
   patient         Patient      @relation(fields: [patientId], references: [id])
   psychologist    Psychologist @relation(fields: [psychologistId], references: [id])
+}
+
+enum ReviewStatus {
+  APPROVED
+  PENDING
+  REJECTED
 }
 
 model Availability {

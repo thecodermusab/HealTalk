@@ -25,6 +25,7 @@ export async function GET(
           },
         },
         reviews: {
+          where: { status: "APPROVED" },
           include: {
             patient: {
               include: {
