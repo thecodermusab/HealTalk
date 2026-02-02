@@ -2,19 +2,21 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { z } from "zod";
+import { parseJson } from "@/lib/validation";
 
-type UpdatePayload = {
-  name?: string;
-  phone?: string | null;
-  dateOfBirth?: string | null;
-  bio?: string | null;
-  credentials?: string | null;
-  licenseNumber?: string | null;
-  experience?: number | null;
-  specializations?: string[] | null;
-  price60?: number | null;
-  price90?: number | null;
-};
+const updateProfileSchema = z.object({
+  name: z.string().min(1).optional(),
+  phone: z.string().optional().nullable(),
+  dateOfBirth: z.string().optional().nullable(),
+  bio: z.string().optional().nullable(),
+  credentials: z.string().optional().nullable(),
+  licenseNumber: z.string().optional().nullable(),
+  experience: z.coerce.number().int().min(0).optional().nullable(),
+  specializations: z.array(z.string()).optional().nullable(),
+  price60: z.coerce.number().int().positive().optional().nullable(),
+  price90: z.coerce.number().int().positive().optional().nullable(),
+});
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -66,7 +68,8 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = (await request.json()) as UpdatePayload;
+  const { data: body, error } = await parseJson(request, updateProfileSchema);
+  if (error) return error;
   const data: {
     name?: string;
     phone?: string | null;

@@ -2,16 +2,19 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/email";
 import { buildIdentifier, createToken, hashToken } from "@/lib/tokens";
+import { z } from "zod";
+import { parseJson } from "@/lib/validation";
+
+const forgotPasswordSchema = z.object({
+  email: z.string().email(),
+});
 
 export async function POST(req: Request) {
   try {
-    const { email } = await req.json();
+    const { data, error } = await parseJson(req, forgotPasswordSchema);
+    if (error) return error;
 
-    if (!email) {
-        return NextResponse.json({ error: "Email is required" }, { status: 400 });
-    }
-
-    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedEmail = data.email.trim().toLowerCase();
     const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
 
     // Always return ok to prevent user enumeration

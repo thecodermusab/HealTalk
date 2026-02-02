@@ -2,14 +2,20 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { hashToken, parseIdentifier } from "@/lib/tokens";
+import { z } from "zod";
+import { parseJson } from "@/lib/validation";
+
+const resetPasswordSchema = z.object({
+  token: z.string().min(1),
+  password: z.string().min(8),
+});
 
 export async function POST(req: Request) {
   try {
-    const { token, password } = await req.json();
+    const { data, error } = await parseJson(req, resetPasswordSchema);
+    if (error) return error;
 
-    if (!token || !password) {
-      return NextResponse.json({ error: "Missing fields" }, { status: 400 });
-    }
+    const { token, password } = data;
 
     // Check token
     const hashedToken = hashToken(token);

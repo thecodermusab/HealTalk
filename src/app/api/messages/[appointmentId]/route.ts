@@ -2,6 +2,12 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { z } from "zod";
+import { parseJson } from "@/lib/validation";
+
+const messageSchema = z.object({
+  content: z.string().min(1),
+});
 
 interface RouteParams {
   params: { appointmentId: string };
@@ -91,12 +97,9 @@ export async function POST(request: Request, { params }: RouteParams) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const body = await request.json();
-  const content = typeof body?.content === "string" ? body.content.trim() : "";
-
-  if (!content) {
-    return NextResponse.json({ error: "Message content is required" }, { status: 400 });
-  }
+  const { data, error } = await parseJson(request, messageSchema);
+  if (error) return error;
+  const content = data.content.trim();
 
   const message = await prisma.message.create({
     data: {

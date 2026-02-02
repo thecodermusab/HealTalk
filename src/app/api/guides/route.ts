@@ -1,12 +1,21 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { z } from 'zod';
+import { parseSearchParams } from '@/lib/validation';
+
+const querySchema = z.object({
+  theme: z.string().optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(50).default(12),
+});
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const theme = searchParams.get('theme') || '';
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '12');
+    const { data, error } = parseSearchParams(request, querySchema);
+    if (error) return error;
+    const theme = data.theme || '';
+    const page = data.page;
+    const limit = data.limit;
 
     const where: any = {
       published: true,

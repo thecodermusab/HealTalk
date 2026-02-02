@@ -2,6 +2,12 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { z } from "zod";
+import { parseJson } from "@/lib/validation";
+
+const updateSchema = z.object({
+  published: z.boolean(),
+});
 
 export async function PATCH(
   request: Request,
@@ -17,12 +23,9 @@ export async function PATCH(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const body = await request.json().catch(() => null);
-  const published = typeof body?.published === "boolean" ? body.published : null;
-
-  if (published === null) {
-    return NextResponse.json({ error: "Invalid published value" }, { status: 400 });
-  }
+  const { data, error } = await parseJson(request, updateSchema);
+  if (error) return error;
+  const { published } = data;
 
   const existing = await prisma.blogPost.findUnique({
     where: { id: params.id },

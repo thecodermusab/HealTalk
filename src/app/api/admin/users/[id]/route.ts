@@ -2,9 +2,18 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { z } from "zod";
+import { parseJson } from "@/lib/validation";
 
 const ALLOWED_ROLES = ["PATIENT", "PSYCHOLOGIST", "ADMIN"];
 const ALLOWED_STATUSES = ["ACTIVE", "SUSPENDED", "BANNED"];
+const updateSchema = z.object({
+  name: z.string().optional(),
+  email: z.string().email().optional().or(z.literal("")),
+  phone: z.string().optional(),
+  role: z.enum(["PATIENT", "PSYCHOLOGIST", "ADMIN"]).optional(),
+  status: z.enum(["ACTIVE", "SUSPENDED", "BANNED"]).optional(),
+});
 
 export async function PATCH(
   request: Request,
@@ -20,12 +29,13 @@ export async function PATCH(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const body = await request.json().catch(() => null);
-  const name = typeof body?.name === "string" ? body.name.trim() : "";
-  const email = typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";
-  const phone = typeof body?.phone === "string" ? body.phone.trim() : "";
-  const role = typeof body?.role === "string" ? body.role : "";
-  const status = typeof body?.status === "string" ? body.status : "";
+  const { data: body, error } = await parseJson(request, updateSchema);
+  if (error) return error;
+  const name = body.name?.trim() || "";
+  const email = body.email?.trim().toLowerCase() || "";
+  const phone = body.phone?.trim() || "";
+  const role = body.role || "";
+  const status = body.status || "";
 
   const user = await prisma.user.findUnique({
     where: { id: params.id },

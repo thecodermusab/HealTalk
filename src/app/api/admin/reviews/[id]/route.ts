@@ -2,8 +2,12 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { z } from "zod";
+import { parseJson } from "@/lib/validation";
 
-const ALLOWED_STATUSES = ["APPROVED", "PENDING", "REJECTED"];
+const updateSchema = z.object({
+  status: z.enum(["APPROVED", "PENDING", "REJECTED"]),
+});
 
 export async function PATCH(
   request: Request,
@@ -19,12 +23,9 @@ export async function PATCH(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const body = await request.json().catch(() => null);
-  const status = typeof body?.status === "string" ? body.status : "";
-
-  if (!ALLOWED_STATUSES.includes(status)) {
-    return NextResponse.json({ error: "Invalid status" }, { status: 400 });
-  }
+  const { data, error } = await parseJson(request, updateSchema);
+  if (error) return error;
+  const status = data.status;
 
   const existing = await prisma.review.findUnique({
     where: { id: params.id },

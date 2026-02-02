@@ -3,12 +3,18 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { UTApi } from "uploadthing/server";
+import { z } from "zod";
+import { parseSearchParams } from "@/lib/validation";
 
 const utapi = new UTApi({
   token:
     process.env.UPLOADTHING_TOKEN ||
     process.env.UPLOADTHING_SECRET ||
     process.env.UPLOADTHING_KEY,
+});
+
+const querySchema = z.object({
+  psychologistId: z.string().optional(),
 });
 
 export async function GET(request: Request) {
@@ -18,8 +24,9 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { searchParams } = new URL(request.url);
-  const psychologistId = searchParams.get("psychologistId");
+  const { data, error } = parseSearchParams(request, querySchema);
+  if (error) return error;
+  const psychologistId = data.psychologistId || null;
 
   let psychologist:
     | {

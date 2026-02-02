@@ -7,9 +7,15 @@ import {
   appointmentCancellationEmail,
   appointmentRescheduleEmail,
 } from "@/lib/appointment-emails";
+import { z } from "zod";
+import { parseJson } from "@/lib/validation";
 
-const isValidStatus = (status: string) =>
-  ["SCHEDULED", "COMPLETED", "CANCELLED", "NO_SHOW"].includes(status);
+const updateAppointmentSchema = z.object({
+  status: z.enum(["SCHEDULED", "COMPLETED", "CANCELLED", "NO_SHOW"]).optional(),
+  startTime: z.string().optional(),
+  endTime: z.string().optional(),
+  date: z.string().optional(),
+});
 
 export async function PATCH(
   request: Request,
@@ -50,13 +56,9 @@ export async function PATCH(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const body = await request.json();
-  const { status, startTime, endTime, date } = body as {
-    status?: string;
-    startTime?: string;
-    endTime?: string;
-    date?: string;
-  };
+  const { data: body, error } = await parseJson(request, updateAppointmentSchema);
+  if (error) return error;
+  const { status, startTime, endTime, date } = body;
 
   const updateData: {
     status?: string;
@@ -66,9 +68,6 @@ export async function PATCH(
   } = {};
 
   if (status) {
-    if (!isValidStatus(status)) {
-      return NextResponse.json({ error: "Invalid status" }, { status: 400 });
-    }
     updateData.status = status;
   }
 

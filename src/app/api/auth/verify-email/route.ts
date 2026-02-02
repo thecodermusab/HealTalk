@@ -1,14 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { hashToken, parseIdentifier } from "@/lib/tokens";
+import { z } from "zod";
+import { parseSearchParams } from "@/lib/validation";
+
+const verifyEmailSchema = z.object({
+  token: z.string().min(1),
+});
 
 export async function GET(request: NextRequest) {
   try {
-    const token = request.nextUrl.searchParams.get("token");
-
-    if (!token) {
-      return NextResponse.json({ error: "Missing token" }, { status: 400 });
-    }
+    const { data, error } = parseSearchParams(request, verifyEmailSchema);
+    if (error) return error;
+    const { token } = data;
 
     const hashedToken = hashToken(token);
     let verificationToken =

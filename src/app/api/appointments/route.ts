@@ -4,6 +4,22 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/email";
 import { appointmentConfirmationEmail } from "@/lib/appointment-emails";
+import { z } from "zod";
+import { parseJson, parseSearchParams } from "@/lib/validation";
+
+const appointmentQuerySchema = z.object({
+  status: z.enum(["SCHEDULED", "COMPLETED", "CANCELLED", "NO_SHOW"]).optional(),
+});
+
+const createAppointmentSchema = z.object({
+  psychologistId: z.string().min(1),
+  date: z.string().min(1),
+  startTime: z.string().min(1),
+  endTime: z.string().min(1),
+  duration: z.coerce.number().int().positive(),
+  type: z.enum(["VIDEO", "AUDIO", "IN_PERSON"]).optional().default("VIDEO"),
+  notes: z.string().optional().nullable(),
+});
 
 // GET /api/appointments - Get user's appointments
 export async function GET(request: Request) {
@@ -15,8 +31,9 @@ export async function GET(request: Request) {
     }
 
     const userId = (session.user as any).id;
-    const { searchParams } = new URL(request.url);
-    const status = searchParams.get("status");
+    const { data: query, error } = parseSearchParams(request, appointmentQuerySchema);
+    if (error) return error;
+    const status = query.status;
 
     // Get patient or psychologist profile
     const patient = await prisma.patient.findUnique({
@@ -87,8 +104,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await request.json();
+    const { data: body, error } = await parseJson(request, createAppointmentSchema);
+    if (error) return error;
     const { psychologistId, date, startTime, endTime, duration, type, notes } = body;
+    const parsedDate = new Date(date);
+    const parsedStart = new Date(startTime);
+    const parsedEnd = new Date(endTime);
+
+    if ([parsedDate, parsedStart, parsedEnd].some((value) => Number.isNaN(value.getTime()))) {
+      return NextResponse.json({ error: "Invalid appointment date/time" }, { status: 400 });
+    }
 
     const userId = (session.user as any).id;
 
@@ -114,9 +139,9 @@ export async function POST(request: Request) {
       data: {
         patientId: patient.id,
         psychologistId,
-        date: new Date(date),
-        startTime: new Date(startTime),
-        endTime: new Date(endTime),
+        date: parsedDate,
+        startTime: parsedStart,
+        endTime: parsedEnd,
         duration,
         type,
         price,

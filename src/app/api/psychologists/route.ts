@@ -1,15 +1,27 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { z } from 'zod';
+import { parseSearchParams } from '@/lib/validation';
+
+const querySchema = z.object({
+  search: z.string().optional(),
+  specialization: z.string().optional(),
+  minRating: z.coerce.number().min(0).optional(),
+  maxPrice: z.coerce.number().min(0).optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+});
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const search = searchParams.get('search') || '';
-    const specialization = searchParams.get('specialization') || '';
-    const minRating = parseFloat(searchParams.get('minRating') || '0');
-    const maxPrice = parseInt(searchParams.get('maxPrice') || '999999');
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '20');
+    const { data, error } = parseSearchParams(request, querySchema);
+    if (error) return error;
+    const search = data.search || '';
+    const specialization = data.specialization || '';
+    const minRating = data.minRating ?? 0;
+    const maxPrice = data.maxPrice ?? 999999;
+    const page = data.page;
+    const limit = data.limit;
 
     const where: any = {
       status: 'APPROVED',

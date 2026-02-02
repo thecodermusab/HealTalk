@@ -3,8 +3,13 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { RtcRole, RtcTokenBuilder } from "agora-token";
+import { z } from "zod";
+import { parseJson } from "@/lib/validation";
 
 const TOKEN_TTL_SECONDS = 60 * 60; // 1 hour
+const tokenSchema = z.object({
+  appointmentId: z.string().min(1),
+});
 
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
@@ -13,12 +18,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await request.json();
-  const appointmentId = body?.appointmentId as string | undefined;
-
-  if (!appointmentId) {
-    return NextResponse.json({ error: "Appointment ID is required" }, { status: 400 });
-  }
+  const { data, error } = await parseJson(request, tokenSchema);
+  if (error) return error;
+  const { appointmentId } = data;
 
   const appId = process.env.AGORA_APP_ID;
   const appCertificate = process.env.AGORA_APP_CERTIFICATE;

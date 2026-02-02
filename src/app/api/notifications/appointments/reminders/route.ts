@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/email";
 import { appointmentReminderEmail } from "@/lib/appointment-emails";
+import { z } from "zod";
+import { parseSearchParams } from "@/lib/validation";
 
 const requireCronSecret = (request: Request) => {
   const secret = process.env.CRON_SECRET;
@@ -27,17 +29,18 @@ const WINDOW_CONFIG = {
 };
 
 type WindowKey = keyof typeof WINDOW_CONFIG;
+const querySchema = z.object({
+  window: z.enum(["24h", "1h", "all"]).optional(),
+});
 
 export async function GET(request: Request) {
   if (!requireCronSecret(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { searchParams } = new URL(request.url);
-  const windowParam = (searchParams.get("window") || "all") as
-    | "24h"
-    | "1h"
-    | "all";
+  const { data, error } = parseSearchParams(request, querySchema);
+  if (error) return error;
+  const windowParam = data.window || "all";
 
   const now = new Date();
   const windows: WindowKey[] =

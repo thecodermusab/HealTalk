@@ -2,6 +2,15 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { z } from "zod";
+import { parseSearchParams } from "@/lib/validation";
+
+const querySchema = z.object({
+  search: z.string().optional(),
+  status: z.string().optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(50).default(10),
+});
 
 export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
@@ -14,14 +23,12 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const { searchParams } = new URL(request.url);
-  const search = searchParams.get("search") || "";
-  const status = searchParams.get("status") || "";
-  const page = Math.max(parseInt(searchParams.get("page") || "1", 10), 1);
-  const limit = Math.min(
-    Math.max(parseInt(searchParams.get("limit") || "10", 10), 1),
-    50
-  );
+  const { data, error } = parseSearchParams(request, querySchema);
+  if (error) return error;
+  const search = data.search || "";
+  const status = data.status || "";
+  const page = data.page;
+  const limit = data.limit;
 
   const where: any = {};
 

@@ -2,8 +2,13 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { z } from "zod";
+import { parseSearchParams } from "@/lib/validation";
 
 const MONTH_RANGE_OPTIONS = [6, 12];
+const querySchema = z.object({
+  range: z.coerce.number().int().optional(),
+});
 
 const getMonthKey = (date: Date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
@@ -51,8 +56,9 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const { searchParams } = new URL(request.url);
-  const rangeParam = Number(searchParams.get("range") || "6");
+  const { data, error } = parseSearchParams(request, querySchema);
+  if (error) return error;
+  const rangeParam = Number(data.range ?? 6);
   const rangeMonths = MONTH_RANGE_OPTIONS.includes(rangeParam) ? rangeParam : 6;
 
   const { months, start } = buildMonths(rangeMonths);
