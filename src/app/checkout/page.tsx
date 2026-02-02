@@ -1,32 +1,96 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { CheckCircle, CreditCard, Lock, ShieldCheck } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { useState, Suspense } from "react";
 
 function CheckoutContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const psychologistId = searchParams.get("psychologistId") || "";
   const doctorName = searchParams.get('doctor') || 'Dr. Sarah Thompson';
-  const date = searchParams.get('date') || 'Today';
-  const time = searchParams.get('time') || '10:00 AM';
+  const startParam = searchParams.get("start");
+  const endParam = searchParams.get("end");
+  const timeParam = searchParams.get("time") || "10:00 AM";
   const price = searchParams.get('price') || '$150';
+  const start = startParam ? new Date(startParam) : null;
+  const end = endParam ? new Date(endParam) : null;
+  const hasValidDates = Boolean(start && end && !Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime()));
+  const durationMinutes = hasValidDates ? Math.max(1, Math.round((end!.getTime() - start!.getTime()) / 60000)) : 60;
+  const dateLabel = hasValidDates
+    ? start!.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+    : "Today";
+  const timeLabel = hasValidDates
+    ? `${start!.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })} - ${end!.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}`
+    : timeParam;
 
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
-  const handlePayment = (e: React.FormEvent) => {
-      e.preventDefault();
-      setIsLoading(true);
-      // Simulate payment processing
-      setTimeout(() => {
-          setIsLoading(false);
-          alert("Payment Successful! Booking Confirmed.");
-      }, 2000);
+  const handlePayment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+
+    if (!psychologistId || !hasValidDates) {
+      setError("Missing booking details. Please go back and select a time.");
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const csrfRes = await fetch("/api/security/csrf", { credentials: "include" });
+      const csrfData = await csrfRes.json();
+      const csrfToken = csrfData?.csrfToken as string | undefined;
+
+      if (!csrfToken) {
+        setError("Unable to initialize booking. Please refresh and try again.");
+        setIsLoading(false);
+        return;
+      }
+
+      const res = await fetch("/api/appointments", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-csrf-token": csrfToken,
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          psychologistId,
+          date: start!.toISOString(),
+          startTime: start!.toISOString(),
+          endTime: end!.toISOString(),
+          duration: durationMinutes,
+          type: "VIDEO",
+        }),
+      });
+
+      if (res.status === 401) {
+        router.push("/login");
+        return;
+      }
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        setError(data?.error || "Failed to create appointment.");
+        setIsLoading(false);
+        return;
+      }
+
+      setSuccess(true);
+      setIsLoading(false);
+      router.push("/patient/dashboard/appointments");
+    } catch (err) {
+      setError("Payment failed. Please try again.");
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -75,6 +139,13 @@ function CheckoutContent() {
                             <Button disabled={isLoading} type="submit" className="w-full h-14 text-lg font-bold bg-[#FC7D45] hover:bg-[#e06935] text-white shadow-lg shadow-orange-100 rounded-xl mt-4">
                                 {isLoading ? "Processing..." : `Pay ${price}`}
                             </Button>
+
+                            {error && (
+                              <p className="text-sm text-red-500 mt-3">{error}</p>
+                            )}
+                            {success && !error && (
+                              <p className="text-sm text-emerald-600 mt-3">Payment successful. Booking confirmed.</p>
+                            )}
                             
                             <div className="flex items-center justify-center gap-2 text-sm text-slate-500 mt-4">
                                 <ShieldCheck size={16} className="text-teal-600" />
@@ -103,15 +174,15 @@ function CheckoutContent() {
                         <div className="space-y-4 mb-8">
                             <div className="flex justify-between text-slate-600">
                                 <span>Date</span>
-                                <span className="font-medium text-slate-900">{date}</span>
+                                <span className="font-medium text-slate-900">{dateLabel}</span>
                             </div>
                             <div className="flex justify-between text-slate-600">
                                 <span>Time</span>
-                                <span className="font-medium text-slate-900">{time}</span>
+                                <span className="font-medium text-slate-900">{timeLabel}</span>
                             </div>
                              <div className="flex justify-between text-slate-600">
                                 <span>Duration</span>
-                                <span className="font-medium text-slate-900">50 mins</span>
+                                <span className="font-medium text-slate-900">{durationMinutes} mins</span>
                             </div>
                         </div>
 

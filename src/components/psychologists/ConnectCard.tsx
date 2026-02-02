@@ -19,6 +19,17 @@ export default function ConnectCard({ therapist }: ConnectCardProps) {
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [time, setTime] = useState<string | undefined>(undefined);
 
+  const buildStartTime = (selectedDate: Date, selectedTime: string) => {
+    const [timePart, meridiem] = selectedTime.split(" ");
+    const [rawHours, rawMinutes] = timePart.split(":").map(Number);
+    let hours = rawHours;
+    if (meridiem === "PM" && hours < 12) hours += 12;
+    if (meridiem === "AM" && hours === 12) hours = 0;
+    const start = new Date(selectedDate);
+    start.setHours(hours, rawMinutes, 0, 0);
+    return start;
+  };
+
   const handleSlotSelect = (d: Date, t: string) => {
       setDate(d);
       setTime(t);
@@ -85,7 +96,9 @@ export default function ConnectCard({ therapist }: ConnectCardProps) {
                                 onClick={() => {
                                     if (date && time) {
                                         const price = therapist.priceRange?.split(' ')[0] || '$50';
-                                        router.push(`/checkout?doctor=${encodeURIComponent(therapist.name || 'Therapist')}&date=${encodeURIComponent(date.toLocaleDateString())}&time=${encodeURIComponent(time)}&price=${encodeURIComponent(price)}`);
+                                        const start = buildStartTime(date, time);
+                                        const end = new Date(start.getTime() + 60 * 60 * 1000);
+                                        router.push(`/checkout?psychologistId=${encodeURIComponent(therapist.id)}&doctor=${encodeURIComponent(therapist.name || 'Therapist')}&start=${encodeURIComponent(start.toISOString())}&end=${encodeURIComponent(end.toISOString())}&time=${encodeURIComponent(time)}&price=${encodeURIComponent(price)}`);
                                     }
                                 }}
                                 className="w-full h-12 text-base font-bold bg-[#FC7D45] hover:bg-[#e06935] text-white shadow-lg shadow-orange-100 rounded-xl disabled:opacity-50 disabled:shadow-none"
