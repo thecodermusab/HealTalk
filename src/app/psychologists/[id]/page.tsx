@@ -1,4 +1,3 @@
-import { psychologists } from "@/lib/mock-data";
 import ProfileHeaderCard from "@/components/psychologists/ProfileHeaderCard";
 import ConnectCard from "@/components/psychologists/ConnectCard";
 import MobileBookingBar from "@/components/psychologists/MobileBookingBar";
@@ -16,15 +15,60 @@ interface PageProps {
   }>;
 }
 
-export async function generateStaticParams() {
-  return psychologists.map((psych) => ({
-    id: psych.id,
-  }));
+async function getPsychologist(id: string) {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const res = await fetch(`${baseUrl}/api/psychologists/${id}`, {
+      cache: 'no-store',
+    });
+
+    if (!res.ok) {
+      return null;
+    }
+
+    const psychologist = await res.json();
+
+    // Transform API data to match component expectations
+    return {
+      id: psychologist.id,
+      name: psychologist.user.name,
+      title: psychologist.credentials,
+      image: psychologist.user.image || 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=300&h=300',
+      verified: true,
+      rating: psychologist.rating,
+      reviewCount: psychologist.reviewCount,
+      location: psychologist.hospital?.location || 'Remote',
+      priceRange: `$${(psychologist.price60 / 100).toFixed(0)} - $${(psychologist.price90 / 100).toFixed(0)}`,
+      languages: ['English'], // Default since not in DB yet
+      conditions: psychologist.specializations,
+      about: psychologist.bio,
+      experience: psychologist.experience,
+      sessionDuration: '50 min',
+      nextAvailable: 'Tomorrow',
+      licenseNumber: psychologist.licenseNumber,
+      highlights: [
+        { icon: "Video", label: "Available Online", color: "bg-green-100 text-green-800" },
+        { icon: "Star", label: "Top Choice", color: "bg-teal-100 text-teal-800" }
+      ],
+      photos: ['https://images.unsplash.com/photo-1516357231954-91487b459602?auto=format&fit=crop&q=80&w=600&h=400'],
+      insurances: ['Aetna', 'BlueCross', 'Cigna'],
+      testimonials: [],
+      education: [
+        { degree: 'PhD in Clinical Psychology', school: 'University', year: '2005' }
+      ],
+      qualifications: [
+        { name: 'Licensed Psychologist', issuer: 'State Board' }
+      ],
+    };
+  } catch (error) {
+    console.error('Error fetching psychologist:', error);
+    return null;
+  }
 }
 
 export default async function PsychologistProfilePage({ params }: PageProps) {
   const { id } = await params;
-  const therapist = psychologists.find((p) => p.id === id);
+  const therapist = await getPsychologist(id);
 
   if (!therapist) {
     return (
