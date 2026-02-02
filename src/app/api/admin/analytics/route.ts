@@ -1,0 +1,154 @@
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+
+const MONTH_RANGE_OPTIONS = [6, 12];
+
+const getMonthKey = (date: Date) =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+
+const buildMonths = (count: number) => {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth() - (count - 1), 1);
+  const months = [] as Array<{
+    key: string;
+    label: string;
+    appointments: number;
+    revenue: number;
+    users: number;
+    patients: number;
+    psychologists: number;
+  }>;
+
+  for (let i = 0; i < count; i += 1) {
+    const date = new Date(start.getFullYear(), start.getMonth() + i, 1);
+    months.push({
+      key: getMonthKey(date),
+      label: date.toLocaleDateString("en-US", {
+        month: "short",
+        year: "numeric",
+      }),
+      appointments: 0,
+      revenue: 0,
+      users: 0,
+      patients: 0,
+      psychologists: 0,
+    });
+  }
+
+  return { months, start };
+};
+
+export async function GET(request: Request) {
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (session.user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const { searchParams } = new URL(request.url);
+  const rangeParam = Number(searchParams.get("range") || "6");
+  const rangeMonths = MONTH_RANGE_OPTIONS.includes(rangeParam) ? rangeParam : 6;
+
+  const { months, start } = buildMonths(rangeMonths);
+  const monthMap = new Map(months.map((month) => [month.key, month]));
+
+  const [
+    appointments,
+    payments,
+    users,
+    totalAppointments,
+    totalRevenue,
+    totalUsers,
+    totalPatients,
+    totalPsychologists,
+    topGroups,
+  ] = await Promise.all([
+    prisma.appointment.findMany({
+      where: { startTime: { gte: start } },
+      select: { startTime: true },
+    }),
+    prisma.payment.findMany({
+      where: { status: "PAID", createdAt: { gte: start } },
+      select: { amount: true, createdAt: true },
+    }),
+    prisma.user.findMany({
+      where: {
+        role: { in: ["PATIENT", "PSYCHOLOGIST"] },
+        createdAt: { gte: start },
+      },
+      select: { createdAt: true, role: true },
+    }),
+    prisma.appointment.count(),
+    prisma.payment.aggregate({
+      where: { status: "PAID" },
+      _sum: { amount: true },
+    }),
+    prisma.user.count({ where: { role: { in: ["PATIENT", "PSYCHOLOGIST"] } } }),
+    prisma.user.count({ where: { role: "PATIENT" } }),
+    prisma.user.count({ where: { role: "PSYCHOLOGIST" } }),
+    prisma.appointment.groupBy({
+      by: ["psychologistId"],
+      where: { startTime: { gte: start } },
+      _count: { _all: true },
+      orderBy: { _count: { _all: "desc" } },
+      take: 5,
+    }),
+  ]);
+
+  appointments.forEach((appointment) => {
+    const key = getMonthKey(appointment.startTime);
+    const bucket = monthMap.get(key);
+    if (bucket) bucket.appointments += 1;
+  });
+
+  payments.forEach((payment) => {
+    const key = getMonthKey(payment.createdAt);
+    const bucket = monthMap.get(key);
+    if (bucket) bucket.revenue += payment.amount || 0;
+  });
+
+  users.forEach((user) => {
+    const key = getMonthKey(user.createdAt);
+    const bucket = monthMap.get(key);
+    if (!bucket) return;
+    bucket.users += 1;
+    if (user.role === "PATIENT") bucket.patients += 1;
+    if (user.role === "PSYCHOLOGIST") bucket.psychologists += 1;
+  });
+
+  const psychologistIds = topGroups.map((group) => group.psychologistId);
+  const psychologists = psychologistIds.length
+    ? await prisma.psychologist.findMany({
+        where: { id: { in: psychologistIds } },
+        select: { id: true, user: { select: { name: true } } },
+      })
+    : [];
+  const psychologistMap = new Map(
+    psychologists.map((item) => [item.id, item.user?.name || "Psychologist"])
+  );
+
+  const topPsychologists = topGroups.map((group) => ({
+    id: group.psychologistId,
+    name: psychologistMap.get(group.psychologistId) || "Psychologist",
+    appointments: group._count._all,
+  }));
+
+  return NextResponse.json({
+    rangeMonths,
+    months,
+    totals: {
+      totalAppointments,
+      totalRevenue: totalRevenue._sum.amount ?? 0,
+      totalUsers,
+      totalPatients,
+      totalPsychologists,
+    },
+    topPsychologists,
+  });
+}

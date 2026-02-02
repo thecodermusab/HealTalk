@@ -49,17 +49,25 @@ export default function AdminDashboardHome() {
     <DashboardLayout>
       <div className="space-y-6">
         {/* Page Header */}
-        <div className="mb-2">
-          <h1 className="text-3xl font-bold text-gray-900 mb-1">
-            Admin Dashboard
-          </h1>
-          <p className="text-gray-500">Platform overview and management</p>
-          {isLoading && (
-            <p className="text-sm text-gray-400 mt-2">Loading metrics...</p>
-          )}
-          {error && (
-            <p className="text-sm text-red-500 mt-2">{error}</p>
-          )}
+        <div className="mb-2 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-1">
+              Admin Dashboard
+            </h1>
+            <p className="text-gray-500">Platform overview and management</p>
+            {isLoading && (
+              <p className="text-sm text-gray-400 mt-2">Loading metrics...</p>
+            )}
+            {error && (
+              <p className="text-sm text-red-500 mt-2">{error}</p>
+            )}
+          </div>
+          <Link
+            href="/admin/dashboard/reports"
+            className="inline-flex items-center justify-center rounded-full bg-[#5B6CFF] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#4a5ae0]"
+          >
+            View Reports
+          </Link>
         </div>
 
         {/* Stats Grid */}
