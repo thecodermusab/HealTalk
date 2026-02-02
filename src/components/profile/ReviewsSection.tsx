@@ -5,11 +5,11 @@ import { Star, ThumbsUp, ThumbsDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface ReviewsSectionProps {
-  psychologistId: number;
+  psychologistId: string | number;
   rating: number;
   reviewCount: number;
   reviews: Array<{
-    id: number;
+    id: string | number;
     patientName: string;
     rating: number;
     date: string;

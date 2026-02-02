@@ -1,24 +1,41 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, CreditCard, Lock } from "lucide-react";
 
 interface BookingWidgetProps {
   price: number;
+  psychologistId: string;
+  psychologistName: string;
 }
 
-export default function BookingWidget({ price }: BookingWidgetProps) {
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+export default function BookingWidget({ price, psychologistId, psychologistName }: BookingWidgetProps) {
+  const router = useRouter();
+  const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [sessionDuration, setSessionDuration] = useState("60");
   const [sessionType, setSessionType] = useState("first");
+  const [error, setError] = useState<string | null>(null);
 
   const availableTimes = [
     "10:00 AM - 11:00 AM",
     "2:00 PM - 3:00 PM",
     "4:30 PM - 5:30 PM"
   ];
+
+  const buildDateTime = (dateValue: string, timeValue: string) => {
+    const [timePart, meridiem] = timeValue.split(" ");
+    const [rawHours, rawMinutes] = timePart.split(":").map(Number);
+    let hours = rawHours;
+    if (meridiem === "PM" && hours < 12) hours += 12;
+    if (meridiem === "AM" && hours === 12) hours = 0;
+    const [year, month, day] = dateValue.split("-").map(Number);
+    const date = new Date(year, month - 1, day);
+    date.setHours(hours, rawMinutes, 0, 0);
+    return date;
+  };
 
   return (
     <div className="bg-card border-2 border-primary rounded-2xl p-6 shadow-lg sticky top-24">
@@ -32,10 +49,14 @@ export default function BookingWidget({ price }: BookingWidgetProps) {
           Select Date:
         </label>
         <div className="border border-border rounded-lg p-4 bg-background">
-          <div className="text-center text-text-secondary">
-            <Calendar className="mx-auto mb-2" size={32} />
-            <p className="text-sm">Calendar Component</p>
-            <p className="text-xs">Click to select a date</p>
+          <div className="flex items-center gap-3 text-text-secondary">
+            <Calendar size={18} />
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(event) => setSelectedDate(event.target.value)}
+              className="w-full bg-transparent outline-none text-sm text-foreground"
+            />
           </div>
         </div>
       </div>
@@ -137,9 +158,42 @@ export default function BookingWidget({ price }: BookingWidgetProps) {
       </div>
 
       {/* Confirm Button */}
-      <Button className="w-full bg-primary hover:bg-primary/90 text-black h-12 text-lg mb-4">
+      <Button
+        className="w-full bg-primary hover:bg-primary/90 text-black h-12 text-lg mb-4"
+        onClick={() => {
+          setError(null);
+          if (!selectedDate || !selectedTime) {
+            setError("Please select a date and time.");
+            return;
+          }
+
+          const [startLabel, endLabel] = selectedTime.split(" - ");
+          const start = buildDateTime(selectedDate, startLabel);
+          const end = endLabel
+            ? buildDateTime(selectedDate, endLabel)
+            : new Date(start.getTime() + Number(sessionDuration) * 60 * 1000);
+
+          if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+            setError("Invalid date or time selection.");
+            return;
+          }
+
+          router.push(
+            `/checkout?psychologistId=${encodeURIComponent(
+              psychologistId
+            )}&doctor=${encodeURIComponent(
+              psychologistName
+            )}&start=${encodeURIComponent(
+              start.toISOString()
+            )}&end=${encodeURIComponent(
+              end.toISOString()
+            )}&time=${encodeURIComponent(selectedTime)}&price=${encodeURIComponent(`₺${price}`)}`
+          );
+        }}
+      >
         Confirm Booking
       </Button>
+      {error && <p className="text-sm text-red-500 mb-4">{error}</p>}
 
       {/* Security Badges */}
       <div className="space-y-2 text-sm text-text-secondary">

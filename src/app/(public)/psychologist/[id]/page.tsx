@@ -33,7 +33,7 @@ async function getPsychologistData(id: string) {
     // Transform API data to match component expectations
     return {
       psychologist: {
-        id: parseInt(id), // Keep as number for component compatibility
+        id: data.id,
         name: data.user.name,
         credentials: data.credentials,
         specialty: data.specializations[0] || 'Clinical Psychologist',
@@ -58,7 +58,7 @@ async function getPsychologistData(id: string) {
       },
       reviews: data.reviews.map((review: any) => ({
         id: review.id,
-        psychologistId: parseInt(id),
+        psychologistId: data.id,
         patientName: review.patient.user.name,
         patientImage: review.patient.user.image || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=300&h=300',
         rating: review.rating,
@@ -104,7 +104,11 @@ export default async function PsychologistProfilePage({ params }: PageProps) {
 
           {/* Right Column - Booking Widget */}
           <div className="lg:col-span-1">
-            <BookingWidget price={psychologist.price} />
+            <BookingWidget
+              price={psychologist.price}
+              psychologistId={psychologist.id}
+              psychologistName={psychologist.name}
+            />
           </div>
         </div>
       </div>
