@@ -7,6 +7,7 @@ import { z } from "zod";
 import { parseJson } from "@/lib/validation";
 import { requireRateLimit } from "@/lib/rate-limit";
 import { validateCsrf } from "@/lib/csrf";
+import { createAuditLog } from "@/lib/audit";
 
 const registerSchema = z
   .object({
@@ -134,6 +135,14 @@ export async function POST(request: Request) {
         email: true,
         role: true,
       },
+    });
+
+    await createAuditLog({
+      actorId: user.id,
+      action: "AUTH_REGISTER",
+      targetType: "User",
+      targetId: user.id,
+      metadata: { role: user.role },
     });
 
     const appUrl =

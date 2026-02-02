@@ -6,6 +6,7 @@ import { z } from "zod";
 import { parseJson } from "@/lib/validation";
 import { requireRateLimit } from "@/lib/rate-limit";
 import { validateCsrf } from "@/lib/csrf";
+import { createAuditLog } from "@/lib/audit";
 
 const forgotPasswordSchema = z.object({
   email: z.string().email(),
@@ -34,6 +35,13 @@ export async function POST(req: Request) {
     if (!user) {
          return NextResponse.json({ message: "If an account exists, a reset link has been sent." }, { status: 200 });
     }
+
+    await createAuditLog({
+      actorId: user.id,
+      action: "AUTH_PASSWORD_RESET_REQUEST",
+      targetType: "User",
+      targetId: user.id,
+    });
 
     // Generate token
     const rawToken = createToken("reset");

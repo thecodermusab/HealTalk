@@ -6,6 +6,7 @@ import { z } from "zod";
 import { parseJson } from "@/lib/validation";
 import { requireRateLimit } from "@/lib/rate-limit";
 import { validateCsrf } from "@/lib/csrf";
+import { createAuditLog } from "@/lib/audit";
 
 const updateSchema = z.object({
   status: z.enum(["PENDING", "APPROVED", "REJECTED", "SUSPENDED"]),
@@ -85,6 +86,17 @@ export async function PATCH(
       approvedAt: true,
       rejectedAt: true,
       rejectionReason: true,
+    },
+  });
+
+  await createAuditLog({
+    actorId: session.user.id,
+    action: "ADMIN_PSYCHOLOGIST_UPDATE",
+    targetType: "Psychologist",
+    targetId: updated.id,
+    metadata: {
+      status: updated.status,
+      rejectionReason: updated.rejectionReason ?? null,
     },
   });
 

@@ -6,6 +6,7 @@ import { z } from "zod";
 import { parseJson } from "@/lib/validation";
 import { requireRateLimit } from "@/lib/rate-limit";
 import { validateCsrf } from "@/lib/csrf";
+import { createAuditLog } from "@/lib/audit";
 
 const updateSchema = z.object({
   published: z.boolean(),
@@ -53,6 +54,14 @@ export async function PATCH(
     where: { id: params.id },
     data: { published },
     select: { id: true, published: true },
+  });
+
+  await createAuditLog({
+    actorId: session.user.id,
+    action: "ADMIN_BLOG_PUBLISH",
+    targetType: "BlogPost",
+    targetId: updated.id,
+    metadata: { published: updated.published },
   });
 
   return NextResponse.json(updated);

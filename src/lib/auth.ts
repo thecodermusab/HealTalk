@@ -4,6 +4,7 @@ import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { createAuditLog } from "@/lib/audit";
 
 const normalizeEmail = (value?: string | null) =>
   value?.trim().toLowerCase();
@@ -208,6 +209,16 @@ export const authOptions: NextAuthOptions = {
             });
           }
         }
+      }
+
+      if (user?.id) {
+        await createAuditLog({
+          actorId: user.id,
+          action: "AUTH_LOGIN",
+          targetType: "User",
+          targetId: user.id,
+          metadata: { provider: account?.provider ?? "unknown" },
+        });
       }
 
       return true;

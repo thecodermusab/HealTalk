@@ -4,6 +4,7 @@ import { hashToken, parseIdentifier } from "@/lib/tokens";
 import { z } from "zod";
 import { parseSearchParams } from "@/lib/validation";
 import { requireRateLimit } from "@/lib/rate-limit";
+import { createAuditLog } from "@/lib/audit";
 
 const verifyEmailSchema = z.object({
   token: z.string().min(1),
@@ -65,6 +66,13 @@ export async function GET(request: NextRequest) {
     await prisma.user.update({
       where: { id: user.id },
       data: { emailVerified: new Date() },
+    });
+
+    await createAuditLog({
+      actorId: user.id,
+      action: "AUTH_EMAIL_VERIFY",
+      targetType: "User",
+      targetId: user.id,
     });
 
     await prisma.verificationToken.delete({

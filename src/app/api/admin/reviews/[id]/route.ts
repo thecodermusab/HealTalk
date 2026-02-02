@@ -6,6 +6,7 @@ import { z } from "zod";
 import { parseJson } from "@/lib/validation";
 import { requireRateLimit } from "@/lib/rate-limit";
 import { validateCsrf } from "@/lib/csrf";
+import { createAuditLog } from "@/lib/audit";
 
 const updateSchema = z.object({
   status: z.enum(["APPROVED", "PENDING", "REJECTED"]),
@@ -62,6 +63,14 @@ export async function PATCH(
     },
   });
 
+  await createAuditLog({
+    actorId: session.user.id,
+    action: "ADMIN_REVIEW_UPDATE",
+    targetType: "Review",
+    targetId: updated.id,
+    metadata: { status: updated.status },
+  });
+
   return NextResponse.json(updated);
 }
 
@@ -91,6 +100,13 @@ export async function DELETE(
   if (csrfError) return csrfError;
 
   await prisma.review.delete({ where: { id: params.id } });
+
+  await createAuditLog({
+    actorId: session.user.id,
+    action: "ADMIN_REVIEW_DELETE",
+    targetType: "Review",
+    targetId: params.id,
+  });
 
   return NextResponse.json({ ok: true });
 }

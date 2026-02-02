@@ -6,6 +6,7 @@ import { z } from "zod";
 import { parseJson } from "@/lib/validation";
 import { requireRateLimit } from "@/lib/rate-limit";
 import { validateCsrf } from "@/lib/csrf";
+import { createAuditLog } from "@/lib/audit";
 
 const ALLOWED_ROLES = ["PATIENT", "PSYCHOLOGIST", "ADMIN"];
 const ALLOWED_STATUSES = ["ACTIVE", "SUSPENDED", "BANNED"];
@@ -108,6 +109,17 @@ export async function PATCH(
     },
   });
 
+  await createAuditLog({
+    actorId: session.user.id,
+    action: "ADMIN_USER_UPDATE",
+    targetType: "User",
+    targetId: updated.id,
+    metadata: {
+      role: updated.role,
+      status: updated.status,
+    },
+  });
+
   return NextResponse.json(updated);
 }
 
@@ -137,6 +149,13 @@ export async function DELETE(
   if (csrfError) return csrfError;
 
   await prisma.user.delete({ where: { id: params.id } });
+
+  await createAuditLog({
+    actorId: session.user.id,
+    action: "ADMIN_USER_DELETE",
+    targetType: "User",
+    targetId: params.id,
+  });
 
   return NextResponse.json({ ok: true });
 }

@@ -11,6 +11,7 @@ import { z } from "zod";
 import { parseJson } from "@/lib/validation";
 import { requireRateLimit } from "@/lib/rate-limit";
 import { validateCsrf } from "@/lib/csrf";
+import { createAuditLog } from "@/lib/audit";
 
 const updateAppointmentSchema = z.object({
   status: z.enum(["SCHEDULED", "COMPLETED", "CANCELLED", "NO_SHOW"]).optional(),
@@ -119,6 +120,19 @@ export async function PATCH(
       psychologist: {
         include: { user: { select: { name: true, email: true } } },
       },
+    },
+  });
+
+  await createAuditLog({
+    actorId: session.user.id,
+    action: "APPOINTMENT_UPDATE",
+    targetType: "Appointment",
+    targetId: updated.id,
+    metadata: {
+      status: updateData.status ?? null,
+      startTime: updateData.startTime?.toISOString() ?? null,
+      endTime: updateData.endTime?.toISOString() ?? null,
+      date: updateData.date?.toISOString() ?? null,
     },
   });
 

@@ -6,6 +6,7 @@ import { z } from "zod";
 import { parseJson } from "@/lib/validation";
 import { requireRateLimit } from "@/lib/rate-limit";
 import { validateCsrf } from "@/lib/csrf";
+import { createAuditLog } from "@/lib/audit";
 
 const resetPasswordSchema = z.object({
   token: z.string().min(1),
@@ -70,6 +71,13 @@ export async function POST(req: Request) {
     await prisma.user.update({
         where: { id: user.id },
         data: { password: hashedPassword }
+    });
+
+    await createAuditLog({
+      actorId: user.id,
+      action: "AUTH_PASSWORD_RESET",
+      targetType: "User",
+      targetId: user.id,
     });
 
     // Delete Token
