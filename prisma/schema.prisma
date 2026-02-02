@@ -106,6 +106,8 @@ model Psychologist {
   reviewCount    Int      @default(0)
   status         PsychologistStatus @default(PENDING)
   approvedAt     DateTime?
+  rejectedAt     DateTime?
+  rejectionReason String? @db.Text
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -122,6 +124,7 @@ model Psychologist {
 enum PsychologistStatus {
   PENDING
   APPROVED
+  REJECTED
   SUSPENDED
 }
 
