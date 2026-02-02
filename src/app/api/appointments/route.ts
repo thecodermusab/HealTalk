@@ -43,6 +43,7 @@ export async function GET(request: Request) {
               },
               hospital: true,
             },
+            // Include credentials field for display on UI
           },
         },
         orderBy: { startTime: "desc" },

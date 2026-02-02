@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import {
   LayoutDashboard,
   CalendarDays,
@@ -14,6 +14,26 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+
+const roleLabels = {
+  PATIENT: "Patient",
+  PSYCHOLOGIST: "Psychologist",
+  ADMIN: "Administrator",
+};
+
+const splitName = (value: string) => {
+  const trimmed = value.trim();
+  if (!trimmed) return { firstName: "", lastName: "" };
+  const parts = trimmed.split(" ").filter(Boolean);
+  if (parts.length === 1) return { firstName: parts[0], lastName: "" };
+  const lastName = parts.pop() || "";
+  return { firstName: parts.join(" "), lastName };
+};
+
+const getInitials = (firstName: string, lastName: string) => {
+  const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`.trim();
+  return initials ? initials.toUpperCase() : "U";
+};
 
 
 const psychologistNavItems = [
@@ -43,12 +63,18 @@ const adminNavItems = [
 
 export function NewSidebar() {
   const pathname = usePathname();
+  const { data: session } = useSession();
   const isPatient = pathname?.startsWith("/patient");
   const isAdmin = pathname?.startsWith("/admin");
   
   let navItems = psychologistNavItems;
   if (isPatient) navItems = patientNavItems;
   if (isAdmin) navItems = adminNavItems;
+
+  const userName = session?.user?.name || session?.user?.email || "User";
+  const { firstName, lastName } = splitName(userName);
+  const userRole = session?.user?.role || "PATIENT";
+  const roleLabel = roleLabels[userRole as keyof typeof roleLabels] || "User";
 
   return (
     <aside className="w-[260px] h-screen fixed left-0 top-0 bg-white border-r border-[#E6EAF2] flex flex-col z-30 hidden lg:flex">
@@ -87,11 +113,13 @@ export function NewSidebar() {
       <div className="p-4 border-t border-[#E6EAF2]">
         <div className="flex items-center gap-3 w-full p-2 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer group">
           <Avatar className="h-10 w-10 border border-gray-200">
-            <AvatarFallback className="bg-[#364a60] text-white font-medium">N</AvatarFallback>
+            <AvatarFallback className="bg-[#364a60] text-white font-medium">
+              {getInitials(firstName, lastName)}
+            </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-gray-900 truncate">Dr. N...</p>
-            <p className="text-xs text-gray-500 truncate">Psychologist</p>
+            <p className="text-sm font-semibold text-gray-900 truncate">{userName}</p>
+            <p className="text-xs text-gray-500 truncate">{roleLabel}</p>
           </div>
           <button 
             className="text-gray-400 hover:text-red-600 transition-colors p-1 rounded-md hover:bg-red-50"

@@ -1,6 +1,7 @@
 "use client";
 
 import { Search, Bell, Menu } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -9,7 +10,33 @@ interface NewHeaderProps {
     onMobileMenuClick: () => void;
 }
 
+const roleLabels = {
+  PATIENT: "Patient",
+  PSYCHOLOGIST: "Psychologist",
+  ADMIN: "Administrator",
+};
+
+const splitName = (value: string) => {
+  const trimmed = value.trim();
+  if (!trimmed) return { firstName: "", lastName: "" };
+  const parts = trimmed.split(" ").filter(Boolean);
+  if (parts.length === 1) return { firstName: parts[0], lastName: "" };
+  const lastName = parts.pop() || "";
+  return { firstName: parts.join(" "), lastName };
+};
+
+const getInitials = (firstName: string, lastName: string) => {
+  const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`.trim();
+  return initials ? initials.toUpperCase() : "U";
+};
+
 export function NewHeader({ onMobileMenuClick }: NewHeaderProps) {
+  const { data: session } = useSession();
+  const userName = session?.user?.name || session?.user?.email || "User";
+  const { firstName, lastName } = splitName(userName);
+  const userRole = session?.user?.role || "PATIENT";
+  const roleLabel = roleLabels[userRole as keyof typeof roleLabels] || "User";
+
   return (
     <header className="h-[72px] bg-white border-b border-[#E6EAF2] flex items-center justify-between px-6 sticky top-0 z-20">
       
@@ -44,12 +71,14 @@ export function NewHeader({ onMobileMenuClick }: NewHeaderProps) {
         {/* Profile Block */}
         <div className="hidden md:flex items-center gap-3 pl-2 border-l border-gray-100">
            <Avatar className="w-10 h-10 border border-gray-100">
-             <AvatarImage src="/images/Me.png" />
-             <AvatarFallback className="bg-[#5B6CFF] text-white">DY</AvatarFallback>
+             <AvatarImage src={session?.user?.image || undefined} />
+             <AvatarFallback className="bg-[#5B6CFF] text-white">
+               {getInitials(firstName, lastName)}
+             </AvatarFallback>
            </Avatar>
            <div className="flex flex-col">
-             <span className="text-sm font-semibold text-gray-900 leading-none">Dr. Ahmet Yılmaz</span>
-             <span className="text-xs text-gray-500 mt-1">Psychotherapist</span>
+             <span className="text-sm font-semibold text-gray-900 leading-none">{userName}</span>
+             <span className="text-xs text-gray-500 mt-1">{roleLabel}</span>
            </div>
         </div>
       </div>

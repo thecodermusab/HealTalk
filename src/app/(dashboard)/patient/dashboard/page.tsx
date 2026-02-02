@@ -5,8 +5,17 @@ import { PatientUpcomingAppointments } from "@/components/dashboard/patient/Pati
 import { PatientQuickActions } from "@/components/dashboard/patient/PatientQuickActions";
 import { PatientRecentActivity } from "@/components/dashboard/patient/PatientRecentActivity";
 import { PatientNextAppointmentCard } from "@/components/dashboard/patient/PatientNextAppointmentCard";
+import { useSession } from "next-auth/react";
+
+const getFirstName = (value?: string | null) => {
+  if (!value) return "there";
+  return value.trim().split(" ")[0] || "there";
+};
 
 export default function PatientDashboardHome() {
+  const { data: session } = useSession();
+  const firstName = getFirstName(session?.user?.name || session?.user?.email);
+
   return (
     <DashboardLayout>
 
@@ -14,8 +23,8 @@ export default function PatientDashboardHome() {
         
         {/* Welcome Header */}
         <div>
-           <h1 className="text-2xl font-bold text-gray-900">Welcome Back, John! 👋</h1>
-           <p className="text-gray-500 text-sm">Here's what's happening with your mental health journey.</p>
+           <h1 className="text-2xl font-bold text-gray-900">Welcome back, {firstName}! 👋</h1>
+           <p className="text-gray-500 text-sm">Here&apos;s what&apos;s happening with your mental health journey.</p>
         </div>
 
         {/* TOP ROW: Quick Actions (Left) + Next Appointment (Right) */}

@@ -8,26 +8,32 @@ import bcrypt from "bcryptjs";
 const normalizeEmail = (value?: string | null) =>
   value?.trim().toLowerCase();
 
-const bootstrapUsers = [
-  {
-    role: "PSYCHOLOGIST" as const,
-    name: "Dr. Ahmet Yılmaz",
-    email: normalizeEmail(process.env.PSYCHOLOGIST_EMAIL) || "ahmet@example.com",
-    password: process.env.PSYCHOLOGIST_PASSWORD || "password123",
-  },
-  {
-    role: "PATIENT" as const,
-    name: "John Doe",
-    email: normalizeEmail(process.env.PATIENT_EMAIL) || "john@example.com",
-    password: process.env.PATIENT_PASSWORD || "password123",
-  },
-  {
-    role: "ADMIN" as const,
-    name: "Admin User",
-    email: normalizeEmail(process.env.ADMIN_EMAIL) || "admin@example.com",
-    password: process.env.ADMIN_PASSWORD || "password123",
-  },
-];
+// Bootstrap users for development/demo only
+// Set ENABLE_BOOTSTRAP_USERS=false in production .env to disable
+const ENABLE_BOOTSTRAP = process.env.ENABLE_BOOTSTRAP_USERS !== "false";
+
+const bootstrapUsers = ENABLE_BOOTSTRAP
+  ? [
+      {
+        role: "PSYCHOLOGIST" as const,
+        name: "Dr. Ahmet Yılmaz",
+        email: normalizeEmail(process.env.PSYCHOLOGIST_EMAIL) || "ahmet@example.com",
+        password: process.env.PSYCHOLOGIST_PASSWORD || "password123",
+      },
+      {
+        role: "PATIENT" as const,
+        name: "John Doe",
+        email: normalizeEmail(process.env.PATIENT_EMAIL) || "john@example.com",
+        password: process.env.PATIENT_PASSWORD || "password123",
+      },
+      {
+        role: "ADMIN" as const,
+        name: "Admin User",
+        email: normalizeEmail(process.env.ADMIN_EMAIL) || "admin@example.com",
+        password: process.env.ADMIN_PASSWORD || "password123",
+      },
+    ]
+  : [];
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -162,11 +168,35 @@ export const authOptions: NextAuthOptions = {
         }
       }
 
-      if (account?.provider === "google" && user?.id && !user.emailVerified) {
-        await prisma.user.updateMany({
+      // Handle Google OAuth - auto-verify email and create Patient profile
+      if (account?.provider === "google" && user?.id) {
+        const dbUser = await prisma.user.findUnique({
           where: { id: user.id },
-          data: { emailVerified: new Date() },
+          include: { patient: true, psychologist: true, admin: true },
         });
+
+        if (dbUser) {
+          // Auto-verify email for Google OAuth users
+          if (!dbUser.emailVerified) {
+            await prisma.user.update({
+              where: { id: user.id },
+              data: { emailVerified: new Date() },
+            });
+          }
+
+          // Create Patient profile if user has no role-specific profile
+          if (!dbUser.patient && !dbUser.psychologist && !dbUser.admin) {
+            await prisma.patient.create({
+              data: { userId: user.id },
+            });
+
+            // Update user role to PATIENT
+            await prisma.user.update({
+              where: { id: user.id },
+              data: { role: "PATIENT" },
+            });
+          }
+        }
       }
 
       return true;

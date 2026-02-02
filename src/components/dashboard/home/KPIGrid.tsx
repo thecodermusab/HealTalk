@@ -1,72 +1,101 @@
 "use client";
 
-import { Users, Calendar, Clock, UserPlus, UserMinus, Activity } from "lucide-react";
+import { Users, Calendar, CheckCircle, UserMinus, Activity, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const stats = [
-  {
-    label: "Total Counselling",
-    value: "2.9K",
-    trend: "+5.6%",
-    trendUp: true,
-    last: "Last year",
-    icon: Users,
-    color: "text-[#5B6CFF]",
-    bg: "bg-[#EEF0FF]",
-  },
-  {
-    label: "Overall Booking",
-    value: "3.2K",
-    trend: "-0.2%",
-    trendUp: false,
-    last: "Last year",
-    icon: Calendar,
-    color: "text-[#20C997]",
-    bg: "bg-[#E6F8F3]",
-  },
-  {
-    label: "New Appointments",
-    value: "254",
-    trend: "-4.0%",
-    trendUp: false,
-    last: "Last year",
-    icon: UserPlus,
-    color: "text-[#FF9F43]",
-    bg: "bg-[#FFF5EB]",
-  },
-  {
-    label: "Canceled Appointments",
-    value: "31",
-    trend: "+2.1%",
-    trendUp: true,
-    last: "Last year",
-    icon: UserMinus,
-    color: "text-[#FF6B6B]",
-    bg: "bg-[#FFEEEE]",
-  },
-  {
-    label: "Total Visitors",
-    value: "144.7K",
-    trend: "+7.5%",
-    trendUp: true,
-    last: "Last month",
-    icon: Activity,
-    color: "text-[#20C997]",
-    bg: "bg-[#E6F8F3]",
-  },
-  {
-    label: "Appointments Today",
-    value: "08",
-    trend: "+0.01%",
-    trendUp: true,
-    last: "Last day",
-    icon: Calendar,
-    color: "text-[#5B6CFF]",
-    bg: "bg-[#EEF0FF]",
-  },
-];
+import { useAppointments } from "@/hooks/useAppointments";
 
 export function KPIGrid() {
+  const { appointments } = useAppointments();
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+
+  const totalAppointments = appointments.length;
+  const upcomingAppointments = appointments.filter(
+    (appointment) =>
+      appointment.status === "SCHEDULED" &&
+      new Date(appointment.startTime) >= now
+  ).length;
+  const completedAppointments = appointments.filter(
+    (appointment) => appointment.status === "COMPLETED"
+  ).length;
+  const cancelledAppointments = appointments.filter(
+    (appointment) =>
+      appointment.status === "CANCELLED" || appointment.status === "NO_SHOW"
+  ).length;
+  const monthAppointments = appointments.filter((appointment) => {
+    if (!appointment.createdAt) return false;
+    return new Date(appointment.createdAt) >= startOfMonth;
+  }).length;
+  const todayAppointments = appointments.filter((appointment) => {
+    const startTime = new Date(appointment.startTime);
+    return startTime >= startOfDay && startTime < endOfDay;
+  }).length;
+
+  const stats = [
+    {
+      label: "Total Appointments",
+      value: `${totalAppointments}`,
+      trend: "All time",
+      trendUp: true,
+      last: "Sessions",
+      icon: Users,
+      color: "text-[#5B6CFF]",
+      bg: "bg-[#EEF0FF]",
+    },
+    {
+      label: "Upcoming Sessions",
+      value: `${upcomingAppointments}`,
+      trend: "Scheduled",
+      trendUp: true,
+      last: "Upcoming",
+      icon: Calendar,
+      color: "text-[#20C997]",
+      bg: "bg-[#E6F8F3]",
+    },
+    {
+      label: "This Month",
+      value: `${monthAppointments}`,
+      trend: "New",
+      trendUp: true,
+      last: "Appointments",
+      icon: Activity,
+      color: "text-[#FF9F43]",
+      bg: "bg-[#FFF5EB]",
+    },
+    {
+      label: "Cancelled/No-show",
+      value: `${cancelledAppointments}`,
+      trend: "Total",
+      trendUp: false,
+      last: "Cancelled",
+      icon: UserMinus,
+      color: "text-[#FF6B6B]",
+      bg: "bg-[#FFEEEE]",
+    },
+    {
+      label: "Completed",
+      value: `${completedAppointments}`,
+      trend: "All time",
+      trendUp: true,
+      last: "Sessions",
+      icon: CheckCircle,
+      color: "text-[#20C997]",
+      bg: "bg-[#E6F8F3]",
+    },
+    {
+      label: "Appointments Today",
+      value: `${todayAppointments}`,
+      trend: "Today",
+      trendUp: true,
+      last: "Schedule",
+      icon: Clock,
+      color: "text-[#5B6CFF]",
+      bg: "bg-[#EEF0FF]",
+    },
+  ];
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
       {stats.map((stat, i) => (
