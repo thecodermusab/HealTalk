@@ -5,18 +5,23 @@ import { prisma } from "@/lib/prisma";
 import { VideoCall } from "@/components/video/VideoCall";
 
 interface CallPageProps {
-  params: { appointmentId: string };
+  params: Promise<{ appointmentId: string }>;
 }
 
 export default async function CallPage({ params }: CallPageProps) {
+  const { appointmentId } = await params;
   const session = await getServerSession(authOptions);
 
   if (!session?.user) {
     redirect("/login");
   }
 
+  if (!appointmentId) {
+    redirect("/patient/dashboard/appointments");
+  }
+
   const appointment = await prisma.appointment.findUnique({
-    where: { id: params.appointmentId },
+    where: { id: appointmentId },
     include: {
       patient: { select: { userId: true, user: { select: { name: true } } } },
       psychologist: {
