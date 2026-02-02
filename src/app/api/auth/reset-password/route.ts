@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { hashToken, parseIdentifier } from "@/lib/tokens";
 import { z } from "zod";
 import { parseJson } from "@/lib/validation";
+import { requireRateLimit } from "@/lib/rate-limit";
 
 const resetPasswordSchema = z.object({
   token: z.string().min(1),
@@ -12,6 +13,14 @@ const resetPasswordSchema = z.object({
 
 export async function POST(req: Request) {
   try {
+    const rateLimit = await requireRateLimit({
+      request: req,
+      key: "auth:reset",
+      limit: 5,
+      window: "10 m",
+    });
+    if (rateLimit) return rateLimit;
+
     const { data, error } = await parseJson(req, resetPasswordSchema);
     if (error) return error;
 

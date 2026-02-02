@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { parseJson } from "@/lib/validation";
+import { requireRateLimit } from "@/lib/rate-limit";
 
 const updateSchema = z.object({
   status: z.enum(["APPROVED", "PENDING", "REJECTED"]),
@@ -22,6 +23,14 @@ export async function PATCH(
   if (session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
+
+  const rateLimit = await requireRateLimit({
+    request,
+    key: "admin:reviews:update",
+    limit: 60,
+    window: "1 m",
+  });
+  if (rateLimit) return rateLimit;
 
   const { data, error } = await parseJson(request, updateSchema);
   if (error) return error;
@@ -53,7 +62,7 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   { params }: { params: { id: string } }
 ) {
   const session = await getServerSession(authOptions);
@@ -65,6 +74,14 @@ export async function DELETE(
   if (session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
+
+  const rateLimit = await requireRateLimit({
+    request,
+    key: "admin:reviews:delete",
+    limit: 30,
+    window: "1 m",
+  });
+  if (rateLimit) return rateLimit;
 
   await prisma.review.delete({ where: { id: params.id } });
 

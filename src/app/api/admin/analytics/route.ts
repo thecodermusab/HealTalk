@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { parseSearchParams } from "@/lib/validation";
+import { requireRateLimit } from "@/lib/rate-limit";
 
 const MONTH_RANGE_OPTIONS = [6, 12];
 const querySchema = z.object({
@@ -55,6 +56,14 @@ export async function GET(request: Request) {
   if (session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
+
+  const rateLimit = await requireRateLimit({
+    request,
+    key: "admin:analytics",
+    limit: 120,
+    window: "1 m",
+  });
+  if (rateLimit) return rateLimit;
 
   const { data, error } = parseSearchParams(request, querySchema);
   if (error) return error;

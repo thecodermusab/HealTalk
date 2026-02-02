@@ -9,6 +9,7 @@ import {
 } from "@/lib/appointment-emails";
 import { z } from "zod";
 import { parseJson } from "@/lib/validation";
+import { requireRateLimit } from "@/lib/rate-limit";
 
 const updateAppointmentSchema = z.object({
   status: z.enum(["SCHEDULED", "COMPLETED", "CANCELLED", "NO_SHOW"]).optional(),
@@ -26,6 +27,14 @@ export async function PATCH(
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const rateLimit = await requireRateLimit({
+    request,
+    key: "appointments:update",
+    limit: 60,
+    window: "1 m",
+  });
+  if (rateLimit) return rateLimit;
 
   const appointment = await prisma.appointment.findUnique({
     where: { id: params.id },

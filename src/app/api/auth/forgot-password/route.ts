@@ -4,6 +4,7 @@ import { sendEmail } from "@/lib/email";
 import { buildIdentifier, createToken, hashToken } from "@/lib/tokens";
 import { z } from "zod";
 import { parseJson } from "@/lib/validation";
+import { requireRateLimit } from "@/lib/rate-limit";
 
 const forgotPasswordSchema = z.object({
   email: z.string().email(),
@@ -11,6 +12,14 @@ const forgotPasswordSchema = z.object({
 
 export async function POST(req: Request) {
   try {
+    const rateLimit = await requireRateLimit({
+      request: req,
+      key: "auth:forgot",
+      limit: 5,
+      window: "10 m",
+    });
+    if (rateLimit) return rateLimit;
+
     const { data, error } = await parseJson(req, forgotPasswordSchema);
     if (error) return error;
 

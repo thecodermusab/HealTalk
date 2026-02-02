@@ -5,6 +5,7 @@ import { sendEmail } from "@/lib/email";
 import { buildIdentifier, createToken, hashToken } from "@/lib/tokens";
 import { z } from "zod";
 import { parseJson } from "@/lib/validation";
+import { requireRateLimit } from "@/lib/rate-limit";
 
 const registerSchema = z
   .object({
@@ -46,6 +47,14 @@ const registerSchema = z
 
 export async function POST(request: Request) {
   try {
+    const rateLimit = await requireRateLimit({
+      request,
+      key: "auth:register",
+      limit: 5,
+      window: "10 m",
+    });
+    if (rateLimit) return rateLimit;
+
     const { data, error } = await parseJson(request, registerSchema);
     if (error) return error;
 

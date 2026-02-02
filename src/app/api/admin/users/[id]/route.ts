@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { parseJson } from "@/lib/validation";
+import { requireRateLimit } from "@/lib/rate-limit";
 
 const ALLOWED_ROLES = ["PATIENT", "PSYCHOLOGIST", "ADMIN"];
 const ALLOWED_STATUSES = ["ACTIVE", "SUSPENDED", "BANNED"];
@@ -28,6 +29,14 @@ export async function PATCH(
   if (session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
+
+  const rateLimit = await requireRateLimit({
+    request,
+    key: "admin:users:update",
+    limit: 60,
+    window: "1 m",
+  });
+  if (rateLimit) return rateLimit;
 
   const { data: body, error } = await parseJson(request, updateSchema);
   if (error) return error;
@@ -99,7 +108,7 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   { params }: { params: { id: string } }
 ) {
   const session = await getServerSession(authOptions);
@@ -111,6 +120,14 @@ export async function DELETE(
   if (session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
+
+  const rateLimit = await requireRateLimit({
+    request,
+    key: "admin:users:delete",
+    limit: 30,
+    window: "1 m",
+  });
+  if (rateLimit) return rateLimit;
 
   await prisma.user.delete({ where: { id: params.id } });
 

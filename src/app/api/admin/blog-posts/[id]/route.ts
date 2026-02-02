@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { parseJson } from "@/lib/validation";
+import { requireRateLimit } from "@/lib/rate-limit";
 
 const updateSchema = z.object({
   published: z.boolean(),
@@ -22,6 +23,14 @@ export async function PATCH(
   if (session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
+
+  const rateLimit = await requireRateLimit({
+    request,
+    key: "admin:blog-posts:update",
+    limit: 60,
+    window: "1 m",
+  });
+  if (rateLimit) return rateLimit;
 
   const { data, error } = await parseJson(request, updateSchema);
   if (error) return error;

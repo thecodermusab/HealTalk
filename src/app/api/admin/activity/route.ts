@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { requireRateLimit } from "@/lib/rate-limit";
 
-export async function GET() {
+export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
 
   if (!session?.user) {
@@ -13,6 +14,14 @@ export async function GET() {
   if (session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
+
+  const rateLimit = await requireRateLimit({
+    request,
+    key: "admin:activity",
+    limit: 120,
+    window: "1 m",
+  });
+  if (rateLimit) return rateLimit;
 
   const appointments = await prisma.appointment.findMany({
     orderBy: { startTime: "desc" },

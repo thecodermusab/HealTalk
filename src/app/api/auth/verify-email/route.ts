@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { hashToken, parseIdentifier } from "@/lib/tokens";
 import { z } from "zod";
 import { parseSearchParams } from "@/lib/validation";
+import { requireRateLimit } from "@/lib/rate-limit";
 
 const verifyEmailSchema = z.object({
   token: z.string().min(1),
@@ -10,6 +11,14 @@ const verifyEmailSchema = z.object({
 
 export async function GET(request: NextRequest) {
   try {
+    const rateLimit = await requireRateLimit({
+      request,
+      key: "auth:verify",
+      limit: 20,
+      window: "10 m",
+    });
+    if (rateLimit) return rateLimit;
+
     const { data, error } = parseSearchParams(request, verifyEmailSchema);
     if (error) return error;
     const { token } = data;

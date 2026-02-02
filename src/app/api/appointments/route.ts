@@ -6,6 +6,7 @@ import { sendEmail } from "@/lib/email";
 import { appointmentConfirmationEmail } from "@/lib/appointment-emails";
 import { z } from "zod";
 import { parseJson, parseSearchParams } from "@/lib/validation";
+import { requireRateLimit } from "@/lib/rate-limit";
 
 const appointmentQuerySchema = z.object({
   status: z.enum(["SCHEDULED", "COMPLETED", "CANCELLED", "NO_SHOW"]).optional(),
@@ -29,6 +30,14 @@ export async function GET(request: Request) {
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const rateLimit = await requireRateLimit({
+      request,
+      key: "appointments:list",
+      limit: 120,
+      window: "1 m",
+    });
+    if (rateLimit) return rateLimit;
 
     const userId = (session.user as any).id;
     const { data: query, error } = parseSearchParams(request, appointmentQuerySchema);
@@ -103,6 +112,14 @@ export async function POST(request: Request) {
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const rateLimit = await requireRateLimit({
+      request,
+      key: "appointments:create",
+      limit: 30,
+      window: "1 m",
+    });
+    if (rateLimit) return rateLimit;
 
     const { data: body, error } = await parseJson(request, createAppointmentSchema);
     if (error) return error;

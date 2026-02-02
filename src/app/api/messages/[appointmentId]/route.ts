@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { parseJson } from "@/lib/validation";
+import { requireRateLimit } from "@/lib/rate-limit";
 
 const messageSchema = z.object({
   content: z.string().min(1),
@@ -19,6 +20,14 @@ export async function GET(request: Request, { params }: RouteParams) {
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const rateLimit = await requireRateLimit({
+    request,
+    key: "messages:read",
+    limit: 120,
+    window: "1 m",
+  });
+  if (rateLimit) return rateLimit;
 
   const appointment = await prisma.appointment.findUnique({
     where: { id: params.appointmentId },
@@ -76,6 +85,14 @@ export async function POST(request: Request, { params }: RouteParams) {
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const rateLimit = await requireRateLimit({
+    request,
+    key: "messages:send",
+    limit: 60,
+    window: "1 m",
+  });
+  if (rateLimit) return rateLimit;
 
   const appointment = await prisma.appointment.findUnique({
     where: { id: params.appointmentId },
