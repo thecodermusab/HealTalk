@@ -1,0 +1,36 @@
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+
+export async function GET() {
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (session.user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const appointments = await prisma.appointment.findMany({
+    orderBy: { startTime: "desc" },
+    take: 6,
+    include: {
+      patient: { select: { user: { select: { name: true } } } },
+      psychologist: { select: { user: { select: { name: true } } } },
+    },
+  });
+
+  return NextResponse.json({
+    items: appointments.map((appointment) => ({
+      id: appointment.id,
+      startTime: appointment.startTime,
+      status: appointment.status,
+      type: appointment.type,
+      patientName: appointment.patient.user?.name || "Patient",
+      psychologistName: appointment.psychologist.user?.name || "Psychologist",
+    })),
+  });
+}

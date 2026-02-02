@@ -5,6 +5,34 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Users, Building, Calendar, TrendingUp, CheckCircle, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 
+type TopPsychologist = {
+  id: string;
+  name: string;
+  appointments: number;
+};
+
+type ActivityItem = {
+  id: string;
+  startTime: string;
+  status: string;
+  type: string;
+  patientName: string;
+  psychologistName: string;
+};
+
+const formatDate = (value: string) =>
+  new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "2-digit",
+  }).format(new Date(value));
+
+const statusStyles: Record<string, string> = {
+  SCHEDULED: "bg-amber-100 text-amber-700",
+  COMPLETED: "bg-green-100 text-green-700",
+  CANCELLED: "bg-red-100 text-red-700",
+  NO_SHOW: "bg-gray-100 text-gray-700",
+};
+
 export default function AdminDashboardHome() {
   const [metrics, setMetrics] = useState({
     totalPsychologists: 0,
@@ -18,23 +46,57 @@ export default function AdminDashboardHome() {
     totalRevenue: 0,
     thisMonthRevenue: 0,
   });
+  const [topPsychologists, setTopPsychologists] = useState<TopPsychologist[]>([]);
+  const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activityError, setActivityError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadMetrics = async () => {
       setIsLoading(true);
       setError(null);
+      setActivityError(null);
       try {
-        const res = await fetch("/api/admin/metrics");
-        if (!res.ok) {
-          const data = await res.json().catch(() => null);
-          setError(data?.error || "Failed to load metrics.");
-          setIsLoading(false);
-          return;
+        const [metricsRes, analyticsRes, activityRes] = await Promise.allSettled([
+          fetch("/api/admin/metrics"),
+          fetch("/api/admin/analytics?range=6"),
+          fetch("/api/admin/activity"),
+        ]);
+
+        if (metricsRes.status === "fulfilled") {
+          const res = metricsRes.value;
+          if (res.ok) {
+            const data = await res.json();
+            setMetrics(data);
+          } else {
+            const data = await res.json().catch(() => null);
+            setError(data?.error || "Failed to load metrics.");
+          }
+        } else {
+          setError("Failed to load metrics.");
         }
-        const data = await res.json();
-        setMetrics(data);
+
+        if (analyticsRes.status === "fulfilled") {
+          const res = analyticsRes.value;
+          if (res.ok) {
+            const data = await res.json();
+            setTopPsychologists(data?.topPsychologists || []);
+          }
+        }
+
+        if (activityRes.status === "fulfilled") {
+          const res = activityRes.value;
+          if (res.ok) {
+            const data = await res.json();
+            setRecentActivity(data?.items || []);
+          } else {
+            const data = await res.json().catch(() => null);
+            setActivityError(data?.error || "Failed to load activity.");
+          }
+        } else {
+          setActivityError("Failed to load activity.");
+        }
       } catch (err) {
         setError("Failed to load metrics.");
       } finally {
@@ -176,19 +238,67 @@ export default function AdminDashboardHome() {
           <div className="bg-white border border-[#E6EAF2] rounded-[16px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)]">
             <div className="flex items-center justify-between mb-6">
                  <h3 className="text-lg font-bold text-gray-900">Top Psychologists</h3>
-                 <span className="text-xs font-bold text-[#5B6CFF] bg-[#EEF0FF] px-2 py-1 rounded">This Month</span>
+                 <span className="text-xs font-bold text-[#5B6CFF] bg-[#EEF0FF] px-2 py-1 rounded">Last 6 months</span>
             </div>
-            <div className="py-10 text-center text-sm text-gray-500">
-              No top psychologists yet.
-            </div>
+            {topPsychologists.length === 0 ? (
+              <div className="py-10 text-center text-sm text-gray-500">
+                No top psychologists yet.
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {topPsychologists.map((psychologist, index) => (
+                  <div key={psychologist.id} className="flex items-center justify-between text-sm">
+                    <div>
+                      <div className="font-semibold text-gray-900">
+                        {index + 1}. {psychologist.name}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {psychologist.appointments} appointments
+                      </div>
+                    </div>
+                    <Link
+                      href="/admin/dashboard/psychologists"
+                      className="text-xs font-semibold text-[#5B6CFF] hover:underline"
+                    >
+                      View
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Recent Activity */}
           <div className="bg-white border border-[#E6EAF2] rounded-[16px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)]">
             <h3 className="text-lg font-bold text-gray-900 mb-6">Recent Activity</h3>
-            <div className="py-10 text-center text-sm text-gray-500">
-              No recent activity yet.
-            </div>
+            {activityError && (
+              <div className="mb-4 text-sm text-red-500">{activityError}</div>
+            )}
+            {recentActivity.length === 0 ? (
+              <div className="py-10 text-center text-sm text-gray-500">
+                No recent activity yet.
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {recentActivity.map((item) => (
+                  <div key={item.id} className="flex items-start justify-between gap-4">
+                    <div>
+                      <div className="text-sm font-semibold text-gray-900">
+                        {item.patientName} → {item.psychologistName}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {item.type.replace("_", " ")} · {formatDate(item.startTime)}
+                      </div>
+                    </div>
+                    <span
+                      className={`px-2.5 py-1 rounded-full text-[11px] font-semibold ${statusStyles[item.status] || "bg-gray-100 text-gray-700"}`}
+                    >
+                      {item.status}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
