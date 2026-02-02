@@ -6,6 +6,10 @@ export default withAuth(
     const token = req.nextauth.token;
     const path = req.nextUrl.pathname;
 
+    if (token?.status && token.status !== "ACTIVE") {
+      return NextResponse.redirect(new URL("/login", req.url));
+    }
+
     // Check role-based access
     if (path.startsWith("/patient/dashboard") && token?.role !== "PATIENT") {
       return NextResponse.redirect(new URL("/login", req.url));

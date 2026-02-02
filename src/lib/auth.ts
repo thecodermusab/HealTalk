@@ -162,6 +162,17 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async signIn({ user, account }) {
+      if (user?.id) {
+        const statusCheck = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { status: true },
+        });
+
+        if (statusCheck?.status && statusCheck.status !== "ACTIVE") {
+          return false;
+        }
+      }
+
       if (account?.provider === "credentials") {
         if (!user?.emailVerified) {
           return false;
@@ -207,12 +218,13 @@ export const authOptions: NextAuthOptions = {
         token.role = (user as any).role;
         token.emailVerified = (user as any).emailVerified ?? null;
         token.image = (user as any).image ?? token.image ?? null;
+        token.status = (user as any).status ?? token.status ?? "ACTIVE";
       }
 
       if ((!token.role || !token.id) && token.email) {
         const dbUser = await prisma.user.findUnique({
           where: { email: token.email },
-          select: { id: true, role: true, emailVerified: true, image: true },
+          select: { id: true, role: true, emailVerified: true, image: true, status: true },
         });
 
         if (dbUser) {
@@ -220,6 +232,7 @@ export const authOptions: NextAuthOptions = {
           token.role = dbUser.role;
           token.emailVerified = dbUser.emailVerified;
           token.image = dbUser.image ?? token.image ?? null;
+          token.status = dbUser.status ?? token.status ?? "ACTIVE";
         }
       }
 
@@ -230,6 +243,7 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).id = token.id;
         (session.user as any).role = token.role;
         (session.user as any).emailVerified = token.emailVerified ?? null;
+        (session.user as any).status = token.status ?? "ACTIVE";
         if (token.image !== undefined) {
           (session.user as any).image = token.image;
         }

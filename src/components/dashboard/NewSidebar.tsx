@@ -59,6 +59,7 @@ const adminNavItems = [
   { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
   { label: "Psychologists", href: "/admin/dashboard/psychologists", icon: Users },
   { label: "Hospitals", href: "/admin/dashboard/hospitals", icon: Users },
+  { label: "Users", href: "/admin/dashboard/patients", icon: Users },
   { label: "Moderation", href: "/admin/dashboard/reviews", icon: MessageSquare },
   { label: "Reports", href: "/admin/dashboard/reports", icon: BarChart2 },
   { label: "Settings", href: "/admin/dashboard/settings", icon: Settings },
