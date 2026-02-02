@@ -28,7 +28,13 @@
       "Bash(git check-ignore:*)",
       "Bash(node:*)",
       "Bash(npm run db:generate:*)",
-      "Bash(npm run db:migrate:*)"
+      "Bash(npm run db:migrate:*)",
+      "Bash(if [ ! -f .planning/agent-history.json ])",
+      "Bash(then)",
+      "Bash(else)",
+      "Bash(fi)",
+      "Bash(npx tsc:*)",
+      "Bash(tail:*)"
     ]
   }
 }
