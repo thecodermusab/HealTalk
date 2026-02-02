@@ -13,7 +13,7 @@ None (general full-stack web development with Next.js, React, and PostgreSQL)
 - [x] **Phase 1: Foundation & Environment** - Set up production infrastructure and dependencies
 - [x] **Phase 2: Authentication System** - Implement Google OAuth and email verification
 - [x] **Phase 3: Data Migration** - Move from mock data to PostgreSQL database
-- [ ] **Phase 4: File Upload System** - Profile pictures and document uploads
+- [x] **Phase 4: File Upload System** - Profile pictures and document uploads
 - [ ] **Phase 5: Email Notifications** - Appointment confirmations and reminders
 - [ ] **Phase 6: Video Consultations** - Agora.io integration for live sessions
 - [ ] **Phase 7: Real-time Messaging** - Socket.io chat between patients and psychologists
@@ -107,10 +107,10 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 04-01: Set up Uploadthing and create upload endpoints
-- [ ] 04-02: Build profile picture upload component
-- [ ] 04-03: Add psychologist credential document upload
-- [ ] 04-04: Implement file validation and error handling
+- [x] 04-01: Set up Uploadthing and create upload endpoints
+- [x] 04-02: Build profile picture upload component
+- [x] 04-03: Add psychologist credential document upload
+- [x] 04-04: Implement file validation and error handling
 
 ---
 

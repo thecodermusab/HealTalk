@@ -95,6 +95,8 @@ model Psychologist {
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   credentials    String
   licenseNumber  String   @unique
+  credentialDocumentUrl String?
+  credentialDocumentKey String?
   experience     Int
   bio            String   @db.Text
   specializations String[]

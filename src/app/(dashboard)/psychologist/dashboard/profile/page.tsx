@@ -2,9 +2,10 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { User, Bell, Clock, DollarSign } from "lucide-react";
+import { User, Bell, Clock, DollarSign, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { UploadButton } from "@/lib/uploadthing";
 
 const formatPrice = (value?: number | null) =>
   value ? Math.round(value / 100).toString() : "";
@@ -22,6 +23,8 @@ export default function ProfilePage() {
     specializations: "",
     price60: "",
     price90: "",
+    credentialDocumentUrl: "",
+    credentialDocumentKey: "",
   });
 
   useEffect(() => {
@@ -51,6 +54,8 @@ export default function ProfilePage() {
             : "",
           price60: formatPrice(data.psychologist?.price60),
           price90: formatPrice(data.psychologist?.price90),
+          credentialDocumentUrl: data.psychologist?.credentialDocumentUrl || "",
+          credentialDocumentKey: data.psychologist?.credentialDocumentKey || "",
         });
       } catch (error) {
         setMessage({ type: "error", text: "Failed to load profile details." });
@@ -117,6 +122,35 @@ export default function ProfilePage() {
       setMessage({ type: "error", text: "Failed to update profile." });
     } finally {
       setIsProfileSaving(false);
+    }
+  };
+
+  const handleViewCredential = async () => {
+    setMessage(null);
+    try {
+      const res = await fetch("/api/uploads/credential");
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        setMessage({
+          type: "error",
+          text: data?.error || "Unable to access credential document.",
+        });
+        return;
+      }
+      const data = await res.json();
+      if (data?.url) {
+        window.open(data.url, "_blank", "noopener,noreferrer");
+      } else {
+        setMessage({
+          type: "error",
+          text: "Unable to access credential document.",
+        });
+      }
+    } catch (error) {
+      setMessage({
+        type: "error",
+        text: "Unable to access credential document.",
+      });
     }
   };
 
@@ -283,6 +317,78 @@ export default function ProfilePage() {
                       disabled={isLoading}
                     />
                   </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-card border border-border rounded-xl p-6 mt-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                  <FileText className="text-primary" size={20} />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-foreground">
+                    Credential Documents
+                  </h2>
+                  <p className="text-sm text-text-secondary">
+                    Upload your license or certification (PDF, JPG, PNG).
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="text-sm text-text-secondary">
+                  {profile.credentialDocumentUrl
+                    ? "Document uploaded."
+                    : "No document uploaded yet."}
+                </div>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  {profile.credentialDocumentUrl && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="h-10"
+                      onClick={handleViewCredential}
+                    >
+                      View Document
+                    </Button>
+                  )}
+                  <UploadButton
+                    endpoint="credentialDocument"
+                    appearance={{
+                      button:
+                        "h-10 rounded-md border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 hover:bg-gray-50",
+                      allowedContent: "hidden",
+                    }}
+                    content={{
+                      button: "Upload Document",
+                    }}
+                    onClientUploadComplete={(res) => {
+                      const url = res?.[0]?.url;
+                      const key = res?.[0]?.key;
+                      if (!url) {
+                        setMessage({
+                          type: "error",
+                          text: "Upload failed. Please try again.",
+                        });
+                        return;
+                      }
+                      setProfile((prev) => ({
+                        ...prev,
+                        credentialDocumentUrl: url,
+                        credentialDocumentKey: key || prev.credentialDocumentKey,
+                      }));
+                      setMessage({
+                        type: "success",
+                        text: "Credential document uploaded successfully.",
+                      });
+                    }}
+                    onUploadError={(error) => {
+                      setMessage({
+                        type: "error",
+                        text: error.message || "Upload failed. Please try again.",
+                      });
+                    }}
+                  />
                 </div>
               </div>
             </div>

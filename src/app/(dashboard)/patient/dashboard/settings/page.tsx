@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { User, Bell, Shield, Save, Eye, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSession } from "next-auth/react";
+import { AvatarUploader } from "@/components/profile/AvatarUploader";
 
 const splitName = (value: string) => {
   const trimmed = value.trim();
@@ -191,24 +192,20 @@ export default function SettingsPage() {
               {activeTab === "profile" && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
                    
-                   <div className="flex items-center gap-6 py-4 border-b border-gray-100 mt-8">
-                      <div className="w-20 h-20 rounded-full bg-gray-100 border-2 border-white shadow-md flex items-center justify-center overflow-hidden">
-                         {profile.image ? (
-                           <img src={profile.image} alt="Profile" className="w-full h-full object-cover" />
-                         ) : (
-                           <span className="text-xl font-semibold text-gray-600">
-                             {getInitials(profile.firstName, profile.lastName)}
-                           </span>
-                         )}
-                      </div>
-                      <div className="flex flex-col gap-2">
-                         <div className="flex gap-3">
-                            <Button size="sm" variant="outline" className="text-xs">Change Photo</Button>
-                            <Button size="sm" variant="ghost" className="text-xs text-red-500 hover:text-red-600 hover:bg-red-50">Remove</Button>
-                         </div>
-                         <p className="text-xs text-gray-400">JPG, GIF or PNG. 1MB Max.</p>
-                      </div>
-                   </div>
+                   <AvatarUploader
+                     imageUrl={profile.image}
+                     fallback={getInitials(profile.firstName, profile.lastName)}
+                     onUploaded={(url) => {
+                       setProfile((prev) => ({ ...prev, image: url }));
+                       setMessage({
+                         type: "success",
+                         text: "Profile photo updated successfully.",
+                       });
+                     }}
+                     onError={(text) =>
+                       setMessage({ type: "error", text })
+                     }
+                   />
 
                    {message && (
                      <div

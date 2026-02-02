@@ -44,6 +44,8 @@ export async function GET() {
           specializations: true,
           price60: true,
           price90: true,
+          credentialDocumentUrl: true,
+          credentialDocumentKey: true,
           status: true,
         },
       },
@@ -217,7 +219,7 @@ export async function PATCH(request: Request) {
       role: true,
       image: true,
       psychologist: {
-        select: { bio: true },
+        select: { bio: true, credentialDocumentUrl: true, credentialDocumentKey: true },
       },
     },
   });
