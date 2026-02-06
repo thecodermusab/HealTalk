@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import Navbar from "@/components/layout/Navbar";
 import AppFooter from "@/components/layout/AppFooter";
+import { FloatingChatbot } from "@/components/chatbot/FloatingChatbot";
 
 export default function PublicLayout({ children }: { children: ReactNode }) {
   return (
@@ -10,6 +11,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
         {children}
       </div>
       <AppFooter />
+      <FloatingChatbot />
     </div>
   );
 }

@@ -90,12 +90,14 @@ model Patient {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  appointments     Appointment[]
-  messages         Message[]
-  favorites        Favorite[]
-  progress         Progress[]
-  payments         Payment[]
-  reviews          Review[]
+  appointments        Appointment[]
+  messages            Message[]
+  favorites           Favorite[]
+  progress            Progress[]
+  payments            Payment[]
+  reviews             Review[]
+  sessionParticipants SessionParticipant[]
+  screenings          ScreeningAssessment[]
 }
 
 // Psychologist specific data
@@ -123,12 +125,13 @@ model Psychologist {
 
   hospitalId     String?
   hospital       Hospital? @relation(fields: [hospitalId], references: [id])
-  
-  appointments   Appointment[]
-  messages       Message[]
-  favorites      Favorite[]
-  reviews        Review[]
-  availability   Availability[]
+
+  appointments     Appointment[]
+  messages         Message[]
+  favorites        Favorite[]
+  reviews          Review[]
+  availability     Availability[]
+  therapySessions  TherapySession[]
 }
 
 enum PsychologistStatus {
@@ -236,7 +239,8 @@ model Progress {
 model Payment {
   id              String   @id @default(cuid())
   patientId       String
-  appointmentId   String   @unique
+  appointmentId   String?  @unique
+  sessionId       String?
   amount          Int      // Amount in cents
   status          PaymentStatus @default(PENDING)
   paymentMethod   String   // card, cash, insurance
@@ -244,8 +248,9 @@ model Payment {
   invoiceNumber   String   @unique
   createdAt       DateTime @default(now())
 
-  patient         Patient     @relation(fields: [patientId], references: [id])
-  appointment     Appointment @relation(fields: [appointmentId], references: [id])
+  patient         Patient         @relation(fields: [patientId], references: [id])
+  appointment     Appointment?    @relation(fields: [appointmentId], references: [id])
+  therapySession  TherapySession? @relation(fields: [sessionId], references: [id])
 }
 
 enum PaymentStatus {
@@ -275,6 +280,32 @@ enum ReviewStatus {
   APPROVED
   PENDING
   REJECTED
+}
+
+enum TherapySessionType {
+  ONE_ON_ONE
+  GROUP
+}
+
+enum TherapySessionStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum ParticipantStatus {
+  REGISTERED
+  JOINED
+  LEFT
+  NO_SHOW
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRISIS
 }
 
 model Availability {
@@ -369,4 +400,63 @@ model AuditLog {
   createdAt  DateTime @default(now())
 
   actor      User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+}
+
+// Group therapy sessions
+model TherapySession {
+  id              String   @id @default(cuid())
+  psychologistId  String
+  title           String
+  description     String?  @db.Text
+  type            TherapySessionType @default(ONE_ON_ONE)
+  maxParticipants Int      @default(1)
+  date            DateTime
+  startTime       DateTime
+  endTime         DateTime
+  duration        Int
+  pricePerPerson  Int
+  status          TherapySessionStatus @default(SCHEDULED)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  psychologist    Psychologist @relation(fields: [psychologistId], references: [id])
+  participants    SessionParticipant[]
+  payments        Payment[]
+
+  @@index([psychologistId])
+  @@index([date, startTime])
+}
+
+model SessionParticipant {
+  id        String   @id @default(cuid())
+  sessionId String
+  patientId String
+  status    ParticipantStatus @default(REGISTERED)
+  joinedAt  DateTime?
+  leftAt    DateTime?
+  createdAt DateTime @default(now())
+
+  session   TherapySession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  patient   Patient  @relation(fields: [patientId], references: [id])
+
+  @@unique([sessionId, patientId])
+  @@index([sessionId])
+  @@index([patientId])
+}
+
+// AI mental health screening
+model ScreeningAssessment {
+  id                  String   @id @default(cuid())
+  patientId           String
+  completedAt         DateTime?
+  responses           Json
+  aiSummary           String?  @db.Text
+  riskLevel           RiskLevel?
+  recommendedActions  String[]
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  patient             Patient  @relation(fields: [patientId], references: [id])
+
+  @@index([patientId])
 }

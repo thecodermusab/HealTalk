@@ -22,15 +22,24 @@ export async function GET(request: Request) {
     if (rateLimit) return rateLimit;
 
     const userId = (session.user as any).id;
+    const role = (session.user as any).role;
 
     // Get patient or psychologist profile
-    const patient = await prisma.patient.findUnique({
+    let patient = await prisma.patient.findUnique({
       where: { userId },
     });
 
-    const psychologist = await prisma.psychologist.findUnique({
+    let psychologist = await prisma.psychologist.findUnique({
       where: { userId },
     });
+
+    if (!patient && !psychologist) {
+      if (role === "PATIENT") {
+        patient = await prisma.patient.create({ data: { userId } });
+      } else if (role === "PSYCHOLOGIST") {
+        return NextResponse.json([]);
+      }
+    }
 
     let appointments;
 

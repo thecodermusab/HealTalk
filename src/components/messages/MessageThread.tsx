@@ -40,6 +40,7 @@ export function MessageThread({ appointmentId }: { appointmentId: string }) {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [sendError, setSendError] = useState<string | null>(null);
   const [isOtherOnline, setIsOtherOnline] = useState(false);
   const [isOtherTyping, setIsOtherTyping] = useState(false);
   const typingTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -139,6 +140,7 @@ export function MessageThread({ appointmentId }: { appointmentId: string }) {
   const sendMessage = async () => {
     const content = input.trim();
     if (!content && !pendingAttachment) return;
+    setSendError(null);
     setInput("");
     setIsOtherTyping(false);
     if (typingTimeout.current) {
@@ -151,24 +153,91 @@ export function MessageThread({ appointmentId }: { appointmentId: string }) {
       isTypingRef.current = false;
     }
 
-    const socket = connectSocket();
-    socket.emit(
-      "message:send",
-      {
-        appointmentId,
-        content,
-        attachment: pendingAttachment || undefined,
-      },
-      (response: any) => {
-        if (response?.ok && response?.message) {
-          setMessages((prev) => {
-            if (prev.some((item) => item.id === response.message.id)) return prev;
-            return [...prev, response.message];
-          });
-        }
-      }
-    );
+    const attachmentToSend = pendingAttachment;
+    const tempId = `temp-${Date.now()}`;
+    const optimisticMessage: MessageRecord = {
+      id: tempId,
+      content: content || (attachmentToSend ? "Attachment" : ""),
+      senderId: session?.user?.id || "unknown",
+      createdAt: new Date().toISOString(),
+      read: false,
+      attachmentUrl: attachmentToSend?.url || null,
+      attachmentType: attachmentToSend?.type || null,
+      attachmentName: attachmentToSend?.name || null,
+    };
+
+    setMessages((prev) => [...prev, optimisticMessage]);
     setPendingAttachment(null);
+
+    const socket = connectSocket();
+    const response = await new Promise<any>((resolve) => {
+      let settled = false;
+      const timer = setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        resolve({ ok: false, error: "Socket timeout" });
+      }, 2500);
+      socket.emit(
+        "message:send",
+        {
+          appointmentId,
+          content,
+          attachment: attachmentToSend || undefined,
+        },
+        (resp: any) => {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timer);
+          resolve(resp || { ok: false, error: "Failed to send message" });
+        }
+      );
+    });
+
+    if (response?.ok && response?.message) {
+      setMessages((prev) =>
+        prev.map((item) =>
+          item.id === tempId ? { ...response.message } : item
+        )
+      );
+      return;
+    }
+
+    if (!attachmentToSend && content) {
+      try {
+        const csrfRes = await fetch("/api/security/csrf", {
+          credentials: "include",
+        });
+        const csrfData = await csrfRes.json();
+        const csrfToken = csrfData?.csrfToken as string | undefined;
+
+        const res = await fetch(`/api/messages/${appointmentId}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(csrfToken ? { "x-csrf-token": csrfToken } : {}),
+          },
+          credentials: "include",
+          body: JSON.stringify({ content }),
+        });
+
+        if (res.ok) {
+          const saved = await res.json();
+          setMessages((prev) =>
+            prev.map((item) => (item.id === tempId ? saved : item))
+          );
+          return;
+        }
+
+        const data = await res.json().catch(() => null);
+        setSendError(data?.error || response?.error || "Failed to send message");
+      } catch (err) {
+        setSendError("Failed to send message");
+      }
+    } else {
+      setSendError(response?.error || "Failed to send message");
+    }
+
+    setMessages((prev) => prev.filter((item) => item.id !== tempId));
   };
 
   const handleAttachmentUpload = (file: any) => {
@@ -337,6 +406,7 @@ export function MessageThread({ appointmentId }: { appointmentId: string }) {
           <SendHorizontal size={16} />
         </Button>
         </div>
+        {sendError && <div className="text-xs text-red-500">{sendError}</div>}
       </div>
     </div>
   );

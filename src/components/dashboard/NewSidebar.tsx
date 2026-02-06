@@ -11,7 +11,9 @@ import {
   MessageSquare,
   BarChart2,
   Settings,
-  LogOut
+  LogOut,
+  Video,
+  Brain
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -40,6 +42,7 @@ const getInitials = (firstName: string, lastName: string) => {
 const psychologistNavItems = [
   { label: "Dashboard", href: "/psychologist/dashboard", icon: LayoutDashboard },
   { label: "Appointments", href: "/psychologist/dashboard/appointments", icon: CalendarDays },
+  { label: "Sessions", href: "/psychologist/dashboard/sessions", icon: Video },
   { label: "Patients", href: "/psychologist/dashboard/patients", icon: Users },
   { label: "Messages", href: "/psychologist/dashboard/messages", icon: MessageSquare },
   { label: "Report", href: "/psychologist/dashboard/report", icon: BarChart2 },
@@ -49,7 +52,9 @@ const psychologistNavItems = [
 const patientNavItems = [
   { label: "Dashboard", href: "/patient/dashboard", icon: LayoutDashboard },
   { label: "Appointments", href: "/patient/dashboard/appointments", icon: CalendarDays },
+  { label: "Sessions", href: "/patient/dashboard/sessions", icon: Video },
   { label: "Messages", href: "/patient/dashboard/messages", icon: MessageSquare },
+  { label: "Screening", href: "/patient/dashboard/screening", icon: Brain },
   { label: "Favorites", href: "/patient/dashboard/favorites", icon: Users },
   { label: "Payments", href: "/patient/dashboard/payments", icon: BarChart2 },
   { label: "Settings", href: "/patient/dashboard/settings", icon: Settings },

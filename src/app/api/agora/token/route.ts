@@ -8,7 +8,10 @@ import { parseJson } from "@/lib/validation";
 
 const TOKEN_TTL_SECONDS = 60 * 60; // 1 hour
 const tokenSchema = z.object({
-  appointmentId: z.string().min(1),
+  appointmentId: z.string().min(1).optional(),
+  sessionId: z.string().min(1).optional(),
+}).refine(data => data.appointmentId || data.sessionId, {
+  message: "Either appointmentId or sessionId must be provided",
 });
 
 export async function POST(request: Request) {
@@ -20,7 +23,7 @@ export async function POST(request: Request) {
 
   const { data, error } = await parseJson(request, tokenSchema);
   if (error) return error;
-  const { appointmentId } = data;
+  const { appointmentId, sessionId } = data;
 
   const appId = process.env.AGORA_APP_ID;
   const appCertificate = process.env.AGORA_APP_CERTIFICATE;
@@ -32,27 +35,75 @@ export async function POST(request: Request) {
     );
   }
 
-  const appointment = await prisma.appointment.findUnique({
-    where: { id: appointmentId },
-    include: {
-      patient: { select: { userId: true } },
-      psychologist: { select: { userId: true } },
-    },
-  });
+  let channelName: string;
+  let isAuthorized = false;
+  let isHost = false;
 
-  if (!appointment) {
-    return NextResponse.json({ error: "Appointment not found" }, { status: 404 });
+  // Handle appointment-based calls
+  if (appointmentId) {
+    const appointment = await prisma.appointment.findUnique({
+      where: { id: appointmentId },
+      include: {
+        patient: { select: { userId: true } },
+        psychologist: { select: { userId: true } },
+      },
+    });
+
+    if (!appointment) {
+      return NextResponse.json({ error: "Appointment not found" }, { status: 404 });
+    }
+
+    isAuthorized =
+      appointment.patient?.userId === session.user.id ||
+      appointment.psychologist?.userId === session.user.id;
+
+    isHost = appointment.psychologist?.userId === session.user.id;
+    channelName = appointment.id;
+  }
+  // Handle session-based calls
+  else if (sessionId) {
+    const therapySession = await prisma.therapySession.findUnique({
+      where: { id: sessionId },
+      include: {
+        psychologist: { select: { userId: true } },
+        participants: {
+          include: {
+            patient: { select: { userId: true } },
+          },
+        },
+      },
+    });
+
+    if (!therapySession) {
+      return NextResponse.json({ error: "Session not found" }, { status: 404 });
+    }
+
+    // Check if user is the psychologist (host)
+    if (therapySession.psychologist?.userId === session.user.id) {
+      isAuthorized = true;
+      isHost = true;
+    }
+    // Check if user is a registered participant
+    else {
+      const isParticipant = therapySession.participants.some(
+        (p) => p.patient.userId === session.user.id && p.status === "REGISTERED"
+      );
+      isAuthorized = isParticipant;
+      isHost = false;
+    }
+
+    channelName = therapySession.id;
+  } else {
+    return NextResponse.json(
+      { error: "Either appointmentId or sessionId required" },
+      { status: 400 }
+    );
   }
 
-  const isParticipant =
-    appointment.patient?.userId === session.user.id ||
-    appointment.psychologist?.userId === session.user.id;
-
-  if (!isParticipant) {
+  if (!isAuthorized) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const channelName = appointment.id;
   const account = session.user.id;
   const role = RtcRole.PUBLISHER;
 
@@ -71,5 +122,6 @@ export async function POST(request: Request) {
     token,
     channelName,
     expiresIn: TOKEN_TTL_SECONDS,
+    isHost,
   });
 }

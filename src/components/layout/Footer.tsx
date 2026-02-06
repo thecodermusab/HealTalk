@@ -34,6 +34,7 @@ export default function Footer({ withShell = true, theme = "light" }: FooterProp
   const solutionLinks = [
     { title: "Privacy Policy", href: "/privacy" },
     { title: "Terms", href: "/terms" },
+    { title: "HIPAA Notice", href: "/hipaa" },
     { title: "Sign In", href: "/login" },
     { title: "Create Account", href: "/signup" },
   ];
@@ -188,6 +189,9 @@ export default function Footer({ withShell = true, theme = "light" }: FooterProp
             </Link>
             <Link href="/terms" className={`transition-colors ${hoverColor}`}>
               Terms
+            </Link>
+            <Link href="/hipaa" className={`transition-colors ${hoverColor}`}>
+              HIPAA Notice
             </Link>
           </div>
         </div>

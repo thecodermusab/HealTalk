@@ -37,7 +37,11 @@
       "Bash(tail:*)",
       "Bash(git status:*)",
       "Bash(git ls-files:*)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(git -C /Users/maahir/Downloads/New/psyconnect log --oneline)",
+      "Bash(git -C /Users/maahir/Downloads/New/psyconnect config user.name)",
+      "Bash(git -C /Users/maahir/Downloads/New/psyconnect config user.email)",
+      "Bash(npm run db:seed-sessions:*)"
     ]
   }
 }

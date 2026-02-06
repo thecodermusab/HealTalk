@@ -32,14 +32,29 @@ export default function PsychologistMessagesPage() {
     async function fetchConversations() {
       try {
         const res = await fetch("/api/messages/conversations");
-        if (!res.ok) throw new Error("Failed to fetch conversations");
+        if (!res.ok) {
+          // Handle unauthorized or other errors gracefully
+          if (res.status === 401) {
+            console.log("User not authenticated");
+          } else {
+            console.error(`Failed to fetch conversations: ${res.status}`);
+          }
+          setConversations([]);
+          return;
+        }
         const data = await res.json();
-        setConversations(data.map((c: any) => ({
-          ...c,
-          lastMessageTime: new Date(c.lastMessageTime),
-        })));
+        // Handle if data is an array
+        if (Array.isArray(data)) {
+          setConversations(data.map((c: any) => ({
+            ...c,
+            lastMessageTime: new Date(c.lastMessageTime),
+          })));
+        } else {
+          setConversations([]);
+        }
       } catch (err) {
         console.error("Error fetching conversations:", err);
+        setConversations([]);
       } finally {
         setLoading(false);
       }

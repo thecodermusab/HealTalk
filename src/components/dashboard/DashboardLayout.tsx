@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
@@ -73,6 +73,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     await signOut({ callbackUrl: "/", redirect: true });
   };
 
+  // Redirect to login if not authenticated (in useEffect to avoid render issues)
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
+  }, [status, router]);
+
   // Show loading state
   if (status === "loading") {
     return (
@@ -85,9 +92,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     );
   }
 
-  // Redirect to login if not authenticated
+  // Show nothing while redirecting
   if (status === "unauthenticated") {
-    router.push("/login");
     return null;
   }
 

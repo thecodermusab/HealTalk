@@ -100,8 +100,10 @@ export async function POST(request: Request, { params }: RouteParams) {
   const csrfError = validateCsrf(request);
   if (csrfError) return csrfError;
 
+  const { appointmentId } = await params;
+
   const appointment = await prisma.appointment.findUnique({
-    where: { id: params.appointmentId },
+    where: { id: appointmentId },
     include: {
       patient: { select: { id: true, userId: true } },
       psychologist: { select: { id: true, userId: true } },
