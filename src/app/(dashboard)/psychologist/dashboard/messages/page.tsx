@@ -22,7 +22,7 @@ interface Conversation {
 export default function PsychologistMessagesPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const appointmentId = searchParams.get("appointmentId") || searchParams.get("chatId") || "";
+  const appointmentId = searchParams?.get("appointmentId") || searchParams?.get("chatId") || "";
 
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
