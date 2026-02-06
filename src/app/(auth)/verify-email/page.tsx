@@ -12,6 +12,12 @@ function VerifyEmailContent() {
   const [message, setMessage] = useState("Verifying your email...");
 
   useEffect(() => {
+    if (!searchParams) {
+      setState("error");
+      setMessage("Verification link is invalid.");
+      return;
+    }
+
     const token = searchParams.get("token");
 
     if (!token) {
