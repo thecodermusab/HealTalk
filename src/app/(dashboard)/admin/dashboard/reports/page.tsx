@@ -187,7 +187,7 @@ export default function AdminReportsPage() {
                         tick={{ fontSize: 12 }}
                         tickFormatter={(value) => `₺${(value / 100).toLocaleString("en-US")}`}
                       />
-                      <Tooltip formatter={(value: number) => formatCurrency(Number(value))} />
+                      <Tooltip formatter={(value: number | undefined) => value ? formatCurrency(Number(value)) : '₺0.00'} />
                       <Legend />
                       <Bar dataKey="revenue" fill="#20C997" />
                     </BarChart>
