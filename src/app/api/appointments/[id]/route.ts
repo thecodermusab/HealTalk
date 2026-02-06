@@ -77,7 +77,7 @@ export async function PATCH(
   const { status, startTime, endTime, date } = body;
 
   const updateData: {
-    status?: string;
+    status?: typeof status;
     startTime?: Date;
     endTime?: Date;
     date?: Date;
