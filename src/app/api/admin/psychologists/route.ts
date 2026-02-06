@@ -83,13 +83,13 @@ export async function GET(request: Request) {
     prisma.psychologist.count({ where }),
   ]);
 
-  const data = psychologists.map(({ credentialDocumentKey, ...rest }) => ({
+  const psychologistsData = psychologists.map(({ credentialDocumentKey, ...rest }) => ({
     ...rest,
     hasCredentialDocument: Boolean(credentialDocumentKey),
   }));
 
   return NextResponse.json({
-    psychologists: data,
+    psychologists: psychologistsData,
     pagination: {
       page,
       limit,
