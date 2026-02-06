@@ -111,7 +111,7 @@ export async function GET(request: Request) {
       by: ["psychologistId"],
       where: { startTime: { gte: start } },
       _count: { _all: true },
-      orderBy: { _count: { _all: "desc" } },
+      orderBy: { psychologistId: "desc" },
       take: 5,
     }),
   ]);
