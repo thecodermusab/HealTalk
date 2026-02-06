@@ -14,8 +14,10 @@ const updateSchema = z.object({
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
+
   const session = await getServerSession(authOptions);
 
   if (!session?.user) {
@@ -42,7 +44,7 @@ export async function PATCH(
   const status = data.status;
 
   const existing = await prisma.review.findUnique({
-    where: { id: params.id },
+    where: { id: id },
     select: { id: true },
   });
 
@@ -51,7 +53,7 @@ export async function PATCH(
   }
 
   const updated = await prisma.review.update({
-    where: { id: params.id },
+    where: { id: id },
     data: {
       status,
       moderatedAt: new Date(),
@@ -76,7 +78,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
 
@@ -99,13 +101,13 @@ export async function DELETE(
   const csrfError = validateCsrf(request);
   if (csrfError) return csrfError;
 
-  await prisma.review.delete({ where: { id: params.id } });
+  await prisma.review.delete({ where: { id: id } });
 
   await createAuditLog({
     actorId: session.user.id,
     action: "ADMIN_REVIEW_DELETE",
     targetType: "Review",
-    targetId: params.id,
+    targetId: id,
   });
 
   return NextResponse.json({ ok: true });

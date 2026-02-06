@@ -22,8 +22,10 @@ const updateAppointmentSchema = z.object({
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
+
   const session = await getServerSession(authOptions);
 
   if (!session?.user) {
@@ -42,7 +44,7 @@ export async function PATCH(
   if (csrfError) return csrfError;
 
   const appointment = await prisma.appointment.findUnique({
-    where: { id: params.id },
+    where: { id: id },
     include: {
       patient: {
         include: {

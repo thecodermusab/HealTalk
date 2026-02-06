@@ -20,8 +20,10 @@ const updateSchema = z.object({
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
+
   const session = await getServerSession(authOptions);
 
   if (!session?.user) {
@@ -52,7 +54,7 @@ export async function PATCH(
   const status = body.status || "";
 
   const user = await prisma.user.findUnique({
-    where: { id: params.id },
+    where: { id: id },
     select: { id: true, email: true },
   });
 
@@ -95,7 +97,7 @@ export async function PATCH(
   }
 
   const updated = await prisma.user.update({
-    where: { id: params.id },
+    where: { id: id },
     data,
     select: {
       id: true,
@@ -125,7 +127,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
 
@@ -148,13 +150,13 @@ export async function DELETE(
   const csrfError = validateCsrf(request);
   if (csrfError) return csrfError;
 
-  await prisma.user.delete({ where: { id: params.id } });
+  await prisma.user.delete({ where: { id: id } });
 
   await createAuditLog({
     actorId: session.user.id,
     action: "ADMIN_USER_DELETE",
     targetType: "User",
-    targetId: params.id,
+    targetId: id,
   });
 
   return NextResponse.json({ ok: true });

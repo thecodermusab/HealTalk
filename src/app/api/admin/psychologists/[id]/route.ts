@@ -15,8 +15,10 @@ const updateSchema = z.object({
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
+
   const session = await getServerSession(authOptions);
 
   if (!session?.user) {
@@ -44,7 +46,7 @@ export async function PATCH(
   const rejectionReason = body.rejectionReason?.trim() || "";
 
   const existing = await prisma.psychologist.findUnique({
-    where: { id: params.id },
+    where: { id: id },
     select: { id: true },
   });
 
@@ -78,7 +80,7 @@ export async function PATCH(
   }
 
   const updated = await prisma.psychologist.update({
-    where: { id: params.id },
+    where: { id: id },
     data,
     select: {
       id: true,
