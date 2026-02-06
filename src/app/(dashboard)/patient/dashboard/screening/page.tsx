@@ -102,7 +102,7 @@ export default function PatientScreeningPage() {
                             {chips.map((chip) => (
                                 <button
                                     key={chip.id}
-                                    onClick={handleStartNewAssessment}
+                                    onClick={() => handleStartNewAssessment()}
                                     className="group flex items-center gap-2 px-5 py-3 rounded-full bg-white border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 active:scale-95"
                                 >
                                     <div className="p-1 rounded-full bg-indigo-50 text-indigo-500 group-hover:bg-indigo-100 transition-colors">
