@@ -6,7 +6,7 @@ import Footer from "@/components/layout/Footer";
 
 export default function AppFooter() {
   const pathname = usePathname();
-  const isDashboard = pathname.includes("/dashboard");
+  const isDashboard = pathname?.includes("/dashboard") ?? false;
   const isHome = pathname === "/";
 
   if (isDashboard) {

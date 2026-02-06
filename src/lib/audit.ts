@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 
 type AuditPayload = {
   actorId?: string | null;
@@ -22,7 +23,7 @@ export const createAuditLog = async ({
         action,
         targetType: targetType ?? null,
         targetId: targetId ?? null,
-        metadata: metadata ?? null,
+        metadata: metadata ? (metadata as Prisma.InputJsonValue) : Prisma.JsonNull,
       },
     });
   } catch (error) {

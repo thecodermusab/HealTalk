@@ -37,8 +37,8 @@ export const uploadRouter = {
       return { uploadedBy: metadata.userId };
     }),
   messageAttachment: f({
-    image: { maxFileSize: "10MB", maxFileCount: 1 },
-    "application/pdf": { maxFileSize: "10MB", maxFileCount: 1 },
+    image: { maxFileSize: "8MB", maxFileCount: 1 },
+    "application/pdf": { maxFileSize: "8MB", maxFileCount: 1 },
   })
     .middleware(async () => {
       const session = await requireSession();
@@ -54,8 +54,8 @@ export const uploadRouter = {
       };
     }),
   credentialDocument: f({
-    "application/pdf": { maxFileSize: "10MB", maxFileCount: 1 },
-    image: { maxFileSize: "10MB", maxFileCount: 1 },
+    "application/pdf": { maxFileSize: "8MB", maxFileCount: 1 },
+    image: { maxFileSize: "8MB", maxFileCount: 1 },
   })
     .middleware(async () => {
       const session = await requireSession();

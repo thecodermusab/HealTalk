@@ -15,6 +15,7 @@ type WaitingRoomProps = {
   onJoin: () => void;
   isJoining: boolean;
   errorMessage?: string | null;
+  onRetry?: () => void;
 };
 
 export function WaitingRoom({
@@ -27,6 +28,7 @@ export function WaitingRoom({
   onJoin,
   isJoining,
   errorMessage,
+  onRetry,
 }: WaitingRoomProps) {
   const previewRef = useRef<HTMLDivElement | null>(null);
 
@@ -51,8 +53,20 @@ export function WaitingRoom({
           </div>
 
           {errorMessage && (
-            <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
-              {errorMessage}
+            <div className="space-y-3">
+              <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                {errorMessage}
+              </div>
+              {onRetry && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full border-white/20 text-white hover:bg-white/10"
+                  onClick={onRetry}
+                >
+                  Retry Permissions
+                </Button>
+              )}
             </div>
           )}
 
@@ -62,6 +76,7 @@ export function WaitingRoom({
               variant="outline"
               className="h-12 w-12 rounded-full border-white/20 text-white hover:bg-white/10"
               onClick={onToggleMic}
+              disabled={!videoTrack || !!errorMessage}
             >
               {isMicMuted ? <MicOff size={18} /> : <Mic size={18} />}
             </Button>
@@ -70,6 +85,7 @@ export function WaitingRoom({
               variant="outline"
               className="h-12 w-12 rounded-full border-white/20 text-white hover:bg-white/10"
               onClick={onToggleCamera}
+              disabled={!videoTrack || !!errorMessage}
             >
               {isCameraOff ? <VideoOff size={18} /> : <Video size={18} />}
             </Button>
@@ -77,7 +93,7 @@ export function WaitingRoom({
               type="button"
               className="h-12 px-6 rounded-full bg-[#5B6CFF] hover:bg-[#4a5ae0]"
               onClick={onJoin}
-              disabled={isJoining}
+              disabled={isJoining || !videoTrack || !!errorMessage}
             >
               {isJoining ? "Joining..." : "Join Session"}
             </Button>

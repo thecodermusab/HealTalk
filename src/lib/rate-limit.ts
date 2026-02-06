@@ -12,6 +12,39 @@ const redis =
 
 const limiterCache = new Map<string, Ratelimit>();
 
+// Parse duration string (e.g., "1 m", "1 h", "10 s") to Duration type
+const parseDuration = (duration: string): `${number} ms` | `${number} s` | `${number} m` | `${number} h` | `${number} d` => {
+  const parts = duration.trim().split(/\s+/);
+  if (parts.length !== 2) return "60000 ms" as const; // default to 1 minute
+
+  const value = parseInt(parts[0] || "60", 10);
+  const unit = parts[1]?.toLowerCase();
+
+  switch (unit) {
+    case "s":
+    case "sec":
+    case "second":
+    case "seconds":
+      return `${value * 1000} ms` as const;
+    case "m":
+    case "min":
+    case "minute":
+    case "minutes":
+      return `${value * 60 * 1000} ms` as const;
+    case "h":
+    case "hr":
+    case "hour":
+    case "hours":
+      return `${value * 60 * 60 * 1000} ms` as const;
+    case "d":
+    case "day":
+    case "days":
+      return `${value * 24 * 60 * 60 * 1000} ms` as const;
+    default:
+      return "60000 ms" as const; // default to 1 minute
+  }
+};
+
 const getLimiter = (limit: number, window: string) => {
   if (!redis) return null;
   const key = `${limit}:${window}`;
@@ -20,7 +53,7 @@ const getLimiter = (limit: number, window: string) => {
       key,
       new Ratelimit({
         redis,
-        limiter: Ratelimit.slidingWindow(limit, window),
+        limiter: Ratelimit.slidingWindow(limit, parseDuration(window)),
         analytics: true,
       })
     );

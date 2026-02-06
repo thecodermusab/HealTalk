@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { MessageCircle, Loader2, Search } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -19,7 +19,7 @@ interface Conversation {
   unreadCount: number;
 }
 
-export default function PatientMessagesPage() {
+function MessagesContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const appointmentId = searchParams?.get("appointmentId") || searchParams?.get("chatId") || "";
@@ -167,5 +167,21 @@ export default function PatientMessagesPage() {
         </div>
       </div>
     </DashboardLayout>
+  );
+}
+
+export default function PatientMessagesPage() {
+  return (
+    <Suspense
+      fallback={
+        <DashboardLayout>
+          <div className="flex items-center justify-center h-full">
+            <Loader2 className="animate-spin text-primary" size={32} />
+          </div>
+        </DashboardLayout>
+      }
+    >
+      <MessagesContent />
+    </Suspense>
   );
 }

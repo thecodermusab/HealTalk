@@ -163,7 +163,8 @@ export function GroupVideoCall({ sessionId, isHost, onLeave }: GroupVideoCallPro
 
     try {
       if (!isScreenSharing) {
-        const screenTrack = await AgoraRTC.createScreenVideoTrack({});
+        // Disable audio to ensure we get a single video track, not an array
+        const screenTrack = await AgoraRTC.createScreenVideoTrack({}, "disable");
 
         if (localVideoTrack) {
           await client.unpublish([localVideoTrack]);

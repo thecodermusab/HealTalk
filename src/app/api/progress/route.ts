@@ -6,6 +6,7 @@ import { requireRateLimit } from "@/lib/rate-limit";
 import { validateCsrf } from "@/lib/csrf";
 import { z } from "zod";
 import { parseJson } from "@/lib/validation";
+import { Prisma } from "@prisma/client";
 
 const createProgressSchema = z.object({
   mood: z.enum(["great", "good", "okay", "bad", "terrible"]),
@@ -103,7 +104,7 @@ export async function POST(request: Request) {
         patientId: patient.id,
         mood,
         notes,
-        goals: goals || null,
+        goals: goals ?? Prisma.JsonNull,
       },
     });
 

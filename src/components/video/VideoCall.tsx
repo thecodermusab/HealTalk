@@ -5,7 +5,7 @@ import AgoraRTC, {
   IAgoraRTCClient,
   ILocalAudioTrack,
   ILocalVideoTrack,
-  IRemoteUser,
+  IAgoraRTCRemoteUser,
 } from "agora-rtc-sdk-ng";
 import { Mic, MicOff, Video, VideoOff, PhoneOff, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -29,10 +29,10 @@ type ConnectionState =
 
 type RemoteParticipant = {
   uid: string | number;
-  user: IRemoteUser;
+  user: IAgoraRTCRemoteUser;
 };
 
-const VideoTile = ({ user }: { user: IRemoteUser }) => {
+const VideoTile = ({ user }: { user: IAgoraRTCRemoteUser }) => {
   const ref = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -83,6 +83,7 @@ export function VideoCall({ appointmentId, userAccount, userName }: VideoCallPro
     uplink: number;
     downlink: number;
   } | null>(null);
+  const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
     let isActive = true;
@@ -100,10 +101,25 @@ export function VideoCall({ appointmentId, userAccount, userName }: VideoCallPro
 
         setLocalAudioTrack(audioTrack);
         setLocalVideoTrack(videoTrack);
+        setErrorMessage(null); // Clear any previous errors
       } catch (error) {
         console.error("Preview setup error:", error);
         if (isActive) {
-          setErrorMessage("Unable to access camera or microphone.");
+          const isPermissionError =
+            error instanceof Error &&
+            (error.name === "NotAllowedError" ||
+             error.message.includes("Permission") ||
+             error.message.includes("PERMISSION_DENIED"));
+
+          if (isPermissionError) {
+            setErrorMessage(
+              "Camera and microphone access denied. Please click the camera icon in your browser's address bar and allow permissions, then refresh the page."
+            );
+          } else {
+            setErrorMessage(
+              "Unable to access camera or microphone. Please check that they are connected and not being used by another application."
+            );
+          }
         }
       }
     };
@@ -113,7 +129,7 @@ export function VideoCall({ appointmentId, userAccount, userName }: VideoCallPro
     return () => {
       isActive = false;
     };
-  }, []);
+  }, [retryKey]);
 
   useEffect(() => {
     if (!localVideoRef.current || !localVideoTrack || !hasJoined) return;
@@ -130,6 +146,31 @@ export function VideoCall({ appointmentId, userAccount, userName }: VideoCallPro
     }, 1000);
     return () => clearInterval(timer);
   }, [hasJoined]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      const client = clientRef.current;
+      if (client) {
+        client.removeAllListeners();
+        client.leave().catch(() => null);
+      }
+      localAudioTrack?.close();
+      localVideoTrack?.close();
+      screenTrack?.close();
+    };
+  }, []);
+
+  const retryPermissions = () => {
+    // Clear existing tracks
+    localAudioTrack?.close();
+    localVideoTrack?.close();
+    setLocalAudioTrack(null);
+    setLocalVideoTrack(null);
+    setErrorMessage(null);
+    // Increment retry key to trigger useEffect
+    setRetryKey((prev) => prev + 1);
+  };
 
   const toggleMic = async () => {
     if (!localAudioTrack) return;
@@ -188,6 +229,18 @@ export function VideoCall({ appointmentId, userAccount, userName }: VideoCallPro
     setErrorMessage(null);
 
     try {
+      // Ensure we're not already in a channel
+      const existingClient = clientRef.current;
+      if (existingClient && existingClient.connectionState !== "DISCONNECTED") {
+        try {
+          await existingClient.leave();
+          // Small delay to ensure server-side cleanup
+          await new Promise((resolve) => setTimeout(resolve, 500));
+        } catch (e) {
+          console.warn("Failed to leave previous session:", e);
+        }
+        clientRef.current = null;
+      }
       if (!localAudioTrack || !localVideoTrack) {
         const [audioTrack, videoTrack] =
           await AgoraRTC.createMicrophoneAndCameraTracks();
@@ -207,11 +260,11 @@ export function VideoCall({ appointmentId, userAccount, userName }: VideoCallPro
       }
 
       const { appId, token, channelName } = await tokenResponse.json();
-      const client = createClient();
-      clientRef.current = client;
+      const newClient = createClient();
+      clientRef.current = newClient;
 
-      client.on("user-published", async (user, mediaType) => {
-        await client.subscribe(user, mediaType);
+      newClient.on("user-published", async (user, mediaType) => {
+        await newClient.subscribe(user, mediaType);
         if (mediaType === "video") {
           setRemoteUsers((prev) => {
             const exists = prev.some((entry) => entry.uid === user.uid);
@@ -224,7 +277,7 @@ export function VideoCall({ appointmentId, userAccount, userName }: VideoCallPro
         }
       });
 
-      client.on("user-unpublished", (user, mediaType) => {
+      newClient.on("user-unpublished", (user, mediaType) => {
         if (mediaType === "video") {
           setRemoteUsers((prev) => prev.filter((entry) => entry.uid !== user.uid));
         }
@@ -233,11 +286,11 @@ export function VideoCall({ appointmentId, userAccount, userName }: VideoCallPro
         }
       });
 
-      client.on("user-left", (user) => {
+      newClient.on("user-left", (user) => {
         setRemoteUsers((prev) => prev.filter((entry) => entry.uid !== user.uid));
       });
 
-      client.on("connection-state-change", (curState, _prevState, reason) => {
+      newClient.on("connection-state-change", (curState, _prevState, reason) => {
         if (curState === "RECONNECTING") {
           setConnectionState("reconnecting");
           return;
@@ -259,17 +312,22 @@ export function VideoCall({ appointmentId, userAccount, userName }: VideoCallPro
         }
       });
 
-      client.on("network-quality", (stats) => {
+      newClient.on("network-quality", (stats) => {
         setNetworkQuality({
           uplink: stats.uplinkNetworkQuality,
           downlink: stats.downlinkNetworkQuality,
         });
       });
 
-      await client.join(appId, channelName, token, userAccount);
+      // Join with the original userAccount (token is generated for this specific UID)
+      await newClient.join(appId, channelName, token, userAccount);
 
       if (localAudioTrack && localVideoTrack) {
-        await client.publish([localAudioTrack, localVideoTrack]);
+        // Ensure tracks are enabled based on current mute state before publishing
+        await localAudioTrack.setEnabled(!isMicMuted);
+        await localVideoTrack.setEnabled(!isCameraOff);
+
+        await newClient.publish([localAudioTrack, localVideoTrack]);
       }
 
       setHasJoined(true);
@@ -277,9 +335,26 @@ export function VideoCall({ appointmentId, userAccount, userName }: VideoCallPro
     } catch (error) {
       console.error("Agora call setup error:", error);
       setConnectionState("failed");
-      setErrorMessage(
-        error instanceof Error ? error.message : "Unable to join call"
-      );
+
+      // Handle specific error types
+      if (error instanceof Error) {
+        if (error.message.includes("UID_CONFLICT")) {
+          setErrorMessage(
+            "This session is already active in another tab or window. Please close other instances and try again."
+          );
+        } else if (
+          error.message.includes("INVALID_TOKEN") ||
+          error.message.includes("CAN_NOT_GET_GATEWAY_SERVER")
+        ) {
+          setErrorMessage(
+            "Authentication failed. Please refresh the page and try again."
+          );
+        } else {
+          setErrorMessage(error.message);
+        }
+      } else {
+        setErrorMessage("Unable to join call");
+      }
     } finally {
       setIsJoining(false);
     }
@@ -317,6 +392,7 @@ export function VideoCall({ appointmentId, userAccount, userName }: VideoCallPro
         onJoin={joinCall}
         isJoining={isJoining}
         errorMessage={errorMessage}
+        onRetry={retryPermissions}
       />
     );
   }

@@ -12,12 +12,12 @@ import { useState, Suspense } from "react";
 function CheckoutContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const psychologistId = searchParams.get("psychologistId") || "";
-  const doctorName = searchParams.get('doctor') || 'Dr. Sarah Thompson';
-  const startParam = searchParams.get("start");
-  const endParam = searchParams.get("end");
-  const timeParam = searchParams.get("time") || "10:00 AM";
-  const price = searchParams.get('price') || '$150';
+  const psychologistId = searchParams?.get("psychologistId") || "";
+  const doctorName = searchParams?.get('doctor') || 'Dr. Sarah Thompson';
+  const startParam = searchParams?.get("start");
+  const endParam = searchParams?.get("end");
+  const timeParam = searchParams?.get("time") || "10:00 AM";
+  const price = searchParams?.get('price') || '$150';
   const start = startParam ? new Date(startParam) : null;
   const end = endParam ? new Date(endParam) : null;
   const hasValidDates = Boolean(start && end && !Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime()));
