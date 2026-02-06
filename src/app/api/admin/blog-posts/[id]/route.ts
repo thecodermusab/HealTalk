@@ -14,7 +14,7 @@ const updateSchema = z.object({
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
 
@@ -41,8 +41,10 @@ export async function PATCH(
   if (error) return error;
   const { published } = data;
 
+  const { id } = await params;
+
   const existing = await prisma.blogPost.findUnique({
-    where: { id: params.id },
+    where: { id },
     select: { id: true },
   });
 
@@ -51,7 +53,7 @@ export async function PATCH(
   }
 
   const updated = await prisma.blogPost.update({
-    where: { id: params.id },
+    where: { id },
     data: { published },
     select: { id: true, published: true },
   });
