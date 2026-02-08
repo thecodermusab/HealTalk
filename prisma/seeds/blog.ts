@@ -14,7 +14,7 @@ export const blogAuthorSeedData = [
     name: "Radia Ahmed Abdirahman",
     role: "Head of Care Operations",
     bio: "Radia Ahmed is a licensed therapist specializing in depression, family dynamics, and relationship counseling.",
-    imageUrl: "/images/ciro.png",
+    imageUrl: "/images/Ciro.png",
     linkedinUrl: "#"
   },
   {
@@ -28,14 +28,14 @@ export const blogAuthorSeedData = [
     name: "Sabirin Ali Isack",
     role: "Director of Operations",
     bio: "Sabiriin is a mental health professional specializing in holistic wellness and community mental health.",
-    imageUrl: "/images/koonfur.png",
+    imageUrl: "/images/Koonfur.png",
     linkedinUrl: "#"
   },
   {
     name: "Abdulkadir Mohamed Abdi",
     role: "Head of People",
     bio: "Abdulkadir is a mental health advocate focused on organizational wellness and employee mental health.",
-    imageUrl: "/images/koonfur.png",
+    imageUrl: "/images/Koonfur.png",
     linkedinUrl: "#"
   }
 ];

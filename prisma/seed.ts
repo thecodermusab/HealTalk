@@ -193,7 +193,13 @@ async function main() {
   for (const a of blogAuthorSeedData) {
     const author = await prisma.blogAuthor.upsert({
       where: { name: a.name },
-      update: {},
+      update: {
+        role: a.role,
+        bio: a.bio,
+        imageUrl: a.imageUrl,
+        linkedinUrl: a.linkedinUrl,
+        socialLabel: a.socialLabel ?? null,
+      },
       create: a
     });
     authorMap.set(a.name, author.id);
