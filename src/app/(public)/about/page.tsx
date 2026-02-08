@@ -13,7 +13,7 @@ const leaders = [
     id: 1,
     name: "Mr. Musab Mohamed",
     role: "CEO / Partner",
-    image: "/images/Me.png",
+    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=800&fit=crop&q=80",
     socialUrl: "https://www.instagram.com/maahir.03?igsh=anY3cXUzanhwNTNj&utm_source=qr",
     socialLabel: "Instagram"
   },
@@ -21,7 +21,7 @@ const leaders = [
     id: 2,
     name: "Mss. Ugbad Bashir Barre",
     role: "Client Director",
-    image: "/images/Mustaf.png",
+    image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=800&h=800&fit=crop&q=80",
     socialUrl: "https://instagram.com",
     socialLabel: "Instagram"
   },
@@ -29,7 +29,7 @@ const leaders = [
     id: 3,
     name: "Mss. Radia Ahmed Abdirahman",
     role: "Head of Care Operations",
-    image: "/images/Ciro.png",
+    image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&h=800&fit=crop&q=80",
     socialUrl: "https://instagram.com",
     socialLabel: "Instagram"
   },
@@ -37,7 +37,7 @@ const leaders = [
     id: 4,
     name: "Mss. Sabirin Ali Isack",
     role: "Director of Operations",
-    image: "/images/Koonfur.png",
+    image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&h=800&fit=crop&q=80",
     socialUrl: "https://instagram.com",
     socialLabel: "Instagram"
   },
@@ -45,7 +45,7 @@ const leaders = [
     id: 5,
     name: "Mr. Abdulkadir Mohamed Abdi",
     role: "Head of People",
-    image: "/images/Koonfur.png",
+    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=800&h=800&fit=crop&q=80",
     socialUrl: "https://instagram.com",
     socialLabel: "Instagram"
   },
