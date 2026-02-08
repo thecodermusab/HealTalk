@@ -29,7 +29,7 @@ const leaders = [
     id: 3,
     name: "Mss. Radia Ahmed Abdirahman",
     role: "Head of Care Operations",
-    image: "/images/ciro.png",
+    image: "/images/Ciro.png",
     socialUrl: "https://instagram.com",
     socialLabel: "Instagram"
   },
@@ -37,7 +37,7 @@ const leaders = [
     id: 4,
     name: "Mss. Sabirin Ali Isack",
     role: "Director of Operations",
-    image: "/images/koonfur.png",
+    image: "/images/Koonfur.png",
     socialUrl: "https://instagram.com",
     socialLabel: "Instagram"
   },
@@ -45,7 +45,7 @@ const leaders = [
     id: 5,
     name: "Mr. Abdulkadir Mohamed Abdi",
     role: "Head of People",
-    image: "/images/koonfur.png",
+    image: "/images/Koonfur.png",
     socialUrl: "https://instagram.com",
     socialLabel: "Instagram"
   },
