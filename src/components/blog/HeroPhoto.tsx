@@ -10,11 +10,11 @@ export function HeroPhoto({ post }: HeroPhotoProps) {
   return (
     <div className="w-full max-w-[1100px] mx-auto px-4 md:px-8 mb-16 md:mb-24">
       {/* Intro Text */}
-      <div className="max-w-4xl mb-12">
-        <h1 className="text-[96px] font-normal leading-[1.05] tracking-tight text-[#131E0D] mb-6 font-logo">
+      <div className="max-w-4xl mb-8 md:mb-12">
+        <h1 className="text-[40px] md:text-[72px] lg:text-[96px] font-normal leading-[1.05] tracking-tight text-[#131E0D] mb-4 md:mb-6 font-logo">
             {post.title}
         </h1>
-        <p className="text-[32px] font-bold leading-relaxed max-w-2xl text-[#131E0D] font-heading">
+        <p className="text-[18px] md:text-[24px] lg:text-[32px] font-bold leading-relaxed max-w-2xl text-[#131E0D] font-heading">
             {post.subtitle}
         </p>
       </div>

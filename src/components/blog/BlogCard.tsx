@@ -24,10 +24,10 @@ export function BlogCard({ post }: BlogCardProps) {
 
         {/* Card Content - Clean whitespace, no borders */}
         <div className="flex flex-col gap-2">
-            <h3 className="text-[32px] font-bold font-heading text-[#131E0D] leading-tight group-hover:text-gray-600 transition-colors">
+            <h3 className="text-[22px] md:text-[28px] lg:text-[32px] font-bold font-heading text-[#131E0D] leading-tight group-hover:text-gray-600 transition-colors">
                 {post.title}
             </h3>
-            <p className="text-[20px] font-normal font-heading text-[#131E0D] line-clamp-3 leading-relaxed">
+            <p className="text-[15px] md:text-[18px] lg:text-[20px] font-normal font-heading text-[#131E0D] line-clamp-3 leading-relaxed">
                 {post.excerpt}
             </p>
         </div>
