@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/email";
 import { appointmentConfirmationEmail } from "@/lib/appointment-emails";
+import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { parseJson, parseSearchParams } from "@/lib/validation";
 import { requireRateLimit } from "@/lib/rate-limit";
@@ -40,7 +41,10 @@ export async function GET(request: Request) {
     });
     if (rateLimit) return rateLimit;
 
-    const userId = (session.user as any).id;
+    const userId = session.user.id;
+    if (!userId || typeof userId !== "string") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const { data: query, error } = parseSearchParams(request, appointmentQuerySchema);
     if (error) return error;
     const status = query.status;
@@ -54,7 +58,7 @@ export async function GET(request: Request) {
       where: { userId },
     });
 
-    const where: any = {};
+    const where: Prisma.AppointmentWhereInput = {};
     if (status) {
       where.status = status;
     }
@@ -136,14 +140,55 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid appointment date/time" }, { status: 400 });
     }
 
-    const userId = (session.user as any).id;
+    if (parsedStart >= parsedEnd) {
+      return NextResponse.json(
+        { error: "Appointment end time must be after start time" },
+        { status: 400 }
+      );
+    }
+
+    if (parsedStart < new Date()) {
+      return NextResponse.json(
+        { error: "Appointments must be scheduled in the future" },
+        { status: 400 }
+      );
+    }
+
+    const actualDuration = Math.round(
+      (parsedEnd.getTime() - parsedStart.getTime()) / 60000
+    );
+    if (actualDuration !== duration) {
+      return NextResponse.json(
+        { error: "Duration must match start and end time" },
+        { status: 400 }
+      );
+    }
+
+    if (![60, 90].includes(duration)) {
+      return NextResponse.json(
+        { error: "Duration must be either 60 or 90 minutes" },
+        { status: 400 }
+      );
+    }
+
+    if (parsedDate.toDateString() !== parsedStart.toDateString()) {
+      return NextResponse.json(
+        { error: "Date must match appointment start time" },
+        { status: 400 }
+      );
+    }
+
+    const userId = session.user.id;
+    if (!userId || typeof userId !== "string") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     let patient = await prisma.patient.findUnique({
       where: { userId },
     });
 
     if (!patient) {
-      const role = (session.user as any).role;
+      const role = session.user.role;
       if (role && role !== "PATIENT") {
         return NextResponse.json(
           { error: "Only patients can book appointments." },
@@ -164,13 +209,55 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Psychologist not found" }, { status: 404 });
     }
 
+    if (psychologist.status !== "APPROVED") {
+      return NextResponse.json(
+        { error: "This psychologist is not available for booking" },
+        { status: 400 }
+      );
+    }
+
+    const [psychologistConflict, patientConflict] = await Promise.all([
+      prisma.appointment.findFirst({
+        where: {
+          psychologistId,
+          status: "SCHEDULED",
+          startTime: { lt: parsedEnd },
+          endTime: { gt: parsedStart },
+        },
+        select: { id: true },
+      }),
+      prisma.appointment.findFirst({
+        where: {
+          patientId: patient.id,
+          status: "SCHEDULED",
+          startTime: { lt: parsedEnd },
+          endTime: { gt: parsedStart },
+        },
+        select: { id: true },
+      }),
+    ]);
+
+    if (psychologistConflict) {
+      return NextResponse.json(
+        { error: "Selected time is no longer available." },
+        { status: 409 }
+      );
+    }
+
+    if (patientConflict) {
+      return NextResponse.json(
+        { error: "You already have another appointment at this time." },
+        { status: 409 }
+      );
+    }
+
     const price = duration === 90 ? psychologist.price90 : psychologist.price60;
 
     const appointment = await prisma.appointment.create({
       data: {
         patientId: patient.id,
         psychologistId,
-        date: parsedDate,
+        date: parsedStart,
         startTime: parsedStart,
         endTime: parsedEnd,
         duration,

@@ -8,6 +8,7 @@ import { User, Bell, Shield, Save, Eye, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import { AvatarUploader } from "@/components/profile/AvatarUploader";
+import SupabaseLinkCard from "@/components/settings/SupabaseLinkCard";
 
 const splitName = (value: string) => {
   const trimmed = value.trim();
@@ -330,6 +331,7 @@ export default function SettingsPage() {
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
 
                    <div className="space-y-4 mt-8">
+                      <SupabaseLinkCard />
                       <div className="space-y-2">
                          <label className="text-sm font-medium text-gray-700">Current Password</label>
                          <Input type="password" placeholder="••••••••" />

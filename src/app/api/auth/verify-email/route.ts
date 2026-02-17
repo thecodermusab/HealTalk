@@ -5,6 +5,10 @@ import { z } from "zod";
 import { parseSearchParams } from "@/lib/validation";
 import { requireRateLimit } from "@/lib/rate-limit";
 import { createAuditLog } from "@/lib/audit";
+import {
+  confirmSupabaseUserEmail,
+  isSupabaseAuthMigrationEnabled,
+} from "@/lib/supabase-auth";
 
 const verifyEmailSchema = z.object({
   token: z.string().min(1),
@@ -25,13 +29,9 @@ export async function GET(request: NextRequest) {
     const { token } = data;
 
     const hashedToken = hashToken(token);
-    let verificationToken =
-      (await prisma.verificationToken.findUnique({
-        where: { token: hashedToken },
-      })) ||
-      (await prisma.verificationToken.findUnique({
-        where: { token },
-      }));
+    const verificationToken = await prisma.verificationToken.findUnique({
+      where: { token: hashedToken },
+    });
 
     if (!verificationToken) {
       return NextResponse.json({ error: "Invalid or expired token" }, { status: 400 });
@@ -63,10 +63,32 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    await prisma.user.update({
+    const updatedUser = await prisma.user.update({
       where: { id: user.id },
       data: { emailVerified: new Date() },
+      select: {
+        id: true,
+        supabaseAuthId: true,
+        authProvider: true,
+      },
     });
+
+    if (isSupabaseAuthMigrationEnabled() && updatedUser.supabaseAuthId) {
+      const confirmation = await confirmSupabaseUserEmail(
+        updatedUser.supabaseAuthId
+      );
+
+      if (!confirmation.ok && confirmation.error) {
+        console.warn("Supabase email confirmation failed:", confirmation.error);
+      }
+
+      if (updatedUser.authProvider === "NEXTAUTH") {
+        await prisma.user.update({
+          where: { id: updatedUser.id },
+          data: { authProvider: "HYBRID" },
+        });
+      }
+    }
 
     await createAuditLog({
       actorId: user.id,

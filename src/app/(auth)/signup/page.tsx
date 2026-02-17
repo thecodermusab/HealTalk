@@ -4,6 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { Eye, EyeOff } from "lucide-react";
+import { fetchCsrfToken } from "@/lib/client-security";
+import { isSupabaseGooglePreferred } from "@/lib/auth-cutover";
+import { startSupabaseGoogleOAuth } from "@/lib/supabase-browser";
 
 export default function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -21,6 +24,13 @@ export default function SignUpPage() {
   const handleGoogleSignIn = async () => {
     if (isGoogleSubmitting) return;
     setIsGoogleSubmitting(true);
+    if (isSupabaseGooglePreferred()) {
+      const result = startSupabaseGoogleOAuth();
+      if (result.ok) return;
+      setErrorMessage(result.error || "Google sign-in failed. Please try again.");
+      setIsGoogleSubmitting(false);
+      return;
+    }
     await signIn("google", { callbackUrl: "/oauth-redirect" });
   };
 
@@ -37,11 +47,15 @@ export default function SignUpPage() {
 
     setIsSubmitting(true);
     setErrorMessage(null);
+    const csrfToken = await fetchCsrfToken();
 
     // Simplified registration logic matching the UI fields
     const response = await fetch("/api/auth/register", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(csrfToken ? { "x-csrf-token": csrfToken } : {}),
+      },
       body: JSON.stringify({
         fullName: formData.fullName,
         email: formData.email,

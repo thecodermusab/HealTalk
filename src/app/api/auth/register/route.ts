@@ -8,6 +8,12 @@ import { parseJson } from "@/lib/validation";
 import { requireRateLimit } from "@/lib/rate-limit";
 import { validateCsrf } from "@/lib/csrf";
 import { createAuditLog } from "@/lib/audit";
+import {
+  createSupabaseUserForMigration,
+  isSupabaseAuthMigrationEnabled,
+  signInSupabaseWithPassword,
+  verifySupabaseAccessToken,
+} from "@/lib/supabase-auth";
 
 const registerSchema = z
   .object({
@@ -136,6 +142,48 @@ export async function POST(request: Request) {
         role: true,
       },
     });
+
+    if (isSupabaseAuthMigrationEnabled()) {
+      let supabaseAuthId: string | null = null;
+      let syncError: string | null = null;
+
+      const createResult = await createSupabaseUserForMigration({
+        email,
+        password,
+        emailConfirmed: false,
+      });
+
+      if (createResult.userId) {
+        supabaseAuthId = createResult.userId;
+      } else {
+        syncError = createResult.error;
+        const signInResult = await signInSupabaseWithPassword(email, password);
+        if (signInResult.accessToken) {
+          const verification = await verifySupabaseAccessToken(
+            signInResult.accessToken
+          );
+          supabaseAuthId = verification.user?.id || null;
+          if (!supabaseAuthId && verification.error) {
+            syncError = verification.error;
+          }
+        } else if (signInResult.error) {
+          syncError = signInResult.error;
+        }
+      }
+
+      if (supabaseAuthId) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            supabaseAuthId,
+            supabaseLinkedAt: new Date(),
+            authProvider: "HYBRID",
+          },
+        });
+      } else if (syncError) {
+        console.warn("Supabase auth sync skipped:", syncError);
+      }
+    }
 
     await createAuditLog({
       actorId: user.id,

@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { CheckCircle, CreditCard, Lock, ShieldCheck } from "lucide-react";
-import Link from "next/link";
 import { useState, Suspense } from "react";
 
 function CheckoutContent() {
@@ -32,6 +31,7 @@ function CheckoutContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const handlePayment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,9 +85,19 @@ function CheckoutContent() {
       }
 
       setSuccess(true);
+      setSuccessMessage(
+        `You booked appointment on ${dateLabel} at ${timeLabel}. Redirecting...`
+      );
       setIsLoading(false);
-      router.push("/patient/dashboard/appointments");
-    } catch (err) {
+      const redirectParams = new URLSearchParams({
+        booked: "1",
+        bookedDate: dateLabel,
+        bookedTime: timeLabel,
+      });
+      setTimeout(() => {
+        router.push(`/find-psychologists?${redirectParams.toString()}`);
+      }, 1800);
+    } catch {
       setError("Payment failed. Please try again.");
       setIsLoading(false);
     }
@@ -143,8 +153,10 @@ function CheckoutContent() {
                             {error && (
                               <p className="text-sm text-red-500 mt-3">{error}</p>
                             )}
-                            {success && !error && (
-                              <p className="text-sm text-emerald-600 mt-3">Payment successful. Booking confirmed.</p>
+                            {success && !error && successMessage && (
+                              <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2">
+                                <p className="text-sm text-emerald-700">{successMessage}</p>
+                              </div>
                             )}
                             
                             <div className="flex items-center justify-center gap-2 text-sm text-slate-500 mt-4">

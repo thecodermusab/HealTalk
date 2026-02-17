@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import FilterBar, { FilterState } from "@/components/psychologists/FilterBar";
 import TherapistListCard from "@/components/psychologists/TherapistListCard";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ import { ChevronDown, Loader2 } from "lucide-react";
 interface PsychologistFromAPI {
   id: string;
   userId: string;
+  status: "PENDING" | "APPROVED" | "REJECTED" | "SUSPENDED";
   credentials: string;
   experience: number;
   bio: string;
@@ -27,7 +29,34 @@ interface PsychologistFromAPI {
   } | null;
 }
 
+interface TherapistHighlight {
+  icon: string;
+  label: string;
+  color: string;
+}
+
+interface TherapistCardData {
+  id: string;
+  name: string;
+  title: string;
+  image: string;
+  verified: boolean;
+  rating: number;
+  reviewCount: number;
+  location: string;
+  priceRange: string;
+  languages: string[];
+  conditions: string[];
+  about: string;
+  experience: number;
+  sessionDuration: string;
+  nextAvailable: string;
+  highlights: TherapistHighlight[];
+  insurances?: string[];
+}
+
 export default function FindPsychologistsPage() {
+  const searchParams = useSearchParams();
   const [filters, setFilters] = useState<FilterState>({
     location: [],
     insurance: [],
@@ -36,14 +65,36 @@ export default function FindPsychologistsPage() {
     priceRange: [],
     ethnicity: []
   });
-  const [psychologists, setPsychologists] = useState<any[]>([]);
+  const [psychologists, setPsychologists] = useState<TherapistCardData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [devPendingNotice, setDevPendingNotice] = useState(false);
+  const [bookingNotice, setBookingNotice] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
+    const booked = searchParams?.get("booked");
+    if (booked !== "1") {
+      setBookingNotice(null);
+      return;
+    }
+
+    const bookedDate = searchParams?.get("bookedDate");
+    const bookedTime = searchParams?.get("bookedTime");
+    if (bookedDate && bookedTime) {
+      setBookingNotice(`You booked appointment on ${bookedDate} at ${bookedTime}.`);
+      return;
+    }
+
+    setBookingNotice("Your appointment was booked successfully.");
+  }, [searchParams]);
+
+  useEffect(() => {
     const fetchPsychologists = async () => {
       setLoading(true);
+      setFetchError(null);
+      setDevPendingNotice(false);
       try {
         const params = new URLSearchParams({
           page: page.toString(),
@@ -56,15 +107,29 @@ export default function FindPsychologistsPage() {
         }
 
         const res = await fetch(`/api/psychologists?${params}`);
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+          setFetchError(typeof data?.error === "string" ? data.error : "Unable to load psychologists right now.");
+          if (page === 1) {
+            setPsychologists([]);
+            setTotalPages(1);
+          }
+          return;
+        }
+
+        const apiPsychologists: PsychologistFromAPI[] = Array.isArray(data?.psychologists)
+          ? data.psychologists
+          : [];
+        setDevPendingNotice(Boolean(data?.showingPendingFallback));
 
         // Transform API data to match component expectations
-        const transformedData = data.psychologists.map((p: PsychologistFromAPI) => ({
+        const transformedData = apiPsychologists.map((p) => ({
           id: p.id,
-          name: p.user.name,
+          name: p.user?.name || 'Therapist',
           title: p.credentials,
-          image: p.user.image || 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=300&h=300',
-          verified: true,
+          image: p.user?.image || 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=300&h=300',
+          verified: p.status === "APPROVED",
           rating: p.rating,
           reviewCount: p.reviewCount,
           location: p.hospital?.location || 'Remote',
@@ -78,10 +143,15 @@ export default function FindPsychologistsPage() {
           highlights: [{ icon: "Video", label: "Available Online", color: "bg-green-100 text-green-800" }],
         }));
 
-        setPsychologists(transformedData);
-        setTotalPages(data.pagination.totalPages);
+        setPsychologists((prev) => (page === 1 ? transformedData : [...prev, ...transformedData]));
+        setTotalPages(Number(data?.pagination?.totalPages) || 1);
       } catch (error) {
-        console.error('Error fetching psychologists:', error);
+        const message = error instanceof Error ? error.message : "Unable to load psychologists right now.";
+        setFetchError(message);
+        if (page === 1) {
+          setPsychologists([]);
+          setTotalPages(1);
+        }
       } finally {
         setLoading(false);
       }
@@ -99,9 +169,9 @@ export default function FindPsychologistsPage() {
   const filteredPsychologists = psychologists.filter((psych) => {
     // Location Filter (client-side for now)
     if (filters.location.length > 0) {
-      const isOnlineSelected = filters.location.some(l => l.includes("Online"));
-      const isOnline = psych.highlights?.some((h: any) => h.label === "Available Online") || psych.location.toLowerCase().includes("online");
-      const locationMatch = filters.location.some(l => psych.location.includes(l));
+      const isOnlineSelected = filters.location.some((l) => l.includes("Online"));
+      const isOnline = psych.highlights?.some((h) => h.label === "Available Online") || psych.location.toLowerCase().includes("online");
+      const locationMatch = filters.location.some((l) => psych.location.includes(l));
 
       if (!((isOnlineSelected && isOnline) || locationMatch)) {
          return false;
@@ -161,10 +231,20 @@ export default function FindPsychologistsPage() {
         </div>
 
         {/* Filter Bar */}
+        {bookingNotice && (
+          <div className="mb-4 text-sm text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3">
+            {bookingNotice}
+          </div>
+        )}
         <FilterBar activeFilters={filters} onApplyFilters={handleApplyFilters} />
 
         {/* Results List */}
         <div className="space-y-4">
+           {devPendingNotice && (
+              <div className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+                Showing pending doctors in development mode because no approved doctors were found yet.
+              </div>
+           )}
            {loading ? (
               <div className="text-center py-20">
                   <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary mb-4" />
@@ -176,8 +256,12 @@ export default function FindPsychologistsPage() {
               ))
            ) : (
                <div className="text-center py-20 text-slate-500 bg-slate-50 rounded-xl border border-slate-100 mt-4">
-                   <p className="text-lg font-medium text-slate-700">No psychologists match your current filters.</p>
-                   <p className="text-slate-400 text-sm mt-1">Try adjusting your filters or search criteria.</p>
+                   <p className="text-lg font-medium text-slate-700">
+                     {fetchError ? "We could not load psychologists right now." : "No psychologists match your current filters."}
+                   </p>
+                   <p className="text-slate-400 text-sm mt-1">
+                     {fetchError ? fetchError : "Try adjusting your filters or search criteria."}
+                   </p>
                    <Button variant="link" onClick={() => { setFilters({location:[], insurance:[], language:[], conditions:[], priceRange:[], ethnicity:[]}); setPage(1); }} className="text-primary mt-4">Clear all filters</Button>
                </div>
            )}

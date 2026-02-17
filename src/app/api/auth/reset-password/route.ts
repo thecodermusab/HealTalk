@@ -7,6 +7,10 @@ import { parseJson } from "@/lib/validation";
 import { requireRateLimit } from "@/lib/rate-limit";
 import { validateCsrf } from "@/lib/csrf";
 import { createAuditLog } from "@/lib/audit";
+import {
+  isSupabaseAuthMigrationEnabled,
+  updateSupabaseUserPassword,
+} from "@/lib/supabase-auth";
 
 const resetPasswordSchema = z.object({
   token: z.string().min(1),
@@ -33,13 +37,9 @@ export async function POST(req: Request) {
 
     // Check token
     const hashedToken = hashToken(token);
-    let verificationToken =
-      (await prisma.verificationToken.findUnique({
-        where: { token: hashedToken },
-      })) ||
-      (await prisma.verificationToken.findUnique({
-        where: { token },
-      }));
+    const verificationToken = await prisma.verificationToken.findUnique({
+      where: { token: hashedToken },
+    });
 
     if (!verificationToken) {
       return NextResponse.json({ error: "Invalid or expired token" }, { status: 400 });
@@ -68,10 +68,27 @@ export async function POST(req: Request) {
     // Update Password
     const hashedPassword = await bcrypt.hash(password, 12);
     
-    await prisma.user.update({
+    const updatedUser = await prisma.user.update({
         where: { id: user.id },
-        data: { password: hashedPassword }
+        data: { password: hashedPassword },
+        select: { id: true, supabaseAuthId: true, authProvider: true },
     });
+
+    if (isSupabaseAuthMigrationEnabled() && updatedUser.supabaseAuthId) {
+      const sync = await updateSupabaseUserPassword(
+        updatedUser.supabaseAuthId,
+        password
+      );
+
+      if (!sync.ok && sync.error) {
+        console.warn("Supabase password sync failed:", sync.error);
+      } else if (updatedUser.authProvider === "NEXTAUTH") {
+        await prisma.user.update({
+          where: { id: updatedUser.id },
+          data: { authProvider: "HYBRID" },
+        });
+      }
+    }
 
     await createAuditLog({
       actorId: user.id,

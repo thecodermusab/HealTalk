@@ -8,6 +8,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -21,6 +22,9 @@ model User {
   dateOfBirth   DateTime?
   role          UserRole  @default(PATIENT)
   status        UserStatus @default(ACTIVE)
+  authProvider  AuthProvider @default(NEXTAUTH)
+  supabaseAuthId String?   @unique
+  supabaseLinkedAt DateTime?
   suspendedAt   DateTime?
   bannedAt      DateTime?
   createdAt     DateTime  @default(now())
@@ -45,6 +49,12 @@ enum UserStatus {
   ACTIVE
   SUSPENDED
   BANNED
+}
+
+enum AuthProvider {
+  NEXTAUTH
+  SUPABASE
+  HYBRID
 }
 
 model Account {

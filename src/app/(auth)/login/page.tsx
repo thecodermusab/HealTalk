@@ -5,6 +5,14 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getSession, signIn } from "next-auth/react";
 import { Eye, EyeOff } from "lucide-react";
+import {
+  isSupabaseGooglePreferred,
+  isSupabasePasswordPreferred,
+} from "@/lib/auth-cutover";
+import {
+  signInWithSupabasePassword,
+  startSupabaseGoogleOAuth,
+} from "@/lib/supabase-browser";
 
 // Auth helpers
 const authErrorMessages: Record<string, string> = {
@@ -12,6 +20,7 @@ const authErrorMessages: Record<string, string> = {
   AccessDenied: "Please verify your email before signing in.",
   OAuthAccountNotLinked: "This email is linked to a different sign-in method.",
   OAuthCallbackError: "Social sign-in failed. Please try again.",
+  SupabaseSignin: "Supabase sign-in failed. Please check your credentials.",
 };
 
 const getPostLoginPath = (role?: string) => {
@@ -60,6 +69,14 @@ function LoginForm() {
   const handleGoogleSignIn = async () => {
     if (isGoogleSubmitting) return;
     setIsGoogleSubmitting(true);
+    if (isSupabaseGooglePreferred()) {
+      const result = startSupabaseGoogleOAuth();
+      if (result.ok) return;
+      setErrorMessage(result.error || authErrorMessages.OAuthCallbackError);
+      setIsGoogleSubmitting(false);
+      return;
+    }
+
     await signIn("google", { callbackUrl: "/oauth-redirect" });
   };
 
@@ -70,6 +87,32 @@ function LoginForm() {
     setIsSubmitting(true);
     setErrorMessage(null);
 
+    let supabaseError: string | null = null;
+    if (isSupabasePasswordPreferred()) {
+      const supabaseSignIn = await signInWithSupabasePassword(
+        formData.email,
+        formData.password
+      );
+
+      if (supabaseSignIn.accessToken) {
+        const result = await signIn("supabase-token", {
+          redirect: false,
+          accessToken: supabaseSignIn.accessToken,
+        });
+
+        if (result && !result.error) {
+          const session = await getSession();
+          const role = (session?.user as { role?: string } | undefined)?.role;
+          router.push(getPostLoginPath(role));
+          return;
+        }
+
+        supabaseError = authErrorMessages.SupabaseSignin;
+      } else if (supabaseSignIn.error) {
+        supabaseError = authErrorMessages.SupabaseSignin;
+      }
+    }
+
     const result = await signIn("credentials", {
       redirect: false,
       email: formData.email,
@@ -77,7 +120,7 @@ function LoginForm() {
     });
 
     if (!result || result.error) {
-      setErrorMessage(authErrorMessages.CredentialsSignin);
+      setErrorMessage(supabaseError || authErrorMessages.CredentialsSignin);
       setIsSubmitting(false);
       return;
     }
