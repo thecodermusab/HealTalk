@@ -3,7 +3,6 @@
 import Image from "next/image";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import InfiniteLogoCarousel from "@/components/InfiniteLogoCarousel";
 import WhoAreWeSection from "@/components/about/WhoAreWeSection";
 import CoreValuesSection from "@/components/about/CoreValuesSection";
 import { AboutSlideshow } from "@/components/about/AboutSlideshow";
@@ -104,9 +103,6 @@ export default function AboutPage() {
 
         </div>
       </section>
-
-      {/* INFINITE LOGO CAROUSEL */}
-      <InfiniteLogoCarousel />
 
       {/* SECTION 2: STORY & VIDEO */}
       <section className="py-[48px] px-10">

@@ -11,7 +11,6 @@ export default function InfiniteLogoCarousel() {
   const containerRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number | null>(null);
 
-  const [isDragging, setIsDragging] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
 
@@ -65,7 +64,6 @@ export default function InfiniteLogoCarousel() {
     state.current.lastTime = Date.now();
     state.current.velocity = 0;
 
-    setIsDragging(true);
     (e.target as Element).setPointerCapture(e.pointerId);
   };
 
@@ -105,7 +103,6 @@ export default function InfiniteLogoCarousel() {
 
   const onPointerUp = (e: React.PointerEvent) => {
     state.current.isDragging = false;
-    setIsDragging(false);
     (e.target as Element).releasePointerCapture(e.pointerId);
 
     // Apply momentum/inertia after release
