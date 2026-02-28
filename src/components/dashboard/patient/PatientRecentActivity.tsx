@@ -13,6 +13,20 @@ interface Activity {
   icon: "calendar" | "message" | "check" | "clock";
 }
 
+interface AppointmentActivityItem {
+  id: string;
+  status: string;
+  startTime: string;
+  endTime?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  psychologist?: {
+    user?: {
+      name?: string | null;
+    } | null;
+  } | null;
+}
+
 export function PatientRecentActivity() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
@@ -22,42 +36,49 @@ export function PatientRecentActivity() {
       try {
         // Fetch recent appointments
         const appointmentsRes = await fetch("/api/appointments");
+
+        // 401 = not logged in, 404 = no patient profile yet — both are normal, just show empty
+        if (appointmentsRes.status === 401 || appointmentsRes.status === 404) {
+          setActivities([]);
+          return;
+        }
+
         if (!appointmentsRes.ok) throw new Error("Failed to fetch appointments");
 
-        const appointments = await appointmentsRes.json();
+        const appointments = (await appointmentsRes.json()) as AppointmentActivityItem[];
 
         // Convert appointments to activities
         const recentActivities: Activity[] = appointments
           .slice(0, 5)
-          .map((apt: any) => {
-            const psychologistName = apt.psychologist?.user?.name || "Psychologist";
-            const status = apt.status;
+          .map((appointment) => {
+            const psychologistName = appointment.psychologist?.user?.name || "Psychologist";
+            const status = appointment.status;
 
             if (status === "COMPLETED") {
               return {
-                id: apt.id,
+                id: appointment.id,
                 type: "COMPLETED",
                 title: "Session Completed",
                 description: `Completed session with ${psychologistName}`,
-                timestamp: new Date(apt.endTime),
+                timestamp: new Date(appointment.endTime || appointment.startTime),
                 icon: "check" as const,
               };
             } else if (status === "SCHEDULED") {
               return {
-                id: apt.id,
+                id: appointment.id,
                 type: "APPOINTMENT",
                 title: "Appointment Scheduled",
                 description: `Upcoming session with ${psychologistName}`,
-                timestamp: new Date(apt.createdAt || apt.startTime),
+                timestamp: new Date(appointment.createdAt || appointment.startTime),
                 icon: "calendar" as const,
               };
             } else {
               return {
-                id: apt.id,
+                id: appointment.id,
                 type: "APPOINTMENT",
                 title: "Appointment Updated",
                 description: `${status} - ${psychologistName}`,
-                timestamp: new Date(apt.updatedAt || apt.startTime),
+                timestamp: new Date(appointment.updatedAt || appointment.startTime),
                 icon: "clock" as const,
               };
             }
