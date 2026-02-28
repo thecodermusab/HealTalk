@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ArrowRight, Calendar, Shield, Target, UserCheck } from "lucide-react";
+import { Calendar, Shield, Target, UserCheck } from "lucide-react";
 
 export default function WhyChooseHealTalk() {
   // TODO: tighten pill size/letter-spacing to match reference.
@@ -17,14 +17,13 @@ export default function WhyChooseHealTalk() {
       <div className="mx-auto max-w-[1140px] px-6 lg:px-8">
         <div className="mb-5 inline-flex items-center rounded-full border border-border bg-card px-4 py-1.5">
           <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-text-secondary">
-            Why Choose Us
+            Why HealTalk
           </span>
         </div>
 
         <h2 className="mb-10 max-w-3xl text-3xl font-semibold leading-tight text-foreground sm:text-4xl lg:mb-12 lg:text-[44px]">
-          Why{" "}
-          <span className="text-primary">HealTalk</span> is The Right Choice
-          for You
+          Simple care that actually{" "}
+          <span className="text-primary">fits your life</span>
         </h2>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 lg:grid-rows-2">
@@ -37,12 +36,12 @@ export default function WhyChooseHealTalk() {
               <UserCheck className="h-5 w-5 text-black/80" strokeWidth={1.5} />
             </div>
             <h3 className="mb-3 text-lg font-semibold text-black lg:text-xl">
-              Licensed Professionals
+              Qualified, caring therapists
             </h3>
             <p className="text-sm leading-relaxed text-black/70">
-              Learn from licensed psychologists with real-world clinical
-              experience, proven methods, and compassionate care designed for
-              your needs.
+              Every therapist is fully licensed and verified. They bring real
+              clinical experience and genuinely want to help — not just fill
+              an appointment slot.
             </p>
           </div>
 
@@ -55,11 +54,11 @@ export default function WhyChooseHealTalk() {
               <Shield className="h-5 w-5 text-secondary" strokeWidth={1.5} />
             </div>
             <h3 className="mb-3 text-lg font-semibold text-foreground lg:text-xl">
-              Confidential & Secure
+              What you share stays private
             </h3>
             <p className="text-sm leading-relaxed text-text-secondary">
-              Earn peace of mind with HIPAA-compliant sessions, end-to-end
-              encryption, and privacy-first care from day one.
+              Your sessions are fully encrypted and HIPAA-compliant. Nothing
+              is shared, sold, or seen by anyone outside your session.
             </p>
           </div>
 
@@ -79,11 +78,11 @@ export default function WhyChooseHealTalk() {
                 Flexible Scheduling
               </h3>
               <p className="mb-4 text-sm leading-relaxed text-black/70">
-                Balance therapy with real life. Choose times that work for you,
-                including evenings and weekends.
+                Pick morning, evening, or weekend slots that fit around work
+                and family — not the other way around.
               </p>
               <p className="text-sm leading-relaxed text-black/70">
-                You can change your schedule anytime.
+                You can reschedule anytime. No penalties, no hassle.
               </p>
             </div>
             <button
@@ -140,12 +139,12 @@ export default function WhyChooseHealTalk() {
               <Target className="h-5 w-5 text-black/80" strokeWidth={1.5} />
             </div>
             <h3 className="mb-3 text-lg font-semibold text-black lg:text-xl">
-              Comprehensive Specializations
+              Help for what you&apos;re going through
             </h3>
             <p className="text-sm leading-relaxed text-black/70">
-              Access psychologists specializing in anxiety, trauma,
-              relationships, and more, with practical care you can apply right
-              away.
+              Anxiety, burnout, grief, relationship stress, trauma — whatever
+              it is, we have a therapist who specialises in exactly that and
+              knows how to help.
             </p>
           </div>
         </div>

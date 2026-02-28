@@ -1,6 +1,5 @@
 "use client";
 
-import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 
 export default function CTASection() {
@@ -33,7 +32,7 @@ export default function CTASection() {
               lineHeight: "15px",
             }}
           >
-            GET STARTED TODAY
+            READY WHEN YOU ARE
           </span>
         </div>
 
@@ -48,8 +47,8 @@ export default function CTASection() {
             letterSpacing: "-0.02em",
           }}
         >
-          <span className="block">You can live fully.</span>
-          <span className="block">We're here to help.</span>
+          <span className="block">Start feeling better.</span>
+          <span className="block">We&apos;ll be with you.</span>
         </h2>
 
         {/* Primary Button */}

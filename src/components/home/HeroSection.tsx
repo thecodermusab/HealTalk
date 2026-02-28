@@ -1,22 +1,18 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 
 export default function HeroSection() {
     // Stage: 0 = Hero1 playing, 1 = Hero1 fading out / Hero2 playing? 
     // Actually, simplest is just activeVideo index: 1 or 2
     const [activeVideo, setActiveVideo] = useState<1 | 2>(1);
-    const [isVisible, setIsVisible] = useState(false);
+    const isVisible = true;
     
     // Refs to control playback if needed, though autoPlay usually handles it.
     // We might need to manually play the next video when switching to ensure it starts immediately.
     const video1Ref = useRef<HTMLVideoElement>(null);
     const video2Ref = useRef<HTMLVideoElement>(null);
-
-    useEffect(() => {
-        setIsVisible(true);
-    }, []);
 
     // Handle video ending
     const handleVideoEnd = (videoIndex: 1 | 2) => {
@@ -124,6 +120,7 @@ export default function HeroSection() {
                 
                 {/* Headline & Subtext Container */}
                 <div 
+                    suppressHydrationWarning
                     className={`absolute left-0 px-6 lg:left-[72px] lg:px-0 transition-all duration-1000 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
                     style={{
                         top: '25%', // Approx 200-250px from top
@@ -139,9 +136,9 @@ export default function HeroSection() {
                             whiteSpace: 'pre-line', // Respect line breaks in text
                         }}
                     >
-                        Helping you find<br />
-                        meaning in your<br />
-                        struggle.
+                        You don&apos;t have to<br />
+                        figure this out<br />
+                        alone.
                     </h1>
 
                 </div>
@@ -149,6 +146,7 @@ export default function HeroSection() {
 
                 {/* CTA BUTTON */}
                 <div 
+                    suppressHydrationWarning
                     className={`absolute left-6 lg:left-[72px] transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
                     style={{
                         bottom: '50px', // 40-60px from bottom

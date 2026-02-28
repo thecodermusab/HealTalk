@@ -8,21 +8,21 @@ import Image from "next/image";
 const testimonials = [
   {
     id: 1,
-    text: "HealTalk made it easy to find a therapist I trust. I feel calmer and more steady after each session.",
+    text: "I was nervous to try therapy, but my first session felt like talking to someone who genuinely cared. It made a real difference.",
     name: "Arne N.",
     role: "Client",
     image: "/images/portrait-1.png",
   },
   {
     id: 2,
-    text: "I booked a session in minutes and the video visit felt private and safe. The support is real.",
+    text: "I booked in under five minutes and the session felt completely safe. I didn't expect it to feel so normal — in a good way.",
     name: "Nora M.",
     role: "Client",
     image: "/images/portrait-2.png",
   },
   {
     id: 3,
-    text: "I was unsure at first, but my therapist listened and gave me simple tools I could use right away.",
+    text: "I kept telling myself I could handle it alone. Starting therapy was the best decision I've made this year.",
     name: "Sarah A.",
     role: "Client",
     image: "/images/portrait-3.png",
