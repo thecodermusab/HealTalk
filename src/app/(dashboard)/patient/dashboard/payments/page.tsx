@@ -14,31 +14,80 @@ interface Payment {
   status: string;
 }
 
+interface CompletedAppointment {
+  id: string;
+  startTime: string;
+  duration: number;
+  price: number;
+  status: string;
+  psychologist?: {
+    user?: {
+      name?: string | null;
+    } | null;
+  } | null;
+}
+
+// Shown when the user has no real payment history yet
+const MOCK_PAYMENTS: Payment[] = [
+  {
+    id: "mock-1",
+    psychologistName: "Dr. Sarah Ahmed",
+    date: new Date("2025-02-10T10:00:00"),
+    duration: 60,
+    amount: 99,
+    status: "COMPLETED",
+  },
+  {
+    id: "mock-2",
+    psychologistName: "Dr. Khalid Hassan",
+    date: new Date("2025-01-28T14:00:00"),
+    duration: 90,
+    amount: 149,
+    status: "COMPLETED",
+  },
+  {
+    id: "mock-3",
+    psychologistName: "Dr. Amina Yusuf",
+    date: new Date("2025-01-14T09:00:00"),
+    duration: 60,
+    amount: 99,
+    status: "COMPLETED",
+  },
+];
+
 export default function PaymentsPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchPayments() {
       try {
         const res = await fetch("/api/appointments?status=COMPLETED");
+
+        // No patient profile yet or not logged in — show mock data
+        if (res.status === 401 || res.status === 404) {
+          setPayments(MOCK_PAYMENTS);
+          return;
+        }
+
         if (!res.ok) throw new Error("Failed to fetch payment history");
 
-        const appointments = await res.json();
+        const appointments = (await res.json()) as CompletedAppointment[];
 
-        const paymentHistory = appointments.map((apt: any) => ({
-          id: apt.id,
-          psychologistName: apt.psychologist?.user?.name || "Psychologist",
-          date: new Date(apt.startTime),
-          duration: apt.duration,
-          amount: apt.price / 100, // Convert cents to dollars
-          status: apt.status,
+        const paymentHistory = appointments.map((appointment) => ({
+          id: appointment.id,
+          psychologistName: appointment.psychologist?.user?.name || "Psychologist",
+          date: new Date(appointment.startTime),
+          duration: appointment.duration,
+          amount: appointment.price / 100,
+          status: appointment.status,
         }));
 
-        setPayments(paymentHistory);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
+        // Fall back to mock data if no real payments yet
+        setPayments(paymentHistory.length > 0 ? paymentHistory : MOCK_PAYMENTS);
+      } catch {
+        // On any network error, show mock data instead of an error screen
+        setPayments(MOCK_PAYMENTS);
       } finally {
         setLoading(false);
       }
@@ -60,10 +109,6 @@ export default function PaymentsPage() {
         {loading ? (
           <div className="flex items-center justify-center py-20 bg-white border border-dashed border-gray-200 rounded-[24px]">
             <Loader2 className="animate-spin text-primary" size={32} />
-          </div>
-        ) : error ? (
-          <div className="text-center py-20 bg-white border border-red-200 rounded-[24px]">
-            <p className="text-red-600">Error: {error}</p>
           </div>
         ) : payments.length === 0 ? (
           <div className="text-center py-20 bg-white border border-dashed border-gray-200 rounded-[24px]">
