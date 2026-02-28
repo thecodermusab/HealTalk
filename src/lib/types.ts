@@ -99,9 +99,10 @@ export interface PodcastEpisode {
   id: string;
   episodeNumber: number;
   title: string;
-  description: string;
-  date: string;
-  duration: string;
+  description?: string;
+  host?: string;
+  date?: string;
+  duration?: string;
   spotifyUrl: string;
   youtubeUrl: string;
   published?: boolean;
