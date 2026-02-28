@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { Suspense, useMemo, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getSession, signIn } from "next-auth/react";
 import { Eye, EyeOff } from "lucide-react";
@@ -23,18 +24,46 @@ const authErrorMessages: Record<string, string> = {
   SupabaseSignin: "Supabase sign-in failed. Please check your credentials.",
 };
 
-const getPostLoginPath = (role?: string) => {
+type SearchParamsReader = {
+  get: (name: string) => string | null;
+};
+
+const getPostLoginPath = (role?: string, redirectParam?: string | null) => {
+  // If a safe relative redirect was requested (e.g. from onboarding), honour it.
+  if (redirectParam && redirectParam.startsWith("/")) return redirectParam;
   if (role === "ADMIN") return "/admin/dashboard";
   if (role === "PSYCHOLOGIST") return "/psychologist/dashboard";
   return "/patient/dashboard";
+};
+
+const getAuthQueryFeedback = (searchParams: SearchParamsReader | null) => {
+  if (!searchParams) {
+    return { queryErrorMessage: null, querySuccessMessage: null };
+  }
+
+  const error = searchParams.get("error");
+  const success = searchParams.get("success");
+
+  const queryErrorMessage = error
+    ? authErrorMessages[error] ?? "We could not sign you in. Please try again."
+    : null;
+  const querySuccessMessage =
+    success === "verified"
+      ? "Email verified. You can sign in now."
+      : success === "password_updated"
+      ? "Password updated. Please sign in with your new password."
+      : null;
+
+  return { queryErrorMessage, querySuccessMessage };
 };
 
 function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [runtimeErrorMessage, setRuntimeErrorMessage] = useState<string | null>(
+    null
+  );
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -42,29 +71,14 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  useEffect(() => {
-    if (!searchParams) return;
-
-    const error = searchParams.get("error");
-    const success = searchParams.get("success");
-    setErrorMessage(null);
-    setSuccessMessage(null);
-
-    if (error) {
-      setErrorMessage(
-        authErrorMessages[error] ?? "We could not sign you in. Please try again."
-      );
-      return;
-    }
-
-    if (success === "verified") {
-      setSuccessMessage("Email verified. You can sign in now.");
-    }
-
-    if (success === "password_updated") {
-      setSuccessMessage("Password updated. Please sign in with your new password.");
-    }
-  }, [searchParams]);
+  const { queryErrorMessage, querySuccessMessage } = useMemo(
+    () => getAuthQueryFeedback(searchParams),
+    [searchParams]
+  );
+  const errorMessage = runtimeErrorMessage ?? queryErrorMessage;
+  const successMessage = querySuccessMessage;
+  // Preserve the redirect destination set by the onboarding flow (or any other caller).
+  const redirectAfterLogin = searchParams?.get("redirect") ?? null;
 
   const handleGoogleSignIn = async () => {
     if (isGoogleSubmitting) return;
@@ -72,7 +86,7 @@ function LoginForm() {
     if (isSupabaseGooglePreferred()) {
       const result = startSupabaseGoogleOAuth();
       if (result.ok) return;
-      setErrorMessage(result.error || authErrorMessages.OAuthCallbackError);
+      setRuntimeErrorMessage(result.error || authErrorMessages.OAuthCallbackError);
       setIsGoogleSubmitting(false);
       return;
     }
@@ -85,7 +99,7 @@ function LoginForm() {
     if (isSubmitting || !formData.email || !formData.password) return;
     
     setIsSubmitting(true);
-    setErrorMessage(null);
+    setRuntimeErrorMessage(null);
 
     let supabaseError: string | null = null;
     if (isSupabasePasswordPreferred()) {
@@ -103,7 +117,7 @@ function LoginForm() {
         if (result && !result.error) {
           const session = await getSession();
           const role = (session?.user as { role?: string } | undefined)?.role;
-          router.push(getPostLoginPath(role));
+          router.push(getPostLoginPath(role, redirectAfterLogin));
           return;
         }
 
@@ -120,14 +134,14 @@ function LoginForm() {
     });
 
     if (!result || result.error) {
-      setErrorMessage(supabaseError || authErrorMessages.CredentialsSignin);
+      setRuntimeErrorMessage(supabaseError || authErrorMessages.CredentialsSignin);
       setIsSubmitting(false);
       return;
     }
 
     const session = await getSession();
     const role = (session?.user as { role?: string } | undefined)?.role;
-    router.push(getPostLoginPath(role));
+    router.push(getPostLoginPath(role, redirectAfterLogin));
   };
 
   const isFormValid = formData.email.trim().length > 0 && formData.password.trim().length > 0;
@@ -148,9 +162,11 @@ function LoginForm() {
           {/* Logo Mark + Text */}
           <div className="flex items-center gap-2 mb-6">
             <Link href="/" className="inline-flex items-center">
-              <img
+              <Image
                 src="/images/New_Logo.png"
                 alt="HealTalk logo"
+                width={112}
+                height={28}
                 className="h-7 w-auto"
               />
             </Link>
