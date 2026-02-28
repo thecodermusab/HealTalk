@@ -2,6 +2,7 @@ import React from "react";
 import { notFound } from "next/navigation";
 import { BlogPostLayout } from "@/components/blog/BlogPostLayout";
 import { AuthorBand } from "@/components/blog/AuthorBand";
+import { RESOURCE_FALLBACK_GUIDES } from "@/lib/resource-fallback";
 
 // Reuse the blog layout for now as it's clean and "Amby" style
 // We'll create a simple "Download / Content" view for the guide
@@ -12,23 +13,32 @@ interface PageProps {
   };
 }
 
+type GuideRecord = {
+  id: string;
+  title: string;
+  coverTitle?: string;
+  theme: string;
+  href: string;
+};
+
 async function getGuides() {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/guides`, {
-      cache: 'no-store'
+      next: { revalidate: 120 },
     });
-    if (!res.ok) return [];
+    if (!res.ok) return RESOURCE_FALLBACK_GUIDES;
     const data = await res.json();
-    return data.guides || [];
+    const guides = Array.isArray(data.guides) ? data.guides : [];
+    return guides.length > 0 ? guides : RESOURCE_FALLBACK_GUIDES;
   } catch (error) {
     console.error('Failed to fetch guides:', error);
-    return [];
+    return RESOURCE_FALLBACK_GUIDES;
   }
 }
 
 export default async function GuideDetailPage({ params }: PageProps) {
   const guides = await getGuides();
-  const guide = guides.find((g: any) => {
+  const guide = guides.find((g: GuideRecord) => {
       // Handle both full href matching or just slug matching
       const slugFromHref = g.href.split("/").filter(Boolean).pop();
       return slugFromHref === params.slug;
@@ -50,7 +60,7 @@ export default async function GuideDetailPage({ params }: PageProps) {
                 {guide.title}
             </h1>
             <p className="text-lg md:text-xl leading-relaxed max-w-2xl text-[#1a1a1a]/80">
-                This is a placeholder for the guide content. In a real application, this would contain the form to download "{guide.title}" or the full HTML content.
+                This is a placeholder for the guide content. In a real application, this would contain the form to download &ldquo;{guide.title}&rdquo; or the full HTML content.
             </p>
          </div>
 

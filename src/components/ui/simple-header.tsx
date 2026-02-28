@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
@@ -19,7 +20,7 @@ export function SimpleHeader() {
   const [hoveredCardIndex, setHoveredCardIndex] = React.useState<number | null>(null);
   const closeTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
   const pathname = usePathname();
-  const resourcesLinkRef = React.useRef<HTMLAnchorElement | null>(null);
+  const resourcesLinkRef = React.useRef<HTMLButtonElement | null>(null);
   const resourcesMenuRef = React.useRef<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
@@ -66,7 +67,11 @@ export function SimpleHeader() {
     }, 150);
   };
 
-  const links = [
+  const links: Array<{
+    label: string;
+    href: string;
+    isMegaMenu?: boolean;
+  }> = [
     { label: "Home", href: "/" },
     { label: "Find Psychologists", href: "/find-psychologists" },
     { label: "Resources", href: "/resources", isMegaMenu: true },
@@ -84,7 +89,6 @@ export function SimpleHeader() {
   const resourcesCards = [
     { title: "Blog", subtitle: "Practical tips and insider info.", href: "/resources/blog" },
     { title: "Podcasts", subtitle: "Insights from TA leaders.", href: "/resources/podcasts" },
-    { title: "Guides", subtitle: "Hiring trends and analyses.", href: "/resources/guides" },
   ];
 
   return (
@@ -157,9 +161,11 @@ export function SimpleHeader() {
         >
             {/* Brand Logo - Left */}
             <Link href="/" className="flex items-center shrink-0 gap-0"> 
-              <img
+              <Image
                 src="/images/New_Logo.png"
                 alt="HealTalk logo"
+                width={160}
+                height={40}
                 className="h-8 sm:h-10 w-auto"
               />
             </Link>
@@ -167,11 +173,11 @@ export function SimpleHeader() {
             {/* Navigation Links - Center (Desktop) */}
             <div className="hidden lg:flex items-center justify-center flex-1 px-4" style={{ gap: '27px' }}>
               {links.map((link) => {
-                if ((link as any).isMegaMenu) {
+                if (link.isMegaMenu) {
                    return (
-                      <Link
+                      <button
                         key={link.label}
-                        href={link.href}
+                        type="button"
                         className={cn(
                           "text-[15px] font-medium text-gray-900 transition-all duration-200 px-4 py-2 rounded-[20px] whitespace-nowrap",
                           "hover:bg-[#dcd5cb]",
@@ -185,7 +191,7 @@ export function SimpleHeader() {
                         aria-haspopup="true"
                       >
                         {link.label}
-                      </Link>
+                      </button>
                    );
                 }
 
@@ -269,7 +275,7 @@ export function SimpleHeader() {
                 >
                   <SheetTitle className="sr-only">Main menu</SheetTitle>
                   <div className="grid gap-y-2 overflow-y-auto px-4 pt-12 pb-5">
-                    {links.map((link) => (
+                    {links.filter((l) => !l.isMegaMenu).map((link) => (
                       <Link
                         key={link.label}
                         className={cn(
@@ -280,6 +286,20 @@ export function SimpleHeader() {
                         onClick={() => setOpen(false)}
                       >
                         {link.label}
+                      </Link>
+                    ))}
+                    <span className="px-4 pt-2 pb-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">Resources</span>
+                    {resourcesCards.map((card) => (
+                      <Link
+                        key={card.title}
+                        className={cn(
+                          "px-4 py-3 text-base font-medium text-gray-900 rounded-lg transition-colors",
+                          "hover:bg-[#dcd5cb]"
+                        )}
+                        href={card.href}
+                        onClick={() => setOpen(false)}
+                      >
+                        {card.title}
                       </Link>
                     ))}
                     {!isAuthenticated && (
