@@ -79,9 +79,11 @@ export function PatientNextAppointmentCard() {
                         Join Session
                      </Button>
                    </Link>
-                   <Button className="flex-1 bg-transparent border-2 border-white/80 text-white hover:bg-white/10 hover:text-white font-semibold shadow-sm" size="sm">
-                      Reschedule
-                   </Button>
+                   <Link href="/patient/dashboard/sessions" className="flex-1">
+                     <Button className="w-full bg-transparent border-2 border-white/80 text-white hover:bg-white/10 hover:text-white font-semibold shadow-sm" size="sm">
+                        Reschedule
+                     </Button>
+                   </Link>
                  </>
                ) : (
                  <Link href="/find-psychologists" className="flex-1">
