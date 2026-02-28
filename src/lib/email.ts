@@ -1,7 +1,7 @@
 import { Resend } from "resend";
 
 type SendEmailPayload = {
-  to: string;
+  to: string | string[];
   subject: string;
   html?: string;
   text?: string;
@@ -33,10 +33,18 @@ export const sendEmail = async ({ to, subject, html, text, from }: SendEmailPayl
     return;
   }
 
-  await resend.emails.send({
-    from: from || emailFrom,
-    to,
-    subject,
-    html: html || text,
-  } as any);
+  const body = html ? { html } : { text: text || "(no content)" };
+  try {
+    await resend.emails.send({
+      from: from || emailFrom,
+      to,
+      subject,
+      ...body,
+    });
+  } catch (err) {
+    // Log delivery failures but don't crash the calling route.
+    // The caller is responsible for deciding whether to surface this error.
+    console.error("Email delivery failed:", err);
+    throw err;
+  }
 };

@@ -11,6 +11,19 @@ import { Mic, MicOff, Video, VideoOff, PhoneOff, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { WaitingRoom } from "@/components/video/WaitingRoom";
 
+// ─── Error code → human-readable message map ─────────────────────────────────
+
+const AGORA_ERROR_MESSAGES: Record<string, string> = {
+  UID_CONFLICT:
+    "This session is already active in another tab or window. Please close other instances and try again.",
+  INVALID_TOKEN:
+    "Authentication failed. Please refresh the page and try again.",
+  CAN_NOT_GET_GATEWAY_SERVER:
+    "Authentication failed. Please refresh the page and try again.",
+};
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
 const createClient = () =>
   AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
 
@@ -32,6 +45,9 @@ type RemoteParticipant = {
   user: IAgoraRTCRemoteUser;
 };
 
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+/** Renders a remote participant's video tile. */
 const VideoTile = ({ user }: { user: IAgoraRTCRemoteUser }) => {
   const ref = useRef<HTMLDivElement | null>(null);
 
@@ -53,6 +69,7 @@ const VideoTile = ({ user }: { user: IAgoraRTCRemoteUser }) => {
   );
 };
 
+/** Formats an elapsed-seconds counter as MM:SS. */
 const formatElapsed = (seconds: number) => {
   const minutes = Math.floor(seconds / 60);
   const remaining = seconds % 60;
@@ -61,17 +78,117 @@ const formatElapsed = (seconds: number) => {
     .padStart(2, "0")}`;
 };
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+/**
+ * Fetches an Agora RTC token from our backend for the given appointment.
+ * Returns the appId, token, and channelName from the server.
+ */
+async function fetchAgoraToken(
+  appointmentId: string
+): Promise<{ appId: string; token: string; channelName: string }> {
+  const res = await fetch("/api/agora/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ appointmentId }),
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    throw new Error(data?.error || "Failed to get call token");
+  }
+
+  return res.json();
+}
+
+/**
+ * Registers all Agora event listeners on the client.
+ * Separated from joinCall() to keep that function readable.
+ */
+function setupAgoraEventListeners(
+  client: IAgoraRTCClient,
+  setRemoteUsers: React.Dispatch<React.SetStateAction<RemoteParticipant[]>>,
+  setConnectionState: React.Dispatch<React.SetStateAction<ConnectionState>>,
+  setErrorMessage: React.Dispatch<React.SetStateAction<string | null>>,
+  setNetworkQuality: React.Dispatch<
+    React.SetStateAction<{ uplink: number; downlink: number } | null>
+  >
+) {
+  client.on("user-published", async (user, mediaType) => {
+    await client.subscribe(user, mediaType);
+    if (mediaType === "video") {
+      setRemoteUsers((prev) => {
+        if (prev.some((e) => e.uid === user.uid)) return prev;
+        return [...prev, { uid: user.uid, user }];
+      });
+    }
+    if (mediaType === "audio") {
+      user.audioTrack?.play();
+    }
+  });
+
+  client.on("user-unpublished", (user, mediaType) => {
+    if (mediaType === "video") {
+      setRemoteUsers((prev) => prev.filter((e) => e.uid !== user.uid));
+    }
+    if (mediaType === "audio") {
+      user.audioTrack?.stop();
+    }
+  });
+
+  client.on("user-left", (user) => {
+    setRemoteUsers((prev) => prev.filter((e) => e.uid !== user.uid));
+  });
+
+  client.on("connection-state-change", (curState, _prevState, reason) => {
+    if (curState === "RECONNECTING") { setConnectionState("reconnecting"); return; }
+    if (curState === "CONNECTING")   { setConnectionState("connecting");   return; }
+    if (curState === "CONNECTED")    {
+      setConnectionState("connected");
+      setErrorMessage(null);
+      return;
+    }
+    if (curState === "DISCONNECTED") {
+      setConnectionState("failed");
+      if (reason) setErrorMessage(`Connection lost: ${reason}`);
+    }
+  });
+
+  client.on("network-quality", (stats) => {
+    setNetworkQuality({
+      uplink: stats.uplinkNetworkQuality,
+      downlink: stats.downlinkNetworkQuality,
+    });
+  });
+}
+
+/**
+ * Publishes the local audio and video tracks to the channel.
+ * Applies current mute state before publishing so the user's
+ * initial mute preferences are respected.
+ */
+async function publishLocalTracks(
+  client: IAgoraRTCClient,
+  audioTrack: ILocalAudioTrack,
+  videoTrack: ILocalVideoTrack,
+  isMicMuted: boolean,
+  isCameraOff: boolean
+) {
+  await audioTrack.setEnabled(!isMicMuted);
+  await videoTrack.setEnabled(!isCameraOff);
+  await client.publish([audioTrack, videoTrack]);
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
+
 export function VideoCall({ appointmentId, userAccount, userName }: VideoCallProps) {
   const clientRef = useRef<IAgoraRTCClient | null>(null);
   const localVideoRef = useRef<HTMLDivElement | null>(null);
-  const [localAudioTrack, setLocalAudioTrack] =
-    useState<ILocalAudioTrack | null>(null);
-  const [localVideoTrack, setLocalVideoTrack] =
-    useState<ILocalVideoTrack | null>(null);
+  const [localAudioTrack, setLocalAudioTrack] = useState<ILocalAudioTrack | null>(null);
+  const [localVideoTrack, setLocalVideoTrack] = useState<ILocalVideoTrack | null>(null);
   const [screenTrack, setScreenTrack] = useState<ILocalVideoTrack | null>(null);
   const [remoteUsers, setRemoteUsers] = useState<RemoteParticipant[]>([]);
-  const [connectionState, setConnectionState] =
-    useState<ConnectionState>("idle");
+  const [connectionState, setConnectionState] = useState<ConnectionState>("idle");
   const [isMicMuted, setIsMicMuted] = useState(false);
   const [isCameraOff, setIsCameraOff] = useState(false);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
@@ -85,6 +202,14 @@ export function VideoCall({ appointmentId, userAccount, userName }: VideoCallPro
   } | null>(null);
   const [retryKey, setRetryKey] = useState(0);
 
+  // Refs track the latest tracks for cleanup — avoids stale closure issues.
+  const localAudioTrackRef = useRef<ILocalAudioTrack | null>(null);
+  const localVideoTrackRef = useRef<ILocalVideoTrack | null>(null);
+  const screenTrackRef = useRef<ILocalVideoTrack | null>(null);
+
+  // ─── Effects ──────────────────────────────────────────────────────────────
+
+  // Acquire camera + mic when the component mounts (or when the user retries).
   useEffect(() => {
     let isActive = true;
 
@@ -101,44 +226,42 @@ export function VideoCall({ appointmentId, userAccount, userName }: VideoCallPro
 
         setLocalAudioTrack(audioTrack);
         setLocalVideoTrack(videoTrack);
-        setErrorMessage(null); // Clear any previous errors
+        setErrorMessage(null);
       } catch (error) {
         console.error("Preview setup error:", error);
-        if (isActive) {
-          const isPermissionError =
-            error instanceof Error &&
-            (error.name === "NotAllowedError" ||
-             error.message.includes("Permission") ||
-             error.message.includes("PERMISSION_DENIED"));
+        if (!isActive) return;
 
-          if (isPermissionError) {
-            setErrorMessage(
-              "Camera and microphone access denied. Please click the camera icon in your browser's address bar and allow permissions, then refresh the page."
-            );
-          } else {
-            setErrorMessage(
-              "Unable to access camera or microphone. Please check that they are connected and not being used by another application."
-            );
-          }
-        }
+        const isPermissionError =
+          error instanceof Error &&
+          (error.name === "NotAllowedError" ||
+            error.message.includes("Permission") ||
+            error.message.includes("PERMISSION_DENIED"));
+
+        setErrorMessage(
+          isPermissionError
+            ? "Camera and microphone access denied. Please click the camera icon in your browser's address bar and allow permissions, then refresh the page."
+            : "Unable to access camera or microphone. Please check that they are connected and not being used by another application."
+        );
       }
     };
 
     setupPreview();
-
-    return () => {
-      isActive = false;
-    };
+    return () => { isActive = false; };
   }, [retryKey]);
 
+  // Play the local video preview in the waiting room.
   useEffect(() => {
     if (!localVideoRef.current || !localVideoTrack || !hasJoined) return;
     localVideoTrack.play(localVideoRef.current);
-    return () => {
-      localVideoTrack.stop();
-    };
+    return () => { localVideoTrack.stop(); };
   }, [localVideoTrack, hasJoined]);
 
+  // Keep refs in sync so cleanup effects always have the latest tracks.
+  useEffect(() => { localAudioTrackRef.current = localAudioTrack; }, [localAudioTrack]);
+  useEffect(() => { localVideoTrackRef.current = localVideoTrack; }, [localVideoTrack]);
+  useEffect(() => { screenTrackRef.current = screenTrack; }, [screenTrack]);
+
+  // Call duration timer — starts when the user joins.
   useEffect(() => {
     if (!hasJoined) return;
     const timer = setInterval(() => {
@@ -147,7 +270,7 @@ export function VideoCall({ appointmentId, userAccount, userName }: VideoCallPro
     return () => clearInterval(timer);
   }, [hasJoined]);
 
-  // Cleanup on unmount
+  // Full cleanup when the component unmounts.
   useEffect(() => {
     return () => {
       const client = clientRef.current;
@@ -155,20 +278,20 @@ export function VideoCall({ appointmentId, userAccount, userName }: VideoCallPro
         client.removeAllListeners();
         client.leave().catch(() => null);
       }
-      localAudioTrack?.close();
-      localVideoTrack?.close();
-      screenTrack?.close();
+      localAudioTrackRef.current?.close();
+      localVideoTrackRef.current?.close();
+      screenTrackRef.current?.close();
     };
   }, []);
 
+  // ─── Handlers ─────────────────────────────────────────────────────────────
+
   const retryPermissions = () => {
-    // Clear existing tracks
     localAudioTrack?.close();
     localVideoTrack?.close();
     setLocalAudioTrack(null);
     setLocalVideoTrack(null);
     setErrorMessage(null);
-    // Increment retry key to trigger useEffect
     setRetryKey((prev) => prev + 1);
   };
 
@@ -191,9 +314,7 @@ export function VideoCall({ appointmentId, userAccount, userName }: VideoCallPro
     if (!client || !screenTrack) return;
     await client.unpublish(screenTrack);
     screenTrack.close();
-    if (localVideoTrack) {
-      await client.publish(localVideoTrack);
-    }
+    if (localVideoTrack) await client.publish(localVideoTrack);
     setScreenTrack(null);
     setIsScreenSharing(false);
   };
@@ -207,21 +328,17 @@ export function VideoCall({ appointmentId, userAccount, userName }: VideoCallPro
     );
     await client.unpublish(localVideoTrack);
     await client.publish(track);
-    track.on("track-ended", () => {
-      stopScreenShare().catch(() => null);
-    });
+    track.on("track-ended", () => { stopScreenShare().catch(() => null); });
     setScreenTrack(track);
     setIsScreenSharing(true);
   };
 
   const toggleScreenShare = async () => {
-    if (isScreenSharing) {
-      await stopScreenShare();
-      return;
-    }
+    if (isScreenSharing) { await stopScreenShare(); return; }
     await startScreenShare();
   };
 
+  /** Fetches the token, connects to Agora, and publishes local tracks. */
   const joinCall = async () => {
     if (hasJoined || isJoining) return;
     setIsJoining(true);
@@ -229,18 +346,19 @@ export function VideoCall({ appointmentId, userAccount, userName }: VideoCallPro
     setErrorMessage(null);
 
     try {
-      // Ensure we're not already in a channel
+      // Leave any previous session before starting a new one.
       const existingClient = clientRef.current;
       if (existingClient && existingClient.connectionState !== "DISCONNECTED") {
         try {
           await existingClient.leave();
-          // Small delay to ensure server-side cleanup
           await new Promise((resolve) => setTimeout(resolve, 500));
         } catch (e) {
           console.warn("Failed to leave previous session:", e);
         }
         clientRef.current = null;
       }
+
+      // Ensure local tracks are ready before joining.
       if (!localAudioTrack || !localVideoTrack) {
         const [audioTrack, videoTrack] =
           await AgoraRTC.createMicrophoneAndCameraTracks();
@@ -248,86 +366,29 @@ export function VideoCall({ appointmentId, userAccount, userName }: VideoCallPro
         setLocalVideoTrack(videoTrack);
       }
 
-      const tokenResponse = await fetch("/api/agora/token", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ appointmentId }),
-      });
+      const { appId, token, channelName } = await fetchAgoraToken(appointmentId);
 
-      if (!tokenResponse.ok) {
-        const data = await tokenResponse.json().catch(() => null);
-        throw new Error(data?.error || "Failed to get call token");
-      }
-
-      const { appId, token, channelName } = await tokenResponse.json();
       const newClient = createClient();
       clientRef.current = newClient;
 
-      newClient.on("user-published", async (user, mediaType) => {
-        await newClient.subscribe(user, mediaType);
-        if (mediaType === "video") {
-          setRemoteUsers((prev) => {
-            const exists = prev.some((entry) => entry.uid === user.uid);
-            if (exists) return prev;
-            return [...prev, { uid: user.uid, user }];
-          });
-        }
-        if (mediaType === "audio") {
-          user.audioTrack?.play();
-        }
-      });
+      setupAgoraEventListeners(
+        newClient,
+        setRemoteUsers,
+        setConnectionState,
+        setErrorMessage,
+        setNetworkQuality
+      );
 
-      newClient.on("user-unpublished", (user, mediaType) => {
-        if (mediaType === "video") {
-          setRemoteUsers((prev) => prev.filter((entry) => entry.uid !== user.uid));
-        }
-        if (mediaType === "audio") {
-          user.audioTrack?.stop();
-        }
-      });
-
-      newClient.on("user-left", (user) => {
-        setRemoteUsers((prev) => prev.filter((entry) => entry.uid !== user.uid));
-      });
-
-      newClient.on("connection-state-change", (curState, _prevState, reason) => {
-        if (curState === "RECONNECTING") {
-          setConnectionState("reconnecting");
-          return;
-        }
-        if (curState === "CONNECTING") {
-          setConnectionState("connecting");
-          return;
-        }
-        if (curState === "CONNECTED") {
-          setConnectionState("connected");
-          setErrorMessage(null);
-          return;
-        }
-        if (curState === "DISCONNECTED") {
-          setConnectionState("failed");
-          if (reason) {
-            setErrorMessage(`Connection lost: ${reason}`);
-          }
-        }
-      });
-
-      newClient.on("network-quality", (stats) => {
-        setNetworkQuality({
-          uplink: stats.uplinkNetworkQuality,
-          downlink: stats.downlinkNetworkQuality,
-        });
-      });
-
-      // Join with the original userAccount (token is generated for this specific UID)
       await newClient.join(appId, channelName, token, userAccount);
 
       if (localAudioTrack && localVideoTrack) {
-        // Ensure tracks are enabled based on current mute state before publishing
-        await localAudioTrack.setEnabled(!isMicMuted);
-        await localVideoTrack.setEnabled(!isCameraOff);
-
-        await newClient.publish([localAudioTrack, localVideoTrack]);
+        await publishLocalTracks(
+          newClient,
+          localAudioTrack,
+          localVideoTrack,
+          isMicMuted,
+          isCameraOff
+        );
       }
 
       setHasJoined(true);
@@ -336,22 +397,11 @@ export function VideoCall({ appointmentId, userAccount, userName }: VideoCallPro
       console.error("Agora call setup error:", error);
       setConnectionState("failed");
 
-      // Handle specific error types
       if (error instanceof Error) {
-        if (error.message.includes("UID_CONFLICT")) {
-          setErrorMessage(
-            "This session is already active in another tab or window. Please close other instances and try again."
-          );
-        } else if (
-          error.message.includes("INVALID_TOKEN") ||
-          error.message.includes("CAN_NOT_GET_GATEWAY_SERVER")
-        ) {
-          setErrorMessage(
-            "Authentication failed. Please refresh the page and try again."
-          );
-        } else {
-          setErrorMessage(error.message);
-        }
+        const knownMessage = Object.entries(AGORA_ERROR_MESSAGES).find(
+          ([code]) => error.message.includes(code)
+        )?.[1];
+        setErrorMessage(knownMessage ?? error.message);
       } else {
         setErrorMessage("Unable to join call");
       }
@@ -380,6 +430,8 @@ export function VideoCall({ appointmentId, userAccount, userName }: VideoCallPro
     setIsScreenSharing(false);
   };
 
+  // ─── Render ───────────────────────────────────────────────────────────────
+
   if (!hasJoined) {
     return (
       <WaitingRoom
@@ -401,22 +453,16 @@ export function VideoCall({ appointmentId, userAccount, userName }: VideoCallPro
     ? Math.max(networkQuality.uplink, networkQuality.downlink)
     : null;
   const qualityLabel =
-    qualityScore === null
-      ? "—"
-      : qualityScore <= 2
-      ? "Good"
-      : qualityScore <= 4
-      ? "Fair"
-      : "Poor";
+    qualityScore === null ? "—"
+    : qualityScore <= 2 ? "Good"
+    : qualityScore <= 4 ? "Fair"
+    : "Poor";
 
   const statusLabel =
-    connectionState === "reconnecting"
-      ? "Reconnecting..."
-      : connectionState === "connecting"
-      ? "Connecting..."
-      : connectionState === "failed"
-      ? "Connection issue"
-      : "Live";
+    connectionState === "reconnecting" ? "Reconnecting..."
+    : connectionState === "connecting"  ? "Connecting..."
+    : connectionState === "failed"      ? "Connection issue"
+    : "Live";
 
   return (
     <div className="h-full w-full bg-slate-950 text-white flex flex-col">

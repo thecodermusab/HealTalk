@@ -1,3 +1,9 @@
+/**
+ * useAppointments — fetches the current user's appointments from the API.
+ *
+ * Optionally filters by status (e.g. "SCHEDULED"). Returns the appointment
+ * list plus loading/error state so callers can render appropriate UI.
+ */
 import { useEffect, useState } from "react";
 
 type AppointmentType = "VIDEO" | "AUDIO" | "IN_PERSON";
@@ -40,7 +46,14 @@ export function useAppointments(status?: AppointmentStatus) {
         if (!res.ok) {
           const data = await res.json().catch(() => null);
           if (isMounted) {
-            setError(data?.error || "Failed to load appointments.");
+            // Provide specific messages for common error codes.
+            const message =
+              res.status === 401
+                ? "You must be logged in to view appointments."
+                : res.status === 403
+                ? "You don't have permission to view these appointments."
+                : data?.error || "Failed to load appointments.";
+            setError(message);
             setAppointments([]);
           }
           return;
@@ -50,9 +63,10 @@ export function useAppointments(status?: AppointmentStatus) {
         if (isMounted) {
           setAppointments(data || []);
         }
-      } catch (err) {
+      } catch {
         if (isMounted) {
-          setError("Failed to load appointments.");
+          // Network error — the API never responded.
+          setError("Network error: could not reach the server. Please check your connection.");
           setAppointments([]);
         }
       } finally {

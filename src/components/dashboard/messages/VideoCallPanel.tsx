@@ -1,79 +1,71 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Mic, MicOff, Video, VideoOff, PhoneOff, Users } from "lucide-react";
+import { PhoneOff, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 interface VideoCallPanelProps {
+  /** The appointment ID that maps to an Agora channel. */
   roomName: string;
   onEndCall: () => void;
 }
 
+/**
+ * VideoCallPanel — shown inside the messages sidebar when a call is active.
+ *
+ * How video calls work in HealTalk:
+ * The actual call UI lives at /call/[appointmentId] (Agora WebRTC).
+ * This panel is a lightweight wrapper that navigates the user to that page.
+ * We don't embed the call inline here to keep the messaging layout clean and
+ * to avoid managing Agora lifecycle inside the messages route.
+ */
 export function VideoCallPanel({ roomName, onEndCall }: VideoCallPanelProps) {
-  const [isAudioMuted, setIsAudioMuted] = useState(false);
-  const [isVideoMuted, setIsVideoMuted] = useState(false);
-  
-  // Construct Jitsi URL
-  // config arguments allow us to hide some default UI elements to keep it clean
-  const jitsiDomain = "meet.jit.si";
-  const configParams = [
-    "config.prejoinPageEnabled=false",
-    "config.startWithAudioMuted=true",
-    "config.startWithVideoMuted=false",
-    "interfaceConfig.TOOLBAR_BUTTONS=['microphone','camera','desktop','fullscreen','fodeviceselection','hangup','profile','chat','recording','livestreaming','etherpad','sharedvideo','settings','raisehand','videoquality','filmstrip','invite','feedback','stats','shortcuts','tileview','videobackgroundblur','download','help','mute-everyone','security']",
-  ].join("&");
-  
-  const jitsiUrl = `https://${jitsiDomain}/${roomName}#${configParams}`;
+  const router = useRouter();
+
+  const handleJoinCall = () => {
+    router.push(`/call/${roomName}`);
+  };
 
   return (
     <div className="flex flex-col h-full bg-white rounded-[16px] border border-[#E6EAF2] shadow-[0_8px_24px_rgba(17,24,39,0.02)] overflow-hidden">
       {/* Panel Header */}
       <div className="h-[64px] border-b border-[#E6EAF2] px-6 flex items-center justify-between flex-shrink-0">
-        <h3 className="font-bold text-gray-900 text-lg">Meeting</h3>
-        <div className="flex items-center gap-2">
-           <div className="flex items-center gap-1.5 px-3 py-1 bg-green-50 rounded-full">
-              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-xs font-semibold text-green-700">Live</span>
-           </div>
+        <h3 className="font-bold text-gray-900 text-lg">Video Call</h3>
+        <div className="flex items-center gap-1.5 px-3 py-1 bg-green-50 rounded-full">
+          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+          <span className="text-xs font-semibold text-green-700">Ready</span>
         </div>
       </div>
 
-      {/* Video Content (Iframe) */}
-      <div className="flex-1 bg-gray-900 relative">
-         <iframe
-            src={jitsiUrl}
-            className="w-full h-full border-0"
-            allow="camera; microphone; fullscreen; display-capture; autoplay"
-         />
+      {/* Call prompt */}
+      <div className="flex-1 flex flex-col items-center justify-center gap-6 p-8 bg-gray-50">
+        <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
+          <Video size={36} className="text-primary" />
+        </div>
+        <div className="text-center">
+          <p className="font-semibold text-gray-900 text-lg mb-1">Join Video Session</p>
+          <p className="text-sm text-gray-500">
+            Click below to open the secure video call in full screen.
+          </p>
+        </div>
+        <Button
+          onClick={handleJoinCall}
+          className="px-8 py-3 rounded-full bg-primary text-white font-semibold hover:bg-primary/90 transition-colors"
+        >
+          <Video size={18} className="mr-2" />
+          Join Call
+        </Button>
       </div>
 
-      {/* Controls Footer */}
-      <div className="h-[80px] border-t border-[#E6EAF2] bg-white flex items-center justify-center gap-4 flex-shrink-0">
-         <Button 
-           variant="outline" 
-           size="icon" 
-           className="w-12 h-12 rounded-full border-gray-200 hover:bg-gray-50"
-           onClick={() => setIsAudioMuted(!isAudioMuted)}
-         >
-           {isAudioMuted ? <MicOff size={20} className="text-red-500" /> : <Mic size={20} />}
-         </Button>
-
-         <Button 
-           variant="outline" 
-           size="icon" 
-           className="w-12 h-12 rounded-full border-gray-200 hover:bg-gray-50"
-           onClick={() => setIsVideoMuted(!isVideoMuted)}
-         >
-           {isVideoMuted ? <VideoOff size={20} className="text-red-500" /> : <Video size={20} />}
-         </Button>
-
-         <Button 
-           size="icon" 
-           className="w-14 h-14 rounded-full bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/20"
-           onClick={onEndCall}
-         >
-           <PhoneOff size={24} className="text-white" />
-         </Button>
+      {/* End call button */}
+      <div className="h-[80px] border-t border-[#E6EAF2] bg-white flex items-center justify-center flex-shrink-0">
+        <Button
+          size="icon"
+          className="w-14 h-14 rounded-full bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/20"
+          onClick={onEndCall}
+        >
+          <PhoneOff size={24} className="text-white" />
+        </Button>
       </div>
     </div>
   );

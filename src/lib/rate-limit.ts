@@ -5,17 +5,25 @@ import { Redis } from "@upstash/redis";
 const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
 const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
 
+// Redis is optional — if not configured, we fall back to an in-process memory store.
 const redis =
   redisUrl && redisToken
     ? new Redis({ url: redisUrl, token: redisToken })
     : null;
 
 const limiterCache = new Map<string, Ratelimit>();
+const memoryLimiterCache = new Map<string, { count: number; reset: number }>();
 
-// Parse duration string (e.g., "1 m", "1 h", "10 s") to Duration type
-const parseDuration = (duration: string): `${number} ms` | `${number} s` | `${number} m` | `${number} h` | `${number} d` => {
+/**
+ * Converts a human-readable duration string (e.g. "1 m", "2 h", "30 s") to
+ * milliseconds. Used for both the Upstash sliding-window limiter and the
+ * in-memory fallback bucket.
+ *
+ * Returns 60 000 ms (1 minute) for unrecognised formats.
+ */
+const parseDurationMs = (duration: string): number => {
   const parts = duration.trim().split(/\s+/);
-  if (parts.length !== 2) return "60000 ms" as const; // default to 1 minute
+  if (parts.length !== 2) return 60_000;
 
   const value = parseInt(parts[0] || "60", 10);
   const unit = parts[1]?.toLowerCase();
@@ -25,25 +33,33 @@ const parseDuration = (duration: string): `${number} ms` | `${number} s` | `${nu
     case "sec":
     case "second":
     case "seconds":
-      return `${value * 1000} ms` as const;
+      return value * 1_000;
     case "m":
     case "min":
     case "minute":
     case "minutes":
-      return `${value * 60 * 1000} ms` as const;
+      return value * 60_000;
     case "h":
     case "hr":
     case "hour":
     case "hours":
-      return `${value * 60 * 60 * 1000} ms` as const;
+      return value * 3_600_000;
     case "d":
     case "day":
     case "days":
-      return `${value * 24 * 60 * 60 * 1000} ms` as const;
+      return value * 86_400_000;
     default:
-      return "60000 ms" as const; // default to 1 minute
+      return 60_000;
   }
 };
+
+/**
+ * Converts a duration string to the `${number} ms` literal type that
+ * Upstash's Ratelimit.slidingWindow() expects.
+ */
+const parseDurationForUpstash = (
+  duration: string
+): `${number} ms` => `${parseDurationMs(duration)} ms` as `${number} ms`;
 
 const getLimiter = (limit: number, window: string) => {
   if (!redis) return null;
@@ -53,7 +69,7 @@ const getLimiter = (limit: number, window: string) => {
       key,
       new Ratelimit({
         redis,
-        limiter: Ratelimit.slidingWindow(limit, parseDuration(window)),
+        limiter: Ratelimit.slidingWindow(limit, parseDurationForUpstash(window)),
         analytics: true,
       })
     );
@@ -71,17 +87,67 @@ const getClientIp = (request: Request) => {
   return realIp || "unknown";
 };
 
+/**
+ * Enforces a sliding-window rate limit for the given key + IP pair.
+ *
+ * - In production with Redis configured: uses Upstash for distributed limiting.
+ * - In production without Redis: falls back to an in-process memory bucket
+ *   (not shared across serverless instances, but better than nothing).
+ * - Outside production: always passes through (returns null) to keep dev ergonomic.
+ *
+ * Returns a 429 NextResponse if the limit is exceeded, or null if the request is allowed.
+ */
 export const requireRateLimit = async (options: {
   request: Request;
   key: string;
   limit: number;
   window: string;
 }) => {
-  const limiter = getLimiter(options.limit, options.window);
-  if (!limiter) return null;
+  if (process.env.NODE_ENV !== "production") {
+    return null;
+  }
 
+  const limiter = getLimiter(options.limit, options.window);
   const ip = getClientIp(options.request);
-  const result = await limiter.limit(`${options.key}:${ip}`);
+  const rateLimitKey = `${options.key}:${ip}`;
+
+  // In-memory fallback when Redis is unavailable.
+  if (!limiter) {
+    const now = Date.now();
+    const windowMs = parseDurationMs(options.window);
+    const fallbackKey = `${rateLimitKey}:${options.limit}:${options.window}`;
+
+    const existing = memoryLimiterCache.get(fallbackKey);
+    const bucket =
+      existing && existing.reset > now
+        ? existing
+        : { count: 0, reset: now + windowMs };
+
+    bucket.count += 1;
+    memoryLimiterCache.set(fallbackKey, bucket);
+
+    // Opportunistic cleanup to avoid unbounded memory growth.
+    if (memoryLimiterCache.size > 10_000) {
+      for (const [key, value] of memoryLimiterCache) {
+        if (value.reset <= now) {
+          memoryLimiterCache.delete(key);
+        }
+      }
+    }
+
+    if (bucket.count <= options.limit) return null;
+
+    const retryAfter = Math.max(1, Math.ceil((bucket.reset - now) / 1000));
+    return NextResponse.json(
+      { error: "Too many requests. Please try again later." },
+      {
+        status: 429,
+        headers: { "Retry-After": retryAfter.toString() },
+      }
+    );
+  }
+
+  const result = await limiter.limit(rateLimitKey);
 
   if (result.success) return null;
 
@@ -90,9 +156,7 @@ export const requireRateLimit = async (options: {
     { error: "Too many requests. Please try again later." },
     {
       status: 429,
-      headers: {
-        "Retry-After": retryAfter.toString(),
-      },
+      headers: { "Retry-After": retryAfter.toString() },
     }
   );
 };

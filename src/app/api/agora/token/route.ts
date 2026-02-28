@@ -5,8 +5,10 @@ import { prisma } from "@/lib/prisma";
 import { RtcRole, RtcTokenBuilder } from "agora-token";
 import { z } from "zod";
 import { parseJson } from "@/lib/validation";
+import { requireRateLimit } from "@/lib/rate-limit";
+import { validateCsrf } from "@/lib/csrf";
+import { AGORA_TOKEN_TTL_SECONDS } from "@/lib/constants";
 
-const TOKEN_TTL_SECONDS = 60 * 60; // 1 hour
 const tokenSchema = z.object({
   appointmentId: z.string().min(1).optional(),
   sessionId: z.string().min(1).optional(),
@@ -20,6 +22,17 @@ export async function POST(request: Request) {
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const rateLimit = await requireRateLimit({
+    request,
+    key: "agora:token",
+    limit: 60,
+    window: "1 m",
+  });
+  if (rateLimit) return rateLimit;
+
+  const csrfError = validateCsrf(request);
+  if (csrfError) return csrfError;
 
   const { data, error } = await parseJson(request, tokenSchema);
   if (error) return error;
@@ -107,21 +120,23 @@ export async function POST(request: Request) {
   const account = session.user.id;
   const role = RtcRole.PUBLISHER;
 
+  // Build a token valid for AGORA_TOKEN_TTL_SECONDS from now.
+  // Both privilege expire times use the same value (join channel + publish).
   const token = RtcTokenBuilder.buildTokenWithUserAccount(
     appId,
     appCertificate,
     channelName,
     account,
     role,
-    TOKEN_TTL_SECONDS,
-    TOKEN_TTL_SECONDS
+    AGORA_TOKEN_TTL_SECONDS,
+    AGORA_TOKEN_TTL_SECONDS
   );
 
   return NextResponse.json({
     appId,
     token,
     channelName,
-    expiresIn: TOKEN_TTL_SECONDS,
+    expiresIn: AGORA_TOKEN_TTL_SECONDS,
     isHost,
   });
 }

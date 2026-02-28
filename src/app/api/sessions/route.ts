@@ -1,14 +1,49 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import { Prisma, TherapySessionStatus, TherapySessionType } from "@prisma/client";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { requireRateLimit } from "@/lib/rate-limit";
+import { validateCsrf } from "@/lib/csrf";
+import { parseJson, parseSearchParams } from "@/lib/validation";
+import { z } from "zod";
+import { parseDate, calculateDurationMinutes } from "@/lib/api-utils";
 
-// GET /api/sessions - List all sessions with filters
+const listSchema = z.object({
+  type: z.nativeEnum(TherapySessionType).optional(),
+  psychologistId: z.string().min(1).optional(),
+  status: z.nativeEnum(TherapySessionStatus).optional(),
+  fromDate: z.string().optional(),
+});
+
+const createSessionSchema = z.object({
+  title: z.string().min(1),
+  description: z.string().optional().nullable(),
+  type: z.nativeEnum(TherapySessionType),
+  maxParticipants: z.coerce.number().int().min(1).max(10),
+  date: z.string().min(1),
+  startTime: z.string().min(1),
+  endTime: z.string().min(1),
+  duration: z.coerce.number().int().positive(),
+  pricePerPerson: z.coerce.number().int().min(0),
+});
+
+/** Wraps the shared parseDate helper into the {date, error} shape used by this route. */
+const parseDateField = (value: string, field: string) => {
+  const date = parseDate(value);
+  if (!date) {
+    return {
+      date: null,
+      error: NextResponse.json({ error: `Invalid ${field}` }, { status: 400 }),
+    };
+  }
+  return { date, error: null };
+};
+
+// GET /api/sessions - List sessions with filters
 export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);
-
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -21,21 +56,18 @@ export async function GET(request: Request) {
     });
     if (rateLimit) return rateLimit;
 
-    const { searchParams } = new URL(request.url);
-    const type = searchParams.get("type"); // ONE_ON_ONE or GROUP
-    const psychologistId = searchParams.get("psychologistId");
-    const status = searchParams.get("status");
-    const fromDate = searchParams.get("fromDate");
+    const { data, error } = parseSearchParams(request, listSchema);
+    if (error) return error;
 
-    const where: any = {};
+    const where: Prisma.TherapySessionWhereInput = {};
+    if (data.type) where.type = data.type;
+    if (data.psychologistId) where.psychologistId = data.psychologistId;
+    if (data.status) where.status = data.status;
 
-    if (type) where.type = type;
-    if (psychologistId) where.psychologistId = psychologistId;
-    if (status) where.status = status;
-    if (fromDate) {
-      where.date = {
-        gte: new Date(fromDate),
-      };
+    if (data.fromDate) {
+      const parsed = parseDateField(data.fromDate, "fromDate");
+      if (parsed.error) return parsed.error;
+      where.date = { gte: parsed.date as Date };
     }
 
     const sessions = await prisma.therapySession.findMany({
@@ -66,11 +98,10 @@ export async function GET(request: Request) {
       orderBy: { startTime: "asc" },
     });
 
-    // Calculate available spots for each session
-    const sessionsWithAvailability = sessions.map((session) => ({
-      ...session,
-      availableSpots: session.maxParticipants - session._count.participants,
-      isFull: session._count.participants >= session.maxParticipants,
+    const sessionsWithAvailability = sessions.map((item) => ({
+      ...item,
+      availableSpots: item.maxParticipants - item._count.participants,
+      isFull: item._count.participants >= item.maxParticipants,
     }));
 
     return NextResponse.json({ sessions: sessionsWithAvailability });
@@ -87,15 +118,11 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
-
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userId = (session.user as any).id;
-    const role = (session.user as any).role;
-
-    if (role !== "PSYCHOLOGIST") {
+    if (session.user.role !== "PSYCHOLOGIST") {
       return NextResponse.json(
         { error: "Only psychologists can create sessions" },
         { status: 403 }
@@ -110,8 +137,63 @@ export async function POST(request: Request) {
     });
     if (rateLimit) return rateLimit;
 
+    const csrfError = validateCsrf(request);
+    if (csrfError) return csrfError;
+
+    const { data, error } = await parseJson(request, createSessionSchema);
+    if (error) return error;
+
+    const parsedDate = parseDateField(data.date, "date");
+    if (parsedDate.error) return parsedDate.error;
+    const parsedStart = parseDateField(data.startTime, "startTime");
+    if (parsedStart.error) return parsedStart.error;
+    const parsedEnd = parseDateField(data.endTime, "endTime");
+    if (parsedEnd.error) return parsedEnd.error;
+
+    const date = parsedDate.date as Date;
+    const startTime = parsedStart.date as Date;
+    const endTime = parsedEnd.date as Date;
+
+    if (startTime >= endTime) {
+      return NextResponse.json(
+        { error: "Session end time must be after start time" },
+        { status: 400 }
+      );
+    }
+
+    if (startTime < new Date()) {
+      return NextResponse.json(
+        { error: "Sessions must be scheduled in the future" },
+        { status: 400 }
+      );
+    }
+
+    // Verify that duration field matches the actual gap between start and end times.
+    const durationMinutes = calculateDurationMinutes(startTime, endTime);
+    if (durationMinutes !== data.duration) {
+      return NextResponse.json(
+        { error: "Duration must match start and end time" },
+        { status: 400 }
+      );
+    }
+
+    if (data.type === "ONE_ON_ONE" && data.maxParticipants !== 1) {
+      return NextResponse.json(
+        { error: "One-on-one sessions must have exactly 1 participant" },
+        { status: 400 }
+      );
+    }
+
+    if (data.type === "GROUP" && data.maxParticipants < 2) {
+      return NextResponse.json(
+        { error: "Group sessions must allow at least 2 participants" },
+        { status: 400 }
+      );
+    }
+
     const psychologist = await prisma.psychologist.findUnique({
-      where: { userId },
+      where: { userId: session.user.id },
+      select: { id: true, status: true },
     });
 
     if (!psychologist) {
@@ -121,53 +203,25 @@ export async function POST(request: Request) {
       );
     }
 
-    const body = await request.json();
-    const {
-      title,
-      description,
-      type,
-      maxParticipants,
-      date,
-      startTime,
-      endTime,
-      duration,
-      pricePerPerson,
-    } = body;
-
-    // Validation
-    if (!title || !type || !maxParticipants || !date || !startTime || !endTime || !duration || !pricePerPerson) {
+    if (psychologist.status !== "APPROVED") {
       return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
-    }
-
-    if (type === "GROUP" && maxParticipants < 2) {
-      return NextResponse.json(
-        { error: "Group sessions must have at least 2 participants" },
-        { status: 400 }
-      );
-    }
-
-    if (maxParticipants > 10) {
-      return NextResponse.json(
-        { error: "Maximum 10 participants allowed" },
-        { status: 400 }
+        { error: "Only approved psychologists can create sessions" },
+        { status: 403 }
       );
     }
 
     const newSession = await prisma.therapySession.create({
       data: {
         psychologistId: psychologist.id,
-        title,
-        description,
-        type,
-        maxParticipants,
-        date: new Date(date),
-        startTime: new Date(startTime),
-        endTime: new Date(endTime),
-        duration,
-        pricePerPerson,
+        title: data.title.trim(),
+        description: data.description?.trim() || null,
+        type: data.type,
+        maxParticipants: data.maxParticipants,
+        date,
+        startTime,
+        endTime,
+        duration: data.duration,
+        pricePerPerson: data.pricePerPerson,
         status: "SCHEDULED",
       },
       include: {

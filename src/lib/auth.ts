@@ -12,6 +12,7 @@ import {
   signInSupabaseWithPassword,
   verifySupabaseAccessToken,
 } from "@/lib/supabase-auth";
+import { BCRYPT_SALT_ROUNDS } from "@/lib/constants";
 
 const normalizeEmail = (value?: string | null) =>
   value?.trim().toLowerCase();
@@ -210,7 +211,7 @@ export const authOptions: NextAuthOptions = {
             bootstrapMatch &&
             credentials.password === bootstrapMatch.password
           ) {
-            const hashedPassword = await bcrypt.hash(bootstrapMatch.password, 12);
+            const hashedPassword = await bcrypt.hash(bootstrapMatch.password, BCRYPT_SALT_ROUNDS);
 
             const updatedUser = await prisma.user.update({
               where: { id: user.id },
@@ -240,7 +241,7 @@ export const authOptions: NextAuthOptions = {
           bootstrapMatch &&
           credentials.password === bootstrapMatch.password
         ) {
-          const hashedPassword = await bcrypt.hash(bootstrapMatch.password, 12);
+          const hashedPassword = await bcrypt.hash(bootstrapMatch.password, BCRYPT_SALT_ROUNDS);
 
           const createdUser = await prisma.user.create({
             data: {

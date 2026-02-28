@@ -1,13 +1,16 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import Groq from "groq-sdk";
+import { z } from "zod";
+import { authOptions } from "@/lib/auth";
 import { requireRateLimit } from "@/lib/rate-limit";
+import { validateCsrf } from "@/lib/csrf";
+import { parseJson } from "@/lib/validation";
+import { CRISIS_KEYWORDS, EMERGENCY_NUMBERS } from "@/lib/constants";
 
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY || "",
-});
-
+// ─── System prompt ────────────────────────────────────────────────────────────
+// This is sent as the hidden "system" message to the AI on every request.
+// It defines the chatbot's persona, the screening flow, and risk levels.
 const SYSTEM_PROMPT = `You are a compassionate mental health screening assistant for HealTalk, a teletherapy platform.
 
 Your role:
@@ -31,19 +34,58 @@ Important:
 - After 8-10 questions, summarize and provide risk assessment
 
 Crisis Resources:
-- National Suicide Prevention Lifeline: 988
-- Crisis Text Line: Text HOME to 741741
-- Emergency: 911
+- National Suicide Prevention Lifeline: ${EMERGENCY_NUMBERS.crisis}
+- Crisis Text Line: Text HOME to ${EMERGENCY_NUMBERS.text}
+- Emergency: ${EMERGENCY_NUMBERS.emergency}
 
 Keep track of which questions you've asked. Start with: "Hi! I'm here to help match you with the right therapist. I'll ask a few questions about how you've been feeling. This will only take 5 minutes. Shall we begin?"`;
 
+// ─── Schema ───────────────────────────────────────────────────────────────────
+
+const chatPayloadSchema = z.object({
+  messages: z
+    .array(
+      z.object({
+        role: z.enum(["user", "assistant"]),
+        content: z.string().min(1).max(4000),
+      })
+    )
+    .min(1)
+    .max(80),
+});
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+/**
+ * Returns true if the message text contains any crisis keyword.
+ * We check the most-recent user message so we can short-circuit with a safe response.
+ */
+function detectCrisisInMessage(text: string): boolean {
+  const lower = text.toLowerCase();
+  return CRISIS_KEYWORDS.some((keyword) => lower.includes(keyword));
+}
+
+/**
+ * Builds the pre-canned crisis response that bypasses the AI entirely.
+ * This guarantees a fast, safe reply when a user is in distress.
+ */
+function buildCrisisResponse(): NextResponse {
+  const message = `I'm very concerned about what you've shared. Your safety is the top priority. Please reach out to these resources immediately:
+
+📞 National Suicide Prevention Lifeline: ${EMERGENCY_NUMBERS.crisis} (available 24/7)
+💬 Crisis Text Line: Text HOME to ${EMERGENCY_NUMBERS.text}
+🚨 Emergency: ${EMERGENCY_NUMBERS.emergency}
+
+If you're in immediate danger, please call ${EMERGENCY_NUMBERS.emergency} or go to your nearest emergency room. You don't have to face this alone.`;
+
+  return NextResponse.json({ content: message, isCrisis: true });
+}
+
+// ─── Route ────────────────────────────────────────────────────────────────────
+
 export async function POST(request: Request) {
   try {
-    console.log("🔍 Screening chat request received");
-    console.log("Groq API Key configured:", process.env.GROQ_API_KEY ? "Yes ✅" : "No ❌");
-
     const session = await getServerSession(authOptions);
-
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -56,39 +98,35 @@ export async function POST(request: Request) {
     });
     if (rateLimit) return rateLimit;
 
-    const { messages } = await request.json();
+    const csrfError = validateCsrf(request);
+    if (csrfError) return csrfError;
 
-    if (!Array.isArray(messages)) {
+    const { data, error } = await parseJson(request, chatPayloadSchema);
+    if (error) return error;
+
+    const groqApiKey = process.env.GROQ_API_KEY;
+    if (!groqApiKey) {
       return NextResponse.json(
-        { error: "Messages must be an array" },
-        { status: 400 }
+        { error: "AI service is not configured" },
+        { status: 500 }
       );
     }
 
-    // Check for crisis keywords
-    const lastUserMessage = messages.filter(m => m.role === "user").slice(-1)[0]?.content?.toLowerCase() || "";
-    const crisisKeywords = ["suicide", "kill myself", "end my life", "hurt myself", "self-harm", "die"];
-    const hasCrisisKeyword = crisisKeywords.some(keyword => lastUserMessage.includes(keyword));
+    // Check the last user message for crisis keywords before hitting the AI.
+    // If detected, return a pre-written safe response immediately.
+    const lastUserMessage =
+      data.messages.filter((m) => m.role === "user").slice(-1)[0]?.content ?? "";
 
-    if (hasCrisisKeyword) {
-      // Immediately return crisis resources
-      return NextResponse.json({
-        content: `I'm very concerned about what you've shared. Your safety is the top priority. Please reach out to these resources immediately:
-
-📞 National Suicide Prevention Lifeline: 988 (available 24/7)
-💬 Crisis Text Line: Text HOME to 741741
-🚨 Emergency: 911
-
-If you're in immediate danger, please call 911 or go to your nearest emergency room. You don't have to face this alone.`,
-        isCrisis: true,
-      });
+    if (detectCrisisInMessage(lastUserMessage)) {
+      return buildCrisisResponse();
     }
 
-    // Create chat with Groq
+    // Stream the AI response back to the client so the UI can render it token-by-token.
+    const groq = new Groq({ apiKey: groqApiKey });
     const completion = await groq.chat.completions.create({
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
-        ...messages,
+        ...data.messages,
       ],
       model: "llama-3.1-8b-instant",
       temperature: 0.7,
@@ -96,7 +134,6 @@ If you're in immediate danger, please call 911 or go to your nearest emergency r
       stream: true,
     });
 
-    // Stream response
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
       async start(controller) {
@@ -108,9 +145,9 @@ If you're in immediate danger, please call 911 or go to your nearest emergency r
             }
           }
           controller.close();
-        } catch (error) {
-          console.error("Stream error:", error);
-          controller.error(error);
+        } catch (streamError) {
+          console.error("Screening stream error:", streamError);
+          controller.error(streamError);
         }
       },
     });
@@ -120,21 +157,11 @@ If you're in immediate danger, please call 911 or go to your nearest emergency r
         "Content-Type": "text/plain; charset=utf-8",
       },
     });
-  } catch (error: any) {
-    console.error("❌ Error in screening chat:");
-    console.error("Error message:", error?.message);
-    console.error("Error details:", error);
-    console.error("Groq API Key configured:", process.env.GROQ_API_KEY ? "Yes" : "No");
-
-    if (error?.message?.includes("invalid") || error?.message?.includes("authentication")) {
-      return NextResponse.json(
-        { error: "Groq API key is invalid. Please check your API key at https://console.groq.com/keys" },
-        { status: 500 }
-      );
-    }
-
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error("Screening chat error:", message);
     return NextResponse.json(
-      { error: `Failed to process chat request: ${error?.message || "Unknown error"}` },
+      { error: "Failed to process screening chat request" },
       { status: 500 }
     );
   }
