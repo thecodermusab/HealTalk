@@ -6,10 +6,13 @@ import Footer from "@/components/layout/Footer";
 
 export default function AppFooter() {
   const pathname = usePathname();
+  const normalizedPathname =
+    pathname && pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
   const isDashboard = pathname?.includes("/dashboard") ?? false;
-  const isHome = pathname === "/";
+  const isHome = normalizedPathname === "/";
+  const hideFooterOnRoute = normalizedPathname === "/resources/blog";
 
-  if (isDashboard) {
+  if (isDashboard || hideFooterOnRoute) {
     return null;
   }
 
