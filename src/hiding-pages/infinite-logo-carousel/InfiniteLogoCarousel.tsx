@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect, useCallback } from "react";
-import { BRAND_LOGOS } from "./about/brand-logos";
+import { BRAND_LOGOS } from "../../components/about/brand-logos";
 
 // Quadruple the logos for seamless infinite loop
 const INFINITE_LOGOS = [...BRAND_LOGOS, ...BRAND_LOGOS, ...BRAND_LOGOS, ...BRAND_LOGOS];
