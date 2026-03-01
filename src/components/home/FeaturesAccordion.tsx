@@ -87,7 +87,7 @@ export default function FeaturesAccordion({ features = defaultFeatures }: Featur
                       setActiveImage(tab.image);
                       setActiveTabId(tab.id);
                     }}
-                    className="cursor-pointer py-5 !no-underline transition hover:no-underline"
+                    className="cursor-pointer py-5 text-[#121E0D] !no-underline transition hover:no-underline [&>svg]:text-[#121E0D]"
                   >
                     <h3
                       className={`text-lg md:text-xl font-semibold text-left transition-colors ${
