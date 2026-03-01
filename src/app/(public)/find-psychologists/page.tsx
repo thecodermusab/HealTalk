@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import FilterBar, { FilterState } from "@/components/psychologists/FilterBar";
 import TherapistListCard from "@/components/psychologists/TherapistListCard";
@@ -64,6 +64,12 @@ interface PsychologistsApiResponse {
   error?: string;
 }
 
+interface CachedPsychologistsPayload {
+  psychologists: TherapistCardData[];
+  totalPages: number;
+  savedAt: number;
+}
+
 type SearchParamsReader = {
   get: (name: string) => string | null;
 };
@@ -71,10 +77,15 @@ type SearchParamsReader = {
 const DEFAULT_PAGE = 1;
 const DEFAULT_TOTAL_PAGES = 1;
 const PSYCHOLOGISTS_PAGE_SIZE = 20;
+const PSYCHOLOGISTS_FETCH_TIMEOUT_MS = 12_000;
+const PSYCHOLOGISTS_CACHE_MAX_AGE_MS = 5 * 60 * 1000;
+const PSYCHOLOGISTS_CACHE_KEY = "find-psychologists:first-page:v1";
 const PRICE_UNIT_DIVISOR = 100;
 const PRICE_FILTER_LOW_MAX = 50;
 const PRICE_FILTER_MID_MAX = 60;
 const DEFAULT_FETCH_ERROR_MESSAGE = "Unable to load psychologists right now.";
+const FETCH_TIMEOUT_ERROR_MESSAGE =
+  "Loading therapists is taking longer than expected. Please try again.";
 const BOOKING_SUCCESS_MESSAGE = "Your appointment was booked successfully.";
 const DEFAULT_THERAPIST_NAME = "Therapist";
 const DEFAULT_THERAPIST_LOCATION = "Remote";
@@ -95,6 +106,66 @@ const createEmptyFilters = (): FilterState => ({
   priceRange: [],
   ethnicity: [],
 });
+
+const hasActiveFilters = (filters: FilterState) =>
+  filters.location.length > 0 ||
+  filters.insurance.length > 0 ||
+  filters.language.length > 0 ||
+  filters.conditions.length > 0 ||
+  filters.priceRange.length > 0 ||
+  filters.ethnicity.length > 0;
+
+const isDefaultBrowseState = (filters: FilterState, page: number) =>
+  page === DEFAULT_PAGE && !hasActiveFilters(filters);
+
+const readCachedPsychologists = (): CachedPsychologistsPayload | null => {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const raw = window.sessionStorage.getItem(PSYCHOLOGISTS_CACHE_KEY);
+    if (!raw) return null;
+
+    const parsed = JSON.parse(raw) as Partial<CachedPsychologistsPayload>;
+    if (!Array.isArray(parsed.psychologists)) return null;
+
+    const savedAt = typeof parsed.savedAt === "number" ? parsed.savedAt : 0;
+    if (Date.now() - savedAt > PSYCHOLOGISTS_CACHE_MAX_AGE_MS) return null;
+
+    const totalPages =
+      typeof parsed.totalPages === "number" && parsed.totalPages > 0
+        ? parsed.totalPages
+        : DEFAULT_TOTAL_PAGES;
+
+    return {
+      psychologists: parsed.psychologists,
+      totalPages,
+      savedAt,
+    };
+  } catch {
+    return null;
+  }
+};
+
+const writeCachedPsychologists = (
+  psychologists: TherapistCardData[],
+  totalPages: number
+) => {
+  if (typeof window === "undefined") return;
+
+  try {
+    const payload: CachedPsychologistsPayload = {
+      psychologists,
+      totalPages: totalPages > 0 ? totalPages : DEFAULT_TOTAL_PAGES,
+      savedAt: Date.now(),
+    };
+    window.sessionStorage.setItem(
+      PSYCHOLOGISTS_CACHE_KEY,
+      JSON.stringify(payload)
+    );
+  } catch {
+    // Ignore storage failures (private mode, quota, etc).
+  }
+};
 
 const getBookingNotice = (searchParams: SearchParamsReader | null): string | null => {
   if (!searchParams || searchParams.get("booked") !== "1") {
@@ -221,8 +292,19 @@ function FindPsychologistsPageContent() {
   const [devPendingNotice, setDevPendingNotice] = useState(false);
   const [page, setPage] = useState(DEFAULT_PAGE);
   const [totalPages, setTotalPages] = useState(DEFAULT_TOTAL_PAGES);
+  const hasHydratedCacheRef = useRef(false);
 
   const bookingNotice = useMemo(() => getBookingNotice(searchParams), [searchParams]);
+
+  useEffect(() => {
+    const cached = readCachedPsychologists();
+    if (!cached) return;
+
+    setPsychologists(cached.psychologists);
+    setTotalPages(cached.totalPages);
+    setLoading(false);
+    hasHydratedCacheRef.current = true;
+  }, []);
 
   useEffect(() => {
     let isCancelled = false;
@@ -233,13 +315,23 @@ function FindPsychologistsPageContent() {
     };
 
     const fetchPsychologists = async () => {
-      setLoading(true);
+      const shouldShowBlockingLoader =
+        page === DEFAULT_PAGE && !hasHydratedCacheRef.current;
+      setLoading(shouldShowBlockingLoader);
       setFetchError(null);
       setDevPendingNotice(false);
 
+      const controller = new AbortController();
+      const timeoutId = window.setTimeout(
+        () => controller.abort(),
+        PSYCHOLOGISTS_FETCH_TIMEOUT_MS
+      );
+
       try {
         const params = buildPsychologistsQueryParams(filters, page);
-        const response = await fetch(`/api/psychologists?${params}`);
+        const response = await fetch(`/api/psychologists?${params}`, {
+          signal: controller.signal,
+        });
         const payload = (await response.json().catch(() => ({}))) as PsychologistsApiResponse;
 
         if (isCancelled) return;
@@ -256,6 +348,8 @@ function FindPsychologistsPageContent() {
           ? payload.psychologists
           : [];
         const mappedPsychologists = apiPsychologists.map(mapPsychologistToCard);
+        const nextTotalPages =
+          Number(payload.pagination?.totalPages) || DEFAULT_TOTAL_PAGES;
 
         setDevPendingNotice(Boolean(payload.showingPendingFallback));
         setPsychologists((previous) =>
@@ -263,17 +357,27 @@ function FindPsychologistsPageContent() {
             ? mappedPsychologists
             : [...previous, ...mappedPsychologists]
         );
-        setTotalPages(Number(payload.pagination?.totalPages) || DEFAULT_TOTAL_PAGES);
+        setTotalPages(nextTotalPages);
+
+        if (isDefaultBrowseState(filters, page)) {
+          writeCachedPsychologists(mappedPsychologists, nextTotalPages);
+          hasHydratedCacheRef.current = true;
+        }
       } catch (error) {
         if (isCancelled) return;
 
         const message =
-          error instanceof Error ? error.message : DEFAULT_FETCH_ERROR_MESSAGE;
+          error instanceof DOMException && error.name === "AbortError"
+            ? FETCH_TIMEOUT_ERROR_MESSAGE
+            : error instanceof Error
+            ? error.message
+            : DEFAULT_FETCH_ERROR_MESSAGE;
         setFetchError(message);
-        if (page === DEFAULT_PAGE) {
+        if (page === DEFAULT_PAGE && !hasHydratedCacheRef.current) {
           resetPsychologists();
         }
       } finally {
+        window.clearTimeout(timeoutId);
         if (!isCancelled) {
           setLoading(false);
         }
@@ -304,22 +408,22 @@ function FindPsychologistsPageContent() {
   );
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#F6F2EA]">
       {/* Optional: Top Gradient Wash */}
-      <div className="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-orange-50/30 to-transparent pointer-events-none" />
+      <div className="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-[#EBEBFF]/50 via-orange-50/30 to-transparent pointer-events-none" />
 
       <div className="relative max-w-[1400px] mx-auto px-4 md:px-8 py-12 pt-32">
         
         {/* Header Section */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-slate-900 mb-2 font-display">
+        <div className="mb-8 rounded-3xl border border-[#D9D1C4] bg-[#fffefe]/80 px-6 py-6 shadow-[0_8px_24px_rgba(17,24,39,0.06)] backdrop-blur-sm">
+          <h1 className="text-4xl font-bold text-[#121E0D] mb-2 font-display">
             Therapists {filters.location.length > 0 
               ? `in ${filters.location.length === 1 ? filters.location[0] : 'Multiple Locations'}`
               : 'Online & Worldwide'}
           </h1>
-          <p className="text-slate-500 text-sm flex items-center gap-1">
+          <p className="text-[#425234] text-sm flex items-center gap-1">
             {filteredPsychologists.length} results {filters.location.length > 0 && (
-                <>in <span className="font-semibold text-slate-900 flex items-center cursor-pointer hover:underline mx-1">
+                <>in <span className="font-semibold text-[#121E0D] flex items-center cursor-pointer hover:underline mx-1">
                     {filters.location.length === 1 ? filters.location[0] : `${filters.location.length} locations`} 
                     <ChevronDown size={14} className="ml-0.5" />
                 </span></>
@@ -385,7 +489,7 @@ function FindPsychologistsPageContent() {
 
 function FindPsychologistsPageFallback() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#F6F2EA]">
       <div className="relative max-w-[1400px] mx-auto px-4 md:px-8 py-12 pt-32">
         <div className="text-center py-20">
           <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary mb-4" />
