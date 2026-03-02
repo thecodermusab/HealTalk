@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { User, Bell, Shield, Save, Eye, AlertTriangle } from "lucide-react";
+import { User, Bell, Shield, Save, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { signOut, useSession } from "next-auth/react";
 import { AvatarUploader } from "@/components/profile/AvatarUploader";
@@ -300,15 +300,6 @@ export default function SettingsPage() {
               >
                 <Shield size={18} /> Security & Auth
               </button>
-              <button 
-                onClick={() => setActiveTab("privacy")}
-                className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors text-left",
-                  activeTab === "privacy" ? "bg-white text-[#5B6CFF] shadow-sm border border-[#E6EAF2]" : "text-gray-500 hover:bg-white/50"
-                )}
-              >
-                <Eye size={18} /> Privacy
-              </button>
            </div>
 
            {/* Content Area */}
@@ -528,38 +519,6 @@ export default function SettingsPage() {
                       >
                         <Save size={16} /> {isUpdatingPassword ? "Updating..." : "Update Password"}
                       </Button>
-                   </div>
-                </div>
-              )}
-
-              {/* PRIVACY TAB */}
-              {activeTab === "privacy" && (
-                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-
-                   <div className="space-y-4 mt-8">
-                      <div className="flex items-center justify-between p-4 border border-[#E6EAF2] rounded-xl">
-                         <div>
-                            <h4 className="font-medium text-gray-900">Public Profile</h4>
-                            <p className="text-xs text-gray-500">Allow other patients to see your basic profile.</p>
-                         </div>
-                         <div className="h-6 w-11 bg-gray-200 rounded-full relative cursor-pointer">
-                            <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow-sm" />
-                         </div>
-                      </div>
-                      
-                      <div className="flex items-center justify-between p-4 border border-[#E6EAF2] rounded-xl">
-                         <div>
-                            <h4 className="font-medium text-gray-900">Contact from Psychologists</h4>
-                            <p className="text-xs text-gray-500">Allow psychologists to send you connection requests.</p>
-                         </div>
-                         <div className="h-6 w-11 bg-[#5B6CFF] rounded-full relative cursor-pointer">
-                            <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full shadow-sm" />
-                         </div>
-                      </div>
-                   </div>
-                   
-                   <div className="pt-4 flex justify-end">
-                      <Button className="bg-[#5B6CFF] hover:bg-[#4a5ae0]">Save Privacy Settings</Button>
                    </div>
                 </div>
               )}
