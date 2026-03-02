@@ -10,11 +10,16 @@ type SendEmailPayload = {
 
 const resendApiKey = process.env.RESEND_API_KEY;
 const emailFrom = process.env.EMAIL_FROM || "noreply@healtalk.com";
+const emailReplyTo = process.env.EMAIL_REPLY_TO;
 
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
 export const sendEmail = async ({ to, subject, html, text, from }: SendEmailPayload) => {
   if (!resend) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("Email service is not configured (missing RESEND_API_KEY).");
+    }
+
     console.log("==================================================================");
     console.log("                      EMAIL DELIVERY (MOCK)                      ");
     console.log("------------------------------------------------------------------");
@@ -35,12 +40,19 @@ export const sendEmail = async ({ to, subject, html, text, from }: SendEmailPayl
 
   const body = html ? { html } : { text: text || "(no content)" };
   try {
-    await resend.emails.send({
+    const response = await resend.emails.send({
       from: from || emailFrom,
       to,
       subject,
+      ...(emailReplyTo ? { replyTo: emailReplyTo } : {}),
       ...body,
     });
+
+    if (response.error) {
+      throw new Error(`Resend API error: ${response.error.message}`);
+    }
+
+    return response.data;
   } catch (err) {
     // Log delivery failures but don't crash the calling route.
     // The caller is responsible for deciding whether to surface this error.

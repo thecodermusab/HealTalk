@@ -4,6 +4,7 @@ import type { Socket as NetSocket } from "net";
 import { Server as IOServer } from "socket.io";
 import { getToken } from "next-auth/jwt";
 import { prisma } from "@/lib/prisma";
+import { parseDirectConversationId } from "@/lib/messaging";
 
 export const config = {
   api: {
@@ -20,29 +21,54 @@ type NextApiResponseWithSocket = NextApiResponse & {
 const onlineUsersByRoom = new Map<string, Set<string>>();
 const APPOINTMENT_ROOM_PREFIX = "appointment:";
 
-const getAppointmentIdFromRoom = (room: string) => {
+const getConversationIdFromRoom = (room: string) => {
   if (!room.startsWith(APPOINTMENT_ROOM_PREFIX)) return null;
-  const appointmentId = room.slice(APPOINTMENT_ROOM_PREFIX.length).trim();
-  return appointmentId || null;
+  const conversationId = room.slice(APPOINTMENT_ROOM_PREFIX.length).trim();
+  return conversationId || null;
 };
 
-const canAccessRoom = async (userId: string, room: string) => {
-  const appointmentId = getAppointmentIdFromRoom(room);
-  if (!appointmentId) return false;
+const resolveConversationParticipants = async (conversationId: string) => {
+  const directConversation = parseDirectConversationId(conversationId);
+  if (directConversation) {
+    const [patient, psychologist] = await Promise.all([
+      prisma.patient.findUnique({
+        where: { id: directConversation.patientId },
+        select: { id: true, userId: true },
+      }),
+      prisma.psychologist.findUnique({
+        where: { id: directConversation.psychologistId },
+        select: { id: true, userId: true },
+      }),
+    ]);
+    if (!patient || !psychologist) return null;
+    return { patient, psychologist };
+  }
 
   const appointment = await prisma.appointment.findUnique({
-    where: { id: appointmentId },
+    where: { id: conversationId },
     select: {
-      patient: { select: { userId: true } },
-      psychologist: { select: { userId: true } },
+      patient: { select: { id: true, userId: true } },
+      psychologist: { select: { id: true, userId: true } },
     },
   });
 
-  if (!appointment) return false;
+  if (!appointment) return null;
+  return {
+    patient: appointment.patient,
+    psychologist: appointment.psychologist,
+  };
+};
+
+const canAccessRoom = async (userId: string, room: string) => {
+  const conversationId = getConversationIdFromRoom(room);
+  if (!conversationId) return false;
+
+  const participants = await resolveConversationParticipants(conversationId);
+  if (!participants) return false;
 
   return (
-    appointment.patient?.userId === userId ||
-    appointment.psychologist?.userId === userId
+    participants.patient?.userId === userId ||
+    participants.psychologist?.userId === userId
   );
 };
 
@@ -180,25 +206,16 @@ export default async function handler(
               return;
             }
 
-            const appointment = await prisma.appointment.findUnique({
-              where: { id: appointmentId },
-              include: {
-                patient: { select: { id: true, userId: true, user: { select: { name: true } } } },
-                psychologist: {
-                  select: { id: true, userId: true, user: { select: { name: true } } },
-                },
-              },
-            });
-
-            if (!appointment) {
-              callback?.({ ok: false, error: "Appointment not found" });
+            const participants = await resolveConversationParticipants(appointmentId);
+            if (!participants) {
+              callback?.({ ok: false, error: "Conversation not found" });
               return;
             }
 
             const senderId = socket.data.userId as string;
             const isParticipant =
-              appointment.patient?.userId === senderId ||
-              appointment.psychologist?.userId === senderId;
+              participants.patient?.userId === senderId ||
+              participants.psychologist?.userId === senderId;
 
             if (!isParticipant) {
               callback?.({ ok: false, error: "Forbidden" });
@@ -207,8 +224,8 @@ export default async function handler(
 
             const message = await prisma.message.create({
               data: {
-                patientId: appointment.patient.id,
-                psychologistId: appointment.psychologist.id,
+                patientId: participants.patient.id,
+                psychologistId: participants.psychologist.id,
                 senderId,
                 content: trimmed || (hasAttachment ? "Attachment" : ""),
                 attachmentUrl: attachment?.url,

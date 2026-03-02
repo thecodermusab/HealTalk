@@ -16,6 +16,7 @@ export default function SignUpPage() {
   const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [registeredEmail, setRegisteredEmail] = useState<string>("");
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -51,6 +52,8 @@ export default function SignUpPage() {
     const csrfToken = await fetchCsrfToken();
 
     // Simplified registration logic matching the UI fields
+    const emailForVerification = formData.email.trim().toLowerCase();
+
     const response = await fetch("/api/auth/register", {
       method: "POST",
       headers: {
@@ -65,8 +68,9 @@ export default function SignUpPage() {
       }),
     });
 
+    const data = await response.json().catch(() => null);
+
     if (!response.ok) {
-      const data = await response.json().catch(() => null);
       setErrorMessage(data?.error ?? "Failed to create account.");
       setIsSubmitting(false);
       return;
@@ -78,8 +82,45 @@ export default function SignUpPage() {
       password: "",
       confirmPassword: "",
     });
+    setRegisteredEmail(emailForVerification);
+    if (data?.verificationEmailSent === false) {
+      setSuccessMessage(
+        "Account created, but we could not send the verification email yet. Click resend below after you confirm email settings."
+      );
+    } else {
+      setSuccessMessage(
+        "Account created! Please check your email to verify your account before signing in."
+      );
+    }
+    setIsSubmitting(false);
+  };
+
+  const handleResendVerification = async () => {
+    if (!registeredEmail || isSubmitting) return;
+
+    setIsSubmitting(true);
+    setErrorMessage(null);
+    const csrfToken = await fetchCsrfToken();
+
+    const response = await fetch("/api/auth/resend-verification", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(csrfToken ? { "x-csrf-token": csrfToken } : {}),
+      },
+      body: JSON.stringify({ email: registeredEmail }),
+    });
+
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      setErrorMessage(data?.error ?? "Failed to resend verification email.");
+      setIsSubmitting(false);
+      return;
+    }
+
     setSuccessMessage(
-      "Account created! Please check your email to verify your account before signing in."
+      data?.message || "Verification email sent. Please check your inbox."
     );
     setIsSubmitting(false);
   };
@@ -136,6 +177,17 @@ export default function SignUpPage() {
             <div className="mb-4 text-center text-sm text-green-600 bg-green-50 p-3 rounded-xl border border-green-100">
               {successMessage}
             </div>
+          )}
+
+          {registeredEmail && (
+            <button
+              type="button"
+              onClick={handleResendVerification}
+              disabled={isSubmitting}
+              className="mb-4 w-full h-11 rounded-xl border border-gray-300 bg-white text-[#111] text-sm font-medium hover:bg-gray-50 disabled:bg-[#E5E7EB] disabled:text-[#9CA3AF] disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? "Sending..." : "Resend verification email"}
+            </button>
           )}
 
           <button

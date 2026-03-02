@@ -59,10 +59,10 @@ export default function FeaturedPsychologists() {
                     <span className="text-xs text-[#425234]">_0{index + 1}</span>
                   </div>
                   <div className="mt-1 flex flex-col gap-1">
-                    <span className="text-[#425234] inline-block translate-y-6 text-sm opacity-0 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                    <span className="text-[#425234] inline-block text-sm translate-y-0 opacity-100 md:translate-y-6 md:opacity-0 transition duration-300 md:group-hover:translate-y-0 md:group-hover:opacity-100">
                       {psychologist.specializations[0]}
                     </span>
-                    <div className="inline-flex items-center gap-2 translate-y-8 opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100">
+                    <div className="inline-flex items-center gap-2 text-sm text-[#425234] translate-y-0 opacity-100 md:translate-y-8 md:opacity-0 transition-all duration-500 md:group-hover:translate-y-0 md:group-hover:opacity-100">
                       <div className="flex items-center gap-1">
                         <Star className="text-accent fill-accent" size={14} />
                         <span className="text-sm font-medium text-[#121E0D]">{psychologist.rating}</span>
@@ -73,7 +73,7 @@ export default function FeaturedPsychologists() {
                         <span className="text-xs text-[#425234]">{psychologist.location}</span>
                       </div>
                     </div>
-                    <span className="text-primary inline-block translate-y-8 text-sm tracking-wide opacity-0 transition-all duration-500 hover:underline group-hover:translate-y-0 group-hover:opacity-100">
+                    <span className="text-primary inline-block translate-y-0 text-sm tracking-wide opacity-100 md:translate-y-8 md:opacity-0 transition-all duration-500 hover:underline md:group-hover:translate-y-0 md:group-hover:opacity-100">
                       View profile →
                     </span>
                   </div>

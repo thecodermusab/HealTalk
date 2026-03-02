@@ -127,8 +127,8 @@ export default function PatientSessionsPage() {
         </div>
 
         <div className="dash-card p-5">
-          <div className="flex items-center gap-4 flex-wrap">
-            <div className="flex-1 min-w-[240px]">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 sm:gap-4">
+            <div className="w-full flex-1 min-w-0 sm:min-w-[240px]">
               <div className="relative">
                 <Search
                   className="absolute left-3 top-1/2 -translate-y-1/2 dash-muted"
@@ -144,7 +144,7 @@ export default function PatientSessionsPage() {
             </div>
 
             <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-[190px] border-[var(--dash-border)] bg-[var(--dash-surface)] text-[var(--dash-text)]">
+              <SelectTrigger className="w-full sm:w-[190px] border-[var(--dash-border)] bg-[var(--dash-surface)] text-[var(--dash-text)]">
                 <Filter size={16} className="mr-2 dash-muted" />
                 <SelectValue placeholder="Session Type" />
               </SelectTrigger>
@@ -156,7 +156,7 @@ export default function PatientSessionsPage() {
             </Select>
 
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-[190px] border-[var(--dash-border)] bg-[var(--dash-surface)] text-[var(--dash-text)]">
+              <SelectTrigger className="w-full sm:w-[190px] border-[var(--dash-border)] bg-[var(--dash-surface)] text-[var(--dash-text)]">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
               <SelectContent className="border-[var(--dash-border)] bg-[var(--dash-surface)] text-[var(--dash-text)]">

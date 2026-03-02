@@ -1,16 +1,47 @@
 "use client";
 
 import Link from "next/link";
-import { Star, MapPin, CheckCircle, Video, Phone, Calendar } from "lucide-react";
+import { Star, MapPin, CheckCircle, Video, Mail, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Psychologist } from "@/lib/types";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { startTherapistConversation } from "@/lib/start-therapist-conversation";
 
 interface TherapistListCardProps {
   therapist: Psychologist;
 }
 
 export default function TherapistListCard({ therapist }: TherapistListCardProps) {
+  const router = useRouter();
+  const [isStartingChat, setIsStartingChat] = useState(false);
+  const [chatError, setChatError] = useState<string | null>(null);
+
+  const handleMessageNow = async () => {
+    if (isStartingChat) return;
+    setIsStartingChat(true);
+    setChatError(null);
+
+    const result = await startTherapistConversation({
+      psychologistId: String(therapist.id),
+    });
+
+    if (!result.ok) {
+      if (result.shouldLogin) {
+        router.push("/login?redirect=/find-psychologists");
+        return;
+      }
+      setChatError(result.error);
+      setIsStartingChat(false);
+      return;
+    }
+
+    router.push(
+      `/patient/dashboard/messages?appointmentId=${encodeURIComponent(result.conversationId)}`
+    );
+  };
+
   return (
     <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow flex flex-col md:flex-row gap-6 w-full max-w-[1356px] min-h-[268px] mx-auto box-border">
       {/* Left: Image (clickable) */}
@@ -75,19 +106,29 @@ export default function TherapistListCard({ therapist }: TherapistListCardProps)
 
       {/* Right: Actions */}
       <div className="flex-shrink-0 w-full md:w-72 flex flex-col gap-3 md:border-l md:border-slate-100 md:pl-8 justify-center py-2 h-full">
-            {/* Call Button */}
-             <Button className="w-full h-12 bg-[#2D2A3E] hover:bg-[#1a1824] text-white flex justify-center items-center gap-3 px-4 rounded-xl shadow-lg shadow-slate-200 active:scale-95 transition-all">
-                <Phone size={20} className="fill-white/20" />
-                <span className="font-semibold text-base">Call Now</span>
-             </Button>
-             
-             {/* Book Button */}
-             <Link href={`/psychologists/${therapist.id}`} className="w-full">
-                <Button variant="outline" className="w-full h-12 border-slate-200 hover:bg-slate-50 text-slate-700 flex justify-center items-center gap-3 px-4 rounded-xl active:scale-95 transition-all">
-                    <Calendar size={20} className="text-slate-400" />
+            {/* Book Button (Primary) */}
+            <Link href={`/psychologists/${therapist.id}`} className="w-full">
+                <Button className="w-full h-12 bg-[#2D2A3E] hover:bg-[#1a1824] text-white flex justify-center items-center gap-3 px-4 rounded-xl shadow-lg shadow-slate-200 active:scale-95 transition-all">
+                    <Calendar size={20} className="text-white/90" />
                     <span className="font-semibold text-base">Book Appointment</span>
                 </Button>
             </Link>
+
+            {/* Message Button (Secondary) */}
+            <Button
+                variant="outline"
+                className="w-full h-12 border-slate-200 hover:bg-slate-50 text-slate-700 flex justify-center items-center gap-3 px-4 rounded-xl active:scale-95 transition-all"
+                onClick={handleMessageNow}
+                disabled={isStartingChat}
+            >
+                    <Mail size={20} className="text-slate-400" />
+                    <span className="font-semibold text-base">
+                      {isStartingChat ? "Opening Chat..." : "Message Now"}
+                    </span>
+            </Button>
+            {chatError && (
+              <p className="text-xs text-red-600 text-center -mt-1">{chatError}</p>
+            )}
 
             <div className="flex items-center gap-2 text-sm font-medium text-orange-500 mt-2 justify-center">
                 <Video size={16} />

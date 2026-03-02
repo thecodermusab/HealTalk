@@ -134,7 +134,7 @@ export function NewHeader({ onMobileMenuClick }: NewHeaderProps) {
       : <Sun size={16} />;
 
   return (
-    <header className="h-14 border-b flex items-center justify-between px-6 sticky top-0 z-20 bg-[var(--dash-surface)] border-[var(--dash-border)]">
+    <header className="h-14 border-b flex items-center justify-between px-4 sm:px-6 sticky top-0 z-20 bg-[var(--dash-surface)] border-[var(--dash-border)]">
       <div className="flex items-center gap-4 flex-1 max-w-xl">
         <Button
           variant="ghost"
@@ -215,7 +215,7 @@ export function NewHeader({ onMobileMenuClick }: NewHeaderProps) {
             <DropdownMenu.Content
               align="end"
               sideOffset={8}
-              className="w-[320px] rounded-2xl border shadow-xl z-50 overflow-hidden bg-[var(--dash-surface)] border-[var(--dash-border)]"
+              className="w-[min(320px,calc(100vw-1rem))] rounded-2xl border shadow-xl z-50 overflow-hidden bg-[var(--dash-surface)] border-[var(--dash-border)]"
             >
               <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--dash-border)]">
                 <span className="text-sm font-bold text-[var(--dash-text)]">Notifications</span>

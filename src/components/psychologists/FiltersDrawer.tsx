@@ -57,7 +57,7 @@ export default function FiltersDrawer() {
            <SlidersHorizontal size={14} />
         </Button>
       </SheetTrigger>
-      <SheetContent className="w-[400px] sm:w-[440px] overflow-y-auto p-0 gap-0">
+      <SheetContent className="w-[min(440px,calc(100vw-1rem))] overflow-y-auto p-0 gap-0">
         <SheetHeader className="px-6 py-5 border-b border-border flex flex-row items-center justify-between sticky top-0 bg-background z-10">
           <SheetTitle className="text-xl font-bold text-slate-900">Filters</SheetTitle>
            {/* Close button is automatically added by SheetContent but we can customize or rely on default X */}

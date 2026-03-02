@@ -44,7 +44,7 @@ export function AboutSlideshow() {
 
   return (
     <div 
-      className="relative w-full max-w-[1343px] mx-auto rounded-[24px] overflow-hidden h-[611px] group isolate"
+      className="relative w-full max-w-[1343px] mx-auto rounded-[20px] sm:rounded-[24px] overflow-hidden h-[360px] sm:h-[460px] lg:h-[611px] group isolate"
     >
       {/* Inline styles for the keyframes to keep it self-contained and performant */}
       <style jsx>{`
@@ -82,11 +82,11 @@ export function AboutSlideshow() {
           />
 
           {/* Text Content */}
-          <div className="absolute bottom-[60px] left-[48px] text-white">
+          <div className="absolute bottom-8 sm:bottom-[60px] left-5 sm:left-[48px] text-white">
             <p className="text-xs font-bold tracking-[0.2em] uppercase mb-4 text-white/90">
               {slide.step}
             </p>
-            <h2 className="text-4xl md:text-[52px] font-sans font-medium leading-[1.1] whitespace-pre-line text-white shadow-sm">
+            <h2 className="text-2xl sm:text-4xl md:text-[52px] font-sans font-medium leading-[1.1] whitespace-pre-line text-white shadow-sm">
               {slide.title}
             </h2>
             {/* Spacer for bars */}
@@ -96,7 +96,7 @@ export function AboutSlideshow() {
       ))}
 
       {/* Progress Bars (Fixed on top, pointer-events-auto for clicking) */}
-      <div className="absolute bottom-[48px] left-[48px] flex gap-3 z-40">
+      <div className="absolute bottom-5 sm:bottom-[48px] left-5 sm:left-[48px] flex gap-2 sm:gap-3 z-40">
         {slides.map((_, index) => {
            const isActive = index === currentSlide;
            return (
@@ -105,7 +105,7 @@ export function AboutSlideshow() {
                 onClick={() => handleManualSlide(index)}
                 className="relative h-1 overflow-hidden transition-all duration-300 cursor-pointer group/bar"
                 style={{ 
-                    width: '64px',
+                    width: '56px',
                     borderRadius: '9999px',
                     backgroundColor: 'rgba(255, 255, 255, 0.22)' // Track color
                 }}

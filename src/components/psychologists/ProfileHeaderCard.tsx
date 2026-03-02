@@ -4,12 +4,40 @@ import { BadgeCheck, MapPin, Phone, Mail, Globe, Star } from "lucide-react";
 import Image from "next/image";
 import { Psychologist } from "@/lib/types";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { startTherapistConversation } from "@/lib/start-therapist-conversation";
 
 interface ProfileHeaderCardProps {
   therapist: Psychologist;
 }
 
 export default function ProfileHeaderCard({ therapist }: ProfileHeaderCardProps) {
+  const router = useRouter();
+  const [isStartingChat, setIsStartingChat] = useState(false);
+
+  const handleMessageNow = async () => {
+    if (isStartingChat) return;
+    setIsStartingChat(true);
+
+    const result = await startTherapistConversation({
+      psychologistId: String(therapist.id),
+    });
+
+    if (!result.ok) {
+      if (result.shouldLogin) {
+        router.push(`/login?redirect=${encodeURIComponent(`/psychologists/${String(therapist.id)}`)}`);
+        return;
+      }
+      setIsStartingChat(false);
+      return;
+    }
+
+    router.push(
+      `/patient/dashboard/messages?appointmentId=${encodeURIComponent(result.conversationId)}`
+    );
+  };
+
   return (
     <div className="bg-white border border-slate-100 rounded-2xl p-6 lg:p-8 flex flex-col md:flex-row gap-8 shadow-sm transition-shadow hover:shadow-md">
       {/* Photo Column */}
@@ -68,15 +96,32 @@ export default function ProfileHeaderCard({ therapist }: ProfileHeaderCardProps)
 
         {/* Action Buttons Row */}
         <div className="flex flex-wrap justify-center md:justify-start gap-3">
-             <Button variant="outline" className="gap-2 h-10 px-5 rounded-lg border-slate-200 hover:bg-slate-50 hover:text-teal-600 transition-colors">
+             <Button asChild variant="outline" className="gap-2 h-10 px-5 rounded-lg border-slate-200 hover:bg-slate-50 hover:text-teal-600 transition-colors">
+                <a href="tel:+15550100">
                 <Phone size={16} />
                 Call
+                </a>
             </Button>
-            <Button variant="outline" className="gap-2 h-10 px-5 rounded-lg border-slate-200 hover:bg-slate-50 hover:text-teal-600 transition-colors">
+            <Button
+                variant="outline"
+                onClick={handleMessageNow}
+                disabled={isStartingChat}
+                className="gap-2 h-10 px-5 rounded-lg border-slate-200 hover:bg-slate-50 hover:text-teal-600 transition-colors"
+            >
                 <Mail size={16} />
-                Email
+                {isStartingChat ? "Opening..." : "Message"}
             </Button>
-            <Button variant="outline" className="gap-2 h-10 px-5 rounded-lg border-slate-200 hover:bg-slate-50 hover:text-teal-600 transition-colors">
+            <Button
+                variant="outline"
+                className="gap-2 h-10 px-5 rounded-lg border-slate-200 hover:bg-slate-50 hover:text-teal-600 transition-colors"
+                onClick={() =>
+                  window.open(
+                    `https://www.google.com/search?q=${encodeURIComponent(`${therapist.name || "Therapist"} psychologist`)}`,
+                    "_blank",
+                    "noopener,noreferrer"
+                  )
+                }
+            >
                 <Globe size={16} />
                 My Website
             </Button>

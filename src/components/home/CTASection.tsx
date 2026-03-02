@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export default function CTASection() {
   return (
-    <section className="relative w-full h-[834px] flex items-center justify-center overflow-hidden">
+    <section className="relative w-full min-h-[620px] sm:min-h-[720px] lg:h-[834px] flex items-center justify-center overflow-hidden">
       {/* Video Background */}
       <video
         className="absolute inset-0 w-full h-full object-cover"
@@ -38,12 +38,10 @@ export default function CTASection() {
 
         {/* Headline */}
         <h2
-          className="text-white mb-10 text-center"
+          className="text-white mb-10 text-center text-[40px] leading-[1.05] sm:text-[56px] sm:leading-[1.05] lg:text-[84px] lg:leading-[78px]"
           style={{
             fontFamily: '"Times New Roman", Times, Baskerville, Georgia, serif',
             fontWeight: 300,
-            fontSize: "84px",
-            lineHeight: "78px",
             letterSpacing: "-0.02em",
           }}
         >
@@ -110,15 +108,6 @@ export default function CTASection() {
         </Link>
       </div>
 
-      {/* Responsive Styles Injection */}
-      <style jsx>{`
-        @media (max-width: 768px) {
-          h2 {
-            font-size: 48px !important;
-            line-height: 1.1 !important;
-          }
-        }
-      `}</style>
     </section>
   );
 }

@@ -215,6 +215,7 @@ export async function POST(request: Request) {
       rawToken
     )}`;
 
+    let verificationEmailSent = true;
     try {
       await sendEmail({
         to: email,
@@ -229,12 +230,14 @@ export async function POST(request: Request) {
       });
     } catch (emailError) {
       console.error("Verification email error:", emailError);
+      verificationEmailSent = false;
     }
 
     return NextResponse.json(
       {
         ...user,
         verificationRequired: true,
+        verificationEmailSent,
       },
       { status: 201 }
     );

@@ -32,7 +32,11 @@ type PsychologistReview = {
 
 async function getPsychologistData(id: string) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const baseUrl =
+      process.env.NEXT_PUBLIC_APP_URL ||
+      process.env.NEXTAUTH_URL ||
+      process.env.NEXT_PUBLIC_BASE_URL ||
+      "http://localhost:3000";
     const res = await fetch(`${baseUrl}/api/psychologists/${id}`, {
       next: { revalidate: 60 },
     });
@@ -120,6 +124,7 @@ export default async function PsychologistProfilePage({ params }: PageProps) {
               price={psychologist.price}
               psychologistId={psychologist.id}
               psychologistName={psychologist.name}
+              psychologistImage={psychologist.image}
             />
           </div>
         </div>

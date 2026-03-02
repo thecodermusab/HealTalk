@@ -129,7 +129,7 @@ export default function PatientScreeningPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6 min-h-[calc(100vh-150px)]">
+      <div className="space-y-6 min-h-[calc(100dvh-150px)]">
         {view === "list" && (
           <>
             <section className="dash-card p-6 md:p-8">
@@ -248,7 +248,7 @@ export default function PatientScreeningPage() {
               <div className="w-20" />
             </div>
 
-            <div className="dash-card p-2 md:p-4 h-[calc(100vh-230px)] min-h-[540px]">
+            <div className="dash-card p-2 md:p-4 h-[70dvh] min-h-[420px] md:h-[calc(100dvh-230px)] md:min-h-[540px]">
               <ChatbotInterface
                 onComplete={handleAssessmentComplete}
                 initialUserMessage={initialMessage}

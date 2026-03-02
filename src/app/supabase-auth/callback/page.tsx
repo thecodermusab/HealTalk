@@ -46,8 +46,8 @@ export default function SupabaseAuthCallbackPage() {
   }, [router]);
 
   return (
-    <div className="flex flex-1 w-full items-center justify-center px-4 py-16 font-sans mb-16">
-      <div className="w-[800px] bg-[#ebebff] rounded-[40px] shadow-sm flex flex-col items-center py-16">
+    <div className="flex flex-1 w-full items-center justify-center px-4 py-10 sm:py-16 font-sans bg-[#F6F2EA] min-h-screen">
+      <div className="w-full max-w-[800px] bg-[#ebebff] rounded-[28px] sm:rounded-[40px] shadow-sm flex flex-col items-center px-5 py-10 sm:px-8 sm:py-16">
         <Link href="/" className="mb-6">
           <Image
             src="/images/New_Logo.png"
@@ -57,7 +57,7 @@ export default function SupabaseAuthCallbackPage() {
             className="h-7 w-auto"
           />
         </Link>
-        <h1 className="text-[28px] font-bold text-[#111] mb-3 text-center">
+        <h1 className="text-2xl sm:text-[28px] font-bold text-[#111] mb-3 text-center">
           Completing Supabase sign-in...
         </h1>
         <p className="text-gray-500 text-center text-[16px]">

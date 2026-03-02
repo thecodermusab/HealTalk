@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import FilterBar, { FilterState } from "@/components/psychologists/FilterBar";
 import TherapistListCard from "@/components/psychologists/TherapistListCard";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 interface PsychologistFromAPI {
   id: string;
@@ -412,22 +412,25 @@ function FindPsychologistsPageContent() {
       {/* Optional: Top Gradient Wash */}
       <div className="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-[#EBEBFF]/50 via-orange-50/30 to-transparent pointer-events-none" />
 
-      <div className="relative max-w-[1400px] mx-auto px-4 md:px-8 py-12 pt-32">
+      <div className="relative max-w-[1400px] mx-auto px-4 md:px-8 py-8 sm:py-12 pt-24 sm:pt-28 md:pt-32">
         
         {/* Header Section */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-[#121E0D] mb-2 font-display">
-            Therapists {filters.location.length > 0 
-              ? `in ${filters.location.length === 1 ? filters.location[0] : 'Multiple Locations'}`
-              : 'Online & Worldwide'}
+          <h1 className="text-3xl sm:text-4xl font-bold text-[#121E0D] mb-2 font-display">
+            Find a Therapist
           </h1>
+          {filters.location.length > 0 && (
+            <p className="text-sm text-[#425234] mb-1">
+              Location:{" "}
+              <span className="font-semibold text-[#121E0D]">
+                {filters.location.length === 1
+                  ? filters.location[0]
+                  : `${filters.location.length} locations`}
+              </span>
+            </p>
+          )}
           <p className="text-[#425234] text-sm flex items-center gap-1">
-            {filteredPsychologists.length} results {filters.location.length > 0 && (
-                <>in <span className="font-semibold text-[#121E0D] flex items-center cursor-pointer hover:underline mx-1">
-                    {filters.location.length === 1 ? filters.location[0] : `${filters.location.length} locations`} 
-                    <ChevronDown size={14} className="ml-0.5" />
-                </span></>
-            )}
+            {filteredPsychologists.length} result{filteredPsychologists.length === 1 ? "" : "s"}
           </p>
         </div>
 
@@ -474,7 +477,7 @@ function FindPsychologistsPageContent() {
                  <Button
                     variant="outline"
                     size="lg"
-                    className="min-w-[200px] border-slate-200 text-slate-600 hover:bg-slate-50"
+                    className="min-w-[200px] w-full sm:w-auto border-slate-200 text-slate-600 hover:bg-slate-50"
                     onClick={() => setPage(page + 1)}
                  >
                     Load More Results
@@ -490,7 +493,7 @@ function FindPsychologistsPageContent() {
 function FindPsychologistsPageFallback() {
   return (
     <div className="min-h-screen bg-[#F6F2EA]">
-      <div className="relative max-w-[1400px] mx-auto px-4 md:px-8 py-12 pt-32">
+      <div className="relative max-w-[1400px] mx-auto px-4 md:px-8 py-8 sm:py-12 pt-24 sm:pt-28 md:pt-32">
         <div className="text-center py-20">
           <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary mb-4" />
           <p className="text-slate-500">Loading psychologists...</p>

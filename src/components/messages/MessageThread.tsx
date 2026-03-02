@@ -338,8 +338,8 @@ export function MessageThread({ appointmentId }: { appointmentId: string }) {
   }
 
   return (
-    <div className="bg-white border border-[#E6EAF2] rounded-[24px] shadow-sm flex flex-col h-[70vh]">
-      <div className="px-6 py-4 border-b border-[#E6EAF2]">
+    <div className="bg-white border border-[#E6EAF2] rounded-[24px] shadow-sm flex flex-col h-[65dvh] min-h-[460px] max-h-[760px] lg:h-[70vh]">
+      <div className="px-4 sm:px-6 py-4 border-b border-[#E6EAF2]">
         <h2 className="text-lg font-semibold text-gray-900">{otherName}</h2>
         <p className="text-sm text-gray-500">
           {isOtherTyping
@@ -350,7 +350,7 @@ export function MessageThread({ appointmentId }: { appointmentId: string }) {
         </p>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+      <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-4">
         {messages.length === 0 ? (
           <div className="text-center text-gray-500 py-10">
             No messages yet. Say hello!
@@ -364,7 +364,7 @@ export function MessageThread({ appointmentId }: { appointmentId: string }) {
                 className={`flex ${isMine ? "justify-end" : "justify-start"}`}
               >
                 <div
-                  className={`max-w-[70%] rounded-2xl px-4 py-3 text-sm shadow-sm ${
+                  className={`max-w-[85%] sm:max-w-[75%] rounded-2xl px-4 py-3 text-sm shadow-sm ${
                     isMine
                       ? "bg-[#5B6CFF] text-white"
                       : "bg-gray-100 text-gray-700"
@@ -391,7 +391,7 @@ export function MessageThread({ appointmentId }: { appointmentId: string }) {
         )}
       </div>
 
-      <div className="border-t border-[#E6EAF2] p-4 flex flex-col gap-3">
+      <div className="border-t border-[#E6EAF2] p-3 sm:p-4 flex flex-col gap-3">
         {pendingAttachment && (
           <div className="flex items-center justify-between rounded-xl border border-gray-200 px-3 py-2 text-xs text-gray-600">
             <span>{pendingAttachment.name || "Attachment ready"}</span>
@@ -404,12 +404,12 @@ export function MessageThread({ appointmentId }: { appointmentId: string }) {
             </button>
           </div>
         )}
-        <div className="flex gap-3">
+        <div className="flex items-end gap-2 sm:gap-3">
           <UploadButton
             endpoint="messageAttachment"
             appearance={{
               button:
-                "h-11 w-11 rounded-full border border-gray-200 bg-white text-gray-600 hover:bg-gray-50",
+                "h-10 w-10 sm:h-11 sm:w-11 rounded-full border border-gray-200 bg-white text-gray-600 hover:bg-gray-50",
               allowedContent: "hidden",
             }}
             content={{ button: <Paperclip size={16} /> }}
@@ -420,7 +420,7 @@ export function MessageThread({ appointmentId }: { appointmentId: string }) {
             value={input}
             onChange={(event) => handleTyping(event.target.value)}
             placeholder="Type your message..."
-            className="rounded-full flex-1"
+            className="rounded-full flex-1 min-w-0 h-10 sm:h-11"
             onKeyDown={(event) => {
               if (event.key === "Enter") {
                 event.preventDefault();
@@ -430,7 +430,7 @@ export function MessageThread({ appointmentId }: { appointmentId: string }) {
           />
           <Button
             type="button"
-            className="rounded-full bg-[#5B6CFF] hover:bg-[#4a5ae0]"
+            className="rounded-full bg-[#5B6CFF] hover:bg-[#4a5ae0] h-10 w-10 sm:h-11 sm:w-11 p-0 shrink-0"
             onClick={sendMessage}
           >
             <SendHorizontal size={16} />

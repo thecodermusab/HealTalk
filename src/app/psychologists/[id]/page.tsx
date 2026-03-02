@@ -2,11 +2,13 @@ import ProfileHeaderCard from "@/components/psychologists/ProfileHeaderCard";
 import ConnectCard from "@/components/psychologists/ConnectCard";
 import MobileBookingBar from "@/components/psychologists/MobileBookingBar";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Share2, ThumbsUp, Shield, Star, Video, Image as ImageIcon, CreditCard, Building, MapPin, ExternalLink, BadgeCheck, Phone, Mail } from "lucide-react";
+import { ArrowLeft, ThumbsUp, Shield, Star, Video, Image as ImageIcon, CreditCard, Building, MapPin, ExternalLink, BadgeCheck, Phone, Mail } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
+import Footer from "@/components/layout/Footer";
+import ProfileShareButton from "@/components/psychologists/ProfileShareButton";
 
 // Update interface for Next.js 15+ where params is a Promise
 interface PageProps {
@@ -17,7 +19,11 @@ interface PageProps {
 
 async function getPsychologist(id: string) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const baseUrl =
+      process.env.NEXT_PUBLIC_APP_URL ||
+      process.env.NEXTAUTH_URL ||
+      process.env.NEXT_PUBLIC_BASE_URL ||
+      "http://localhost:3000";
     const res = await fetch(`${baseUrl}/api/psychologists/${id}`, {
       next: { revalidate: 60 },
     });
@@ -76,6 +82,11 @@ async function getPsychologist(id: string) {
 export default async function PsychologistProfilePage({ params }: PageProps) {
   const { id } = await params;
   const therapist = await getPsychologist(id);
+  const profileUrl = `${
+    process.env.NEXT_PUBLIC_APP_URL ||
+    process.env.NEXTAUTH_URL ||
+    "http://localhost:3000"
+  }/psychologists/${id}`;
 
   if (!therapist) {
     return (
@@ -101,7 +112,7 @@ export default async function PsychologistProfilePage({ params }: PageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFCF8] pb-28 lg:pb-0">
+    <div className="min-h-screen bg-[#F6F2EA] pb-28 lg:pb-0">
          {/* Top Gradient Wash */}
          <div className="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-rose-50/60 to-transparent pointer-events-none" />
 
@@ -113,10 +124,10 @@ export default async function PsychologistProfilePage({ params }: PageProps) {
                 <ArrowLeft size={18} />
                 Back
             </Link>
-            <Button variant="ghost" size="sm" className="text-slate-600 hover:text-slate-900 gap-2">
-                <Share2 size={18} />
-                Share
-            </Button>
+            <ProfileShareButton
+              url={profileUrl}
+              title={`HealTalk | ${therapist.name}`}
+            />
          </div>
 
          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
@@ -126,13 +137,13 @@ export default async function PsychologistProfilePage({ params }: PageProps) {
                 
                 {/* Sticky Tabs Navigation */}
                 <Tabs defaultValue="about" className="w-full mt-10">
-                    <div className="sticky top-0 z-20 bg-[#FDFCF8]/95 backdrop-blur-sm pt-2">
+                    <div className="sticky top-0 z-20 bg-[#F6F2EA]/95 backdrop-blur-sm pt-2">
                     <TabsList className="w-full flex justify-start bg-transparent border-b border-border mb-8 gap-8 overflow-x-auto no-scrollbar rounded-none h-auto p-0 pb-1">
                         {["About", "My Photos", "Finances", "Experience", "Treatment", "Location", "Testimonials"].map((tab) => (
                              <TabsTrigger 
                                 key={tab} 
                                 value={tab.toLowerCase().replace(' ', '-')}
-                                className="rounded-none border-b-2 border-transparent data-[state=active]:border-slate-900 data-[state=active]:text-slate-900 px-0 py-3 text-base font-medium text-slate-500 hover:text-slate-800 transition-all bg-transparent shadow-none"
+                                className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#121E0D] data-[state=active]:text-[#121E0D] data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 py-3 text-base font-medium text-[#425234] hover:text-[#121E0D] hover:bg-transparent focus-visible:ring-2 focus-visible:ring-[#FC7D45]/40 transition-colors bg-transparent shadow-none"
                             >
                                 {tab}
                             </TabsTrigger>
@@ -375,57 +386,7 @@ export default async function PsychologistProfilePage({ params }: PageProps) {
 
       </div>
 
-      {/* Footer Placeholder (since we can't reuse the complex one easily in this one-shot without seeing it) */}
-      <footer className="border-t border-[#D9D1C4] bg-[#F6F2EA] pt-16 pb-8 mt-20">
-          <div className="max-w-7xl mx-auto px-8">
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
-                  <div className="col-span-2">
-                       <h3 className="font-logo text-2xl font-bold mb-4">HealTalk</h3>
-                       <p className="text-slate-500 text-sm max-w-sm mb-6">Connecting you with the best mental health professionals for a better tomorrow.</p>
-                       <div className="flex gap-4">
-                           {/* Socials Placeholders */}
-                           <div className="w-8 h-8 rounded-full bg-slate-100"></div>
-                           <div className="w-8 h-8 rounded-full bg-slate-100"></div>
-                           <div className="w-8 h-8 rounded-full bg-slate-100"></div>
-                       </div>
-                  </div>
-                  <div>
-                      <h4 className="font-bold text-slate-900 mb-4">Addiction</h4>
-                      <ul className="space-y-2 text-sm text-slate-500">
-                          <li>Alcohol Use</li>
-                          <li>Cocaine</li>
-                          <li>Fentanyl</li>
-                          <li>Meth</li>
-                      </ul>
-                  </div>
-                   <div>
-                      <h4 className="font-bold text-slate-900 mb-4">Treatment</h4>
-                      <ul className="space-y-2 text-sm text-slate-500">
-                          <li>Inpatient Rehab</li>
-                          <li>Detox</li>
-                          <li>Therapy</li>
-                          <li>Aftercare</li>
-                      </ul>
-                  </div>
-                   <div>
-                      <h4 className="font-bold text-slate-900 mb-4">Company</h4>
-                      <ul className="space-y-2 text-sm text-slate-500">
-                          <li>About Us</li>
-                          <li>Contact</li>
-                          <li>Careers</li>
-                          <li>Press</li>
-                      </ul>
-                  </div>
-              </div>
-              <div className="border-t border-[#E8DFD0] pt-8 flex justify-between items-center text-sm text-slate-400">
-                  <p>© 2026 HealTalk. All rights reserved.</p>
-                  <div className="flex gap-6">
-                      <span>Privacy Policy</span>
-                      <span>Terms of Service</span>
-                  </div>
-              </div>
-          </div>
-      </footer>
+      <Footer />
       <MobileBookingBar therapist={therapist} />
     </div>
   );

@@ -75,13 +75,13 @@ function MessagesContent() {
     <DashboardLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-1">Messages</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">Messages</h1>
           <p className="text-gray-500">Secure conversations with your psychologists</p>
         </div>
 
-        <div className="grid grid-cols-12 gap-6 h-[calc(100vh-250px)]">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 min-h-[calc(100dvh-220px)] lg:h-[calc(100dvh-250px)]">
           {/* Conversations List */}
-          <div className="col-span-12 lg:col-span-4 bg-white border border-[#E6EAF2] rounded-[24px] overflow-hidden flex flex-col">
+          <div className="col-span-12 lg:col-span-4 bg-white border border-[#E6EAF2] rounded-[24px] overflow-hidden flex flex-col min-h-[320px] lg:min-h-0">
             {/* Search */}
             <div className="p-4 border-b border-[#E6EAF2]">
               <div className="relative">
@@ -157,7 +157,7 @@ function MessagesContent() {
             {appointmentId ? (
               <MessageThread appointmentId={appointmentId} />
             ) : (
-              <div className="bg-white border border-dashed border-gray-200 rounded-[24px] p-12 text-center h-full flex flex-col items-center justify-center">
+              <div className="bg-white border border-dashed border-gray-200 rounded-[24px] p-6 sm:p-8 lg:p-12 text-center h-full min-h-[320px] flex flex-col items-center justify-center">
                 <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
                   <MessageCircle className="text-gray-300" size={32} />
                 </div>

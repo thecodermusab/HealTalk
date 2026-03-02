@@ -6,6 +6,7 @@ import { z } from "zod";
 import { parseJson } from "@/lib/validation";
 import { requireRateLimit } from "@/lib/rate-limit";
 import { validateCsrf } from "@/lib/csrf";
+import { buildDirectConversationId, parseDirectConversationId } from "@/lib/messaging";
 
 const messageSchema = z.object({
   content: z.string().min(1),
@@ -14,6 +15,94 @@ const messageSchema = z.object({
 interface RouteParams {
   params: Promise<{ appointmentId: string }>;
 }
+
+type ConversationContext = {
+  id: string;
+  patientId: string;
+  psychologistId: string;
+  patientUserId: string;
+  psychologistUserId: string;
+  patientName: string;
+  psychologistName: string;
+};
+
+const resolveConversation = async (
+  conversationId: string,
+  currentUserId: string
+): Promise<
+  | { ok: true; context: ConversationContext }
+  | { ok: false; status: number; error: string }
+> => {
+  const directConversation = parseDirectConversationId(conversationId);
+  if (directConversation) {
+    const [patient, psychologist] = await Promise.all([
+      prisma.patient.findUnique({
+        where: { id: directConversation.patientId },
+        include: { user: { select: { id: true, name: true } } },
+      }),
+      prisma.psychologist.findUnique({
+        where: { id: directConversation.psychologistId },
+        include: { user: { select: { id: true, name: true } } },
+      }),
+    ]);
+
+    if (!patient || !psychologist) {
+      return { ok: false, status: 404, error: "Conversation not found" };
+    }
+
+    const isParticipant =
+      patient.userId === currentUserId || psychologist.userId === currentUserId;
+    if (!isParticipant) {
+      return { ok: false, status: 403, error: "Forbidden" };
+    }
+
+    return {
+      ok: true,
+      context: {
+        id: buildDirectConversationId(patient.id, psychologist.id),
+        patientId: patient.id,
+        psychologistId: psychologist.id,
+        patientUserId: patient.userId,
+        psychologistUserId: psychologist.userId,
+        patientName: patient.user?.name || "Patient",
+        psychologistName: psychologist.user?.name || "Psychologist",
+      },
+    };
+  }
+
+  const appointment = await prisma.appointment.findUnique({
+    where: { id: conversationId },
+    include: {
+      patient: { select: { id: true, userId: true, user: { select: { name: true } } } },
+      psychologist: { select: { id: true, userId: true, user: { select: { name: true } } } },
+    },
+  });
+
+  if (!appointment) {
+    return { ok: false, status: 404, error: "Appointment not found" };
+  }
+
+  const isParticipant =
+    appointment.patient?.userId === currentUserId ||
+    appointment.psychologist?.userId === currentUserId;
+
+  if (!isParticipant) {
+    return { ok: false, status: 403, error: "Forbidden" };
+  }
+
+  return {
+    ok: true,
+    context: {
+      id: appointment.id,
+      patientId: appointment.patient.id,
+      psychologistId: appointment.psychologist.id,
+      patientUserId: appointment.patient.userId,
+      psychologistUserId: appointment.psychologist.userId,
+      patientName: appointment.patient.user?.name || "Patient",
+      psychologistName: appointment.psychologist.user?.name || "Psychologist",
+    },
+  };
+};
 
 export async function GET(request: Request, { params }: RouteParams) {
   const session = await getServerSession(authOptions);
@@ -31,31 +120,16 @@ export async function GET(request: Request, { params }: RouteParams) {
   if (rateLimit) return rateLimit;
 
   const { appointmentId } = await params;
-
-  const appointment = await prisma.appointment.findUnique({
-    where: { id: appointmentId },
-    include: {
-      patient: { select: { id: true, userId: true, user: { select: { name: true } } } },
-      psychologist: { select: { id: true, userId: true, user: { select: { name: true } } } },
-    },
-  });
-
-  if (!appointment) {
-    return NextResponse.json({ error: "Appointment not found" }, { status: 404 });
+  const resolved = await resolveConversation(appointmentId, session.user.id);
+  if (!resolved.ok) {
+    return NextResponse.json({ error: resolved.error }, { status: resolved.status });
   }
-
-  const isParticipant =
-    appointment.patient?.userId === session.user.id ||
-    appointment.psychologist?.userId === session.user.id;
-
-  if (!isParticipant) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
+  const context = resolved.context;
 
   await prisma.message.updateMany({
     where: {
-      patientId: appointment.patient.id,
-      psychologistId: appointment.psychologist.id,
+      patientId: context.patientId,
+      psychologistId: context.psychologistId,
       read: false,
       senderId: { not: session.user.id },
     },
@@ -64,19 +138,19 @@ export async function GET(request: Request, { params }: RouteParams) {
 
   const messages = await prisma.message.findMany({
     where: {
-      patientId: appointment.patient.id,
-      psychologistId: appointment.psychologist.id,
+      patientId: context.patientId,
+      psychologistId: context.psychologistId,
     },
     orderBy: { createdAt: "asc" },
   });
 
   return NextResponse.json({
     appointment: {
-      id: appointment.id,
-      patientName: appointment.patient.user?.name || "Patient",
-      psychologistName: appointment.psychologist.user?.name || "Psychologist",
-      patientUserId: appointment.patient.userId,
-      psychologistUserId: appointment.psychologist.userId,
+      id: context.id,
+      patientName: context.patientName,
+      psychologistName: context.psychologistName,
+      patientUserId: context.patientUserId,
+      psychologistUserId: context.psychologistUserId,
     },
     messages,
   });
@@ -101,26 +175,11 @@ export async function POST(request: Request, { params }: RouteParams) {
   if (csrfError) return csrfError;
 
   const { appointmentId } = await params;
-
-  const appointment = await prisma.appointment.findUnique({
-    where: { id: appointmentId },
-    include: {
-      patient: { select: { id: true, userId: true } },
-      psychologist: { select: { id: true, userId: true } },
-    },
-  });
-
-  if (!appointment) {
-    return NextResponse.json({ error: "Appointment not found" }, { status: 404 });
+  const resolved = await resolveConversation(appointmentId, session.user.id);
+  if (!resolved.ok) {
+    return NextResponse.json({ error: resolved.error }, { status: resolved.status });
   }
-
-  const isParticipant =
-    appointment.patient?.userId === session.user.id ||
-    appointment.psychologist?.userId === session.user.id;
-
-  if (!isParticipant) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
+  const context = resolved.context;
 
   const { data, error } = await parseJson(request, messageSchema);
   if (error) return error;
@@ -128,8 +187,8 @@ export async function POST(request: Request, { params }: RouteParams) {
 
   const message = await prisma.message.create({
     data: {
-      patientId: appointment.patient.id,
-      psychologistId: appointment.psychologist.id,
+      patientId: context.patientId,
+      psychologistId: context.psychologistId,
       senderId: session.user.id,
       content,
     },
