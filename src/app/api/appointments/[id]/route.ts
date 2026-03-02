@@ -279,10 +279,20 @@ export async function PATCH(
     const psychologistEmail = updated.psychologist?.user?.email;
 
     if (updateData.status === "CANCELLED") {
+      const cancelledBy =
+        appointment.patient?.user?.id === session.user.id
+          ? "patient"
+          : appointment.psychologist?.user?.id === session.user.id
+          ? "psychologist"
+          : "admin";
+
       if (patientEmail) {
         const message = appointmentCancellationEmail({
           ...payload,
           appUrl: `${appUrl}/patient/dashboard/appointments`,
+        }, {
+          recipientRole: "patient",
+          cancelledBy,
         });
         await sendEmail({ to: patientEmail, ...message });
       }
@@ -290,6 +300,9 @@ export async function PATCH(
         const message = appointmentCancellationEmail({
           ...payload,
           appUrl: `${appUrl}/psychologist/dashboard/appointments`,
+        }, {
+          recipientRole: "psychologist",
+          cancelledBy,
         });
         await sendEmail({ to: psychologistEmail, ...message });
       }

@@ -7,6 +7,9 @@ type AppointmentEmailPayload = {
   appUrl?: string;
 };
 
+type CancellationActor = "patient" | "psychologist" | "admin";
+type CancellationRecipient = "patient" | "psychologist";
+
 const formatDate = (value: Date) =>
   new Intl.DateTimeFormat("en-US", {
     weekday: "long",
@@ -83,14 +86,37 @@ export const appointmentReminderEmail = (
   };
 };
 
-export const appointmentCancellationEmail = (payload: AppointmentEmailPayload) => {
+export const appointmentCancellationEmail = (
+  payload: AppointmentEmailPayload,
+  options: {
+    recipientRole: CancellationRecipient;
+    cancelledBy: CancellationActor;
+  }
+) => {
   const details = buildDetails(payload);
+  const cancelledByLabel =
+    options.cancelledBy === options.recipientRole
+      ? "you"
+      : options.cancelledBy === "patient"
+      ? payload.patientName
+      : options.cancelledBy === "psychologist"
+      ? `Dr. ${payload.psychologistName}`
+      : "an administrator";
+  const subject =
+    options.cancelledBy === options.recipientRole
+      ? "You cancelled your HealTalk appointment"
+      : "Appointment cancelled";
+  const introLine =
+    options.cancelledBy === options.recipientRole
+      ? "You cancelled your appointment."
+      : `This appointment was cancelled by ${cancelledByLabel}.`;
+
   return {
-    subject: "Appointment cancelled",
-    text: `Your appointment has been cancelled.\nDate: ${details.date}\nTime: ${details.time}\nType: ${details.type}\nPsychologist: ${payload.psychologistName}\nPatient: ${payload.patientName}\n${details.appUrl ? `Manage: ${details.appUrl}` : ""}`,
+    subject,
+    text: `${introLine}\nDate: ${details.date}\nTime: ${details.time}\nType: ${details.type}\nPsychologist: ${payload.psychologistName}\nPatient: ${payload.patientName}\n${details.appUrl ? `Manage: ${details.appUrl}` : ""}`,
     html: `
       <h2>Appointment cancelled</h2>
-      <p>This appointment has been cancelled.</p>
+      <p>${introLine}</p>
       <ul>
         <li><strong>Date:</strong> ${details.date}</li>
         <li><strong>Time:</strong> ${details.time}</li>

@@ -66,6 +66,7 @@ export default function AppointmentsPage() {
     text: string;
   } | null>(null);
   const [isUpdatingAppointmentId, setIsUpdatingAppointmentId] = useState<string | null>(null);
+  const [cancelTarget, setCancelTarget] = useState<AppointmentRecord | null>(null);
   const [rescheduleTarget, setRescheduleTarget] = useState<AppointmentRecord | null>(null);
   const [rescheduleDate, setRescheduleDate] = useState("");
   const [rescheduleTime, setRescheduleTime] = useState("");
@@ -118,11 +119,19 @@ export default function AppointmentsPage() {
     setRescheduleTime("");
   };
 
-  const handleCancelAppointment = async (appointment: AppointmentRecord) => {
-    if (isUpdatingAppointmentId) return;
+  const requestCancelAppointment = (appointment: AppointmentRecord) => {
+    setCancelTarget(appointment);
+    setActionMessage(null);
+  };
 
-    const confirmed = window.confirm("Do you want to cancel this appointment?");
-    if (!confirmed) return;
+  const closeCancelModal = () => {
+    setCancelTarget(null);
+  };
+
+  const handleCancelAppointment = async () => {
+    const appointment = cancelTarget;
+    if (!appointment) return;
+    if (isUpdatingAppointmentId) return;
 
     setActionMessage(null);
     setIsUpdatingAppointmentId(appointment.id);
@@ -175,6 +184,7 @@ export default function AppointmentsPage() {
         type: "success",
         text: "Appointment cancelled successfully.",
       });
+      closeCancelModal();
     } catch {
       setActionMessage({
         type: "error",
@@ -298,7 +308,7 @@ export default function AppointmentsPage() {
             className={cn(
               "rounded-xl border px-4 py-3 text-sm",
               actionMessage.type === "success"
-                ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                ? "border-blue-200 bg-blue-50 text-blue-700"
                 : "border-red-200 bg-red-50 text-red-700"
             )}
           >
@@ -357,7 +367,7 @@ export default function AppointmentsPage() {
                             {appointment.psychologist?.user?.name || "Psychologist"}
                           </h3>
                           {appointment.status === "SCHEDULED" ? (
-                            <span className="px-2 py-0.5 bg-[var(--dash-success-soft)] text-[var(--dash-success)] text-[10px] font-bold rounded-full uppercase tracking-wide flex items-center gap-1 border border-[var(--dash-border)]">
+                            <span className="px-2 py-0.5 bg-[var(--dash-primary-soft)] text-[var(--dash-primary)] text-[10px] font-bold rounded-full uppercase tracking-wide flex items-center gap-1 border border-[var(--dash-border)]">
                               <CheckCircle size={10} /> Scheduled
                             </span>
                           ) : (
@@ -425,7 +435,7 @@ export default function AppointmentsPage() {
                           <Button
                             variant="ghost"
                             className="w-full text-[var(--dash-danger)] hover:bg-[var(--dash-danger-soft)] justify-start lg:justify-center"
-                            onClick={() => handleCancelAppointment(appointment)}
+                            onClick={() => requestCancelAppointment(appointment)}
                             disabled={isUpdatingAppointmentId === appointment.id}
                           >
                             {isUpdatingAppointmentId === appointment.id
@@ -506,6 +516,51 @@ export default function AppointmentsPage() {
             )}
           </>
         )}
+
+        <Dialog
+          open={Boolean(cancelTarget)}
+          onOpenChange={(open) => {
+            if (!open) closeCancelModal();
+          }}
+        >
+          <DialogContent className="sm:max-w-[440px]">
+            <DialogHeader>
+              <DialogTitle>Cancel Appointment?</DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-3 text-sm text-gray-600">
+              <p>This action will cancel your session.</p>
+              {cancelTarget && (
+                <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
+                  <p className="font-medium text-gray-900">
+                    {cancelTarget.psychologist?.user?.name || "Psychologist"}
+                  </p>
+                  <p>
+                    {formatDate(cancelTarget.startTime)} •{" "}
+                    {formatTime(cancelTarget.startTime)}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={closeCancelModal}
+                disabled={Boolean(isUpdatingAppointmentId)}
+              >
+                Keep Appointment
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleCancelAppointment}
+                disabled={Boolean(isUpdatingAppointmentId)}
+              >
+                {isUpdatingAppointmentId ? "Cancelling..." : "Yes, Cancel"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         <Dialog
           open={Boolean(rescheduleTarget)}
