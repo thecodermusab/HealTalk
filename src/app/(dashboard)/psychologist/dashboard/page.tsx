@@ -7,29 +7,28 @@ import { AppointmentRequests } from "@/components/dashboard/home/AppointmentRequ
 export default function PsychologistDashboardHome() {
   return (
     <DashboardLayout>
-       <div className="flex flex-col xl:flex-row gap-6">
-          {/* Left Column (Wider ~ 70%) */}
+      <div className="space-y-8">
+        <div>
+          <h1 className="text-2xl font-bold dash-heading">Dashboard</h1>
+          <p className="text-sm dash-muted mt-1">Overview of your practice activity and appointments.</p>
+        </div>
+
+        <div className="flex flex-col xl:flex-row gap-6">
           <div className="flex-1 space-y-6 min-w-0">
-             {/* 1. KPI Cards Grid */}
-             <KPIGrid />
-             
-             {/* 2. Upcoming Appointments (Wide Table) */}
-             <UpcomingAppointments />
+            <KPIGrid />
+            <UpcomingAppointments />
           </div>
 
-          {/* Right Column (Narrow ~ 30%) */}
           <div className="w-full xl:w-[380px] space-y-6 flex flex-col">
-             {/* 3. Patients Overview Chart */}
-             <div className="h-[340px]">
-                <PatientsOverviewChart />
-             </div>
-
-             {/* 4. Appointment Requests */}
-             <div className="flex-1 min-h-[400px]">
-                <AppointmentRequests />
-             </div>
+            <div className="h-[340px]">
+              <PatientsOverviewChart />
+            </div>
+            <div className="flex-1 min-h-[400px]">
+              <AppointmentRequests />
+            </div>
           </div>
-       </div>
+        </div>
+      </div>
     </DashboardLayout>
   );
 }

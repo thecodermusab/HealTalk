@@ -6,7 +6,15 @@ import { X } from "lucide-react";
 import { specializations, hospitals, cities } from "@/lib/data";
 
 interface FilterSidebarProps {
-  onFilterChange?: (filters: any) => void;
+  onFilterChange?: (filters: {
+    specializations: string[];
+    hospitals: string[];
+    city: string;
+    rating: number | null;
+    availability: string | null;
+    priceRange: { min: number; max: number };
+    languages: string[];
+  }) => void;
 }
 
 export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {

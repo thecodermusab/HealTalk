@@ -7,12 +7,18 @@ import { parseSearchParams } from "@/lib/validation";
 
 const requireCronSecret = (request: Request) => {
   const secret = process.env.CRON_SECRET;
-  if (!secret) return true;
+  if (!secret) {
+    return {
+      ok: false,
+      status: 500,
+      error: "Cron secret is not configured",
+    } as const;
+  }
   const header = request.headers.get("x-cron-secret");
   const bearer = request.headers.get("authorization");
-  if (header === secret) return true;
-  if (bearer === `Bearer ${secret}`) return true;
-  return false;
+  if (header === secret) return { ok: true } as const;
+  if (bearer === `Bearer ${secret}`) return { ok: true } as const;
+  return { ok: false, status: 401, error: "Unauthorized" } as const;
 };
 
 const WINDOW_CONFIG = {
@@ -34,8 +40,12 @@ const querySchema = z.object({
 });
 
 export async function GET(request: Request) {
-  if (!requireCronSecret(request)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const cronAuth = requireCronSecret(request);
+  if (!cronAuth.ok) {
+    return NextResponse.json(
+      { error: cronAuth.error },
+      { status: cronAuth.status }
+    );
   }
 
   const { data, error } = parseSearchParams(request, querySchema);

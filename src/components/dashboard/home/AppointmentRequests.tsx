@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Calendar, Clock, User, Loader2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
+import Image from "next/image";
 
 interface RecentBooking {
   id: string;
@@ -13,6 +14,26 @@ interface RecentBooking {
   duration: number;
   createdAt: Date;
 }
+
+interface AppointmentApiItem {
+  id: string;
+  startTime: string;
+  createdAt?: string | null;
+  duration: number;
+  patient?: {
+    user?: {
+      name?: string | null;
+      image?: string | null;
+    } | null;
+  } | null;
+}
+
+const RECENT_DAYS = 7;
+const RECENT_LIMIT = 5;
+const DAY_IN_MS = 24 * 60 * 60 * 1000;
+
+const toBookingDate = (appointment: AppointmentApiItem) =>
+  new Date(appointment.createdAt || appointment.startTime);
 
 export function AppointmentRequests() {
   const [bookings, setBookings] = useState<RecentBooking[]>([]);
@@ -24,30 +45,25 @@ export function AppointmentRequests() {
         const res = await fetch("/api/appointments?status=SCHEDULED");
         if (!res.ok) throw new Error("Failed to fetch appointments");
 
-        const appointments = await res.json();
+        const appointments = (await res.json()) as AppointmentApiItem[];
 
-        // Get recent bookings (within last 7 days)
         const now = new Date();
-        const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        const sevenDaysAgo = new Date(now.getTime() - RECENT_DAYS * DAY_IN_MS);
 
         const recent = appointments
-          .filter((apt: any) => {
-            const created = new Date(apt.createdAt || apt.startTime);
-            return created >= sevenDaysAgo;
-          })
-          .sort((a: any, b: any) => {
-            const dateA = new Date(a.createdAt || a.startTime);
-            const dateB = new Date(b.createdAt || b.startTime);
-            return dateB.getTime() - dateA.getTime();
-          })
-          .slice(0, 5)
-          .map((apt: any) => ({
+          .filter((appointment) => toBookingDate(appointment) >= sevenDaysAgo)
+          .sort(
+            (a, b) =>
+              toBookingDate(b).getTime() - toBookingDate(a).getTime()
+          )
+          .slice(0, RECENT_LIMIT)
+          .map((apt) => ({
             id: apt.id,
             patientName: apt.patient?.user?.name || "Patient",
-            patientImage: apt.patient?.user?.image,
+            patientImage: apt.patient?.user?.image ?? null,
             startTime: new Date(apt.startTime),
             duration: apt.duration,
-            createdAt: new Date(apt.createdAt || apt.startTime),
+            createdAt: toBookingDate(apt),
           }));
 
         setBookings(recent);
@@ -62,52 +78,57 @@ export function AppointmentRequests() {
   }, []);
 
   return (
-    <div className="bg-white rounded-[16px] border border-[#E6EAF2] p-6 shadow-[0_8px_24px_rgba(17,24,39,0.02)] h-full flex flex-col">
+    <div className="dash-card p-6 h-full flex flex-col">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="font-bold text-gray-900 text-lg">Recent Bookings</h3>
-        <Link href="/psychologist/dashboard/appointments" className="text-sm text-[#5B6CFF] hover:underline font-medium">
+        <h3 className="font-bold dash-heading text-lg">Recent Bookings</h3>
+        <Link
+          href="/psychologist/dashboard/appointments"
+          className="text-sm font-medium text-[var(--dash-primary)] hover:opacity-80 transition-opacity"
+        >
           See All
         </Link>
       </div>
 
       {loading ? (
         <div className="flex-1 flex items-center justify-center">
-          <Loader2 className="animate-spin text-primary" size={24} />
+          <Loader2 className="animate-spin text-[var(--dash-primary)]" size={24} />
         </div>
       ) : bookings.length === 0 ? (
-        <div className="flex-1 flex items-center justify-center text-sm text-gray-500">
+        <div className="flex-1 flex items-center justify-center text-sm dash-muted">
           No recent bookings in the last 7 days.
         </div>
       ) : (
-        <div className="space-y-4 flex-1 overflow-y-auto">
+        <div className="space-y-4 flex-1 overflow-y-auto pr-1">
           {bookings.map((booking) => (
             <div
               key={booking.id}
-              className="flex items-start gap-3 p-3 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors"
+              className="dash-card-elev flex items-start gap-3 p-3 transition-colors hover:border-[var(--dash-border-strong)]"
             >
-              <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
+              <div className="w-10 h-10 rounded-full bg-[var(--dash-surface)] border border-[var(--dash-border)] flex items-center justify-center flex-shrink-0 overflow-hidden">
                 {booking.patientImage ? (
-                  <img
+                  <Image
                     src={booking.patientImage}
                     alt={booking.patientName}
+                    width={40}
+                    height={40}
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <User size={20} className="text-gray-400" />
+                  <User size={20} className="dash-muted" />
                 )}
               </div>
 
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900 truncate">
+                <p className="text-sm font-semibold dash-heading truncate">
                   {booking.patientName}
                 </p>
-                <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+                <div className="flex items-center gap-2 text-xs dash-muted mt-1">
                   <Calendar size={12} />
                   <span>{booking.startTime.toLocaleDateString()}</span>
                   <Clock size={12} className="ml-1" />
                   <span>{booking.duration} min</span>
                 </div>
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-xs dash-muted mt-1">
                   Booked {formatDistanceToNow(booking.createdAt, { addSuffix: true })}
                 </p>
               </div>

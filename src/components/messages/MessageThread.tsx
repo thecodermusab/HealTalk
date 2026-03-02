@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
+import Image from "next/image";
 import { connectSocket, disconnectSocket } from "@/lib/socket";
 import { Paperclip, SendHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -27,11 +28,37 @@ type AppointmentMeta = {
   psychologistUserId: string;
 };
 
+type SocketSendResponse = {
+  ok: boolean;
+  error?: string;
+  message?: MessageRecord;
+};
+
+type UploadAttachment = {
+  url: string;
+  key?: string;
+  type?: string;
+  name?: string;
+};
+
 const formatTime = (value: string) =>
   new Intl.DateTimeFormat("en-US", {
     hour: "numeric",
     minute: "2-digit",
   }).format(new Date(value));
+
+const toSocketResponse = (payload: unknown): SocketSendResponse => {
+  if (!payload || typeof payload !== "object") {
+    return { ok: false, error: "Failed to send message" };
+  }
+
+  const parsed = payload as Partial<SocketSendResponse>;
+  return {
+    ok: Boolean(parsed.ok),
+    error: parsed.error,
+    message: parsed.message,
+  };
+};
 
 export function MessageThread({ appointmentId }: { appointmentId: string }) {
   const { data: session } = useSession();
@@ -170,7 +197,7 @@ export function MessageThread({ appointmentId }: { appointmentId: string }) {
     setPendingAttachment(null);
 
     const socket = connectSocket();
-    const response = await new Promise<any>((resolve) => {
+    const response = await new Promise<SocketSendResponse>((resolve) => {
       let settled = false;
       const timer = setTimeout(() => {
         if (settled) return;
@@ -184,19 +211,20 @@ export function MessageThread({ appointmentId }: { appointmentId: string }) {
           content,
           attachment: attachmentToSend || undefined,
         },
-        (resp: any) => {
+        (resp: unknown) => {
           if (settled) return;
           settled = true;
           clearTimeout(timer);
-          resolve(resp || { ok: false, error: "Failed to send message" });
+          resolve(toSocketResponse(resp));
         }
       );
     });
 
     if (response?.ok && response?.message) {
+      const confirmedMessage = response.message;
       setMessages((prev) =>
         prev.map((item) =>
-          item.id === tempId ? { ...response.message } : item
+          item.id === tempId ? confirmedMessage : item
         )
       );
       return;
@@ -230,7 +258,7 @@ export function MessageThread({ appointmentId }: { appointmentId: string }) {
 
         const data = await res.json().catch(() => null);
         setSendError(data?.error || response?.error || "Failed to send message");
-      } catch (err) {
+      } catch {
         setSendError("Failed to send message");
       }
     } else {
@@ -240,7 +268,7 @@ export function MessageThread({ appointmentId }: { appointmentId: string }) {
     setMessages((prev) => prev.filter((item) => item.id !== tempId));
   };
 
-  const handleAttachmentUpload = (file: any) => {
+  const handleAttachmentUpload = (file?: UploadAttachment | null) => {
     if (!file?.url) return;
     setPendingAttachment({
       url: file.url,
@@ -255,9 +283,11 @@ export function MessageThread({ appointmentId }: { appointmentId: string }) {
     const isImage = message.attachmentType?.startsWith("image/");
     if (isImage) {
       return (
-        <img
+        <Image
           src={message.attachmentUrl}
           alt={message.attachmentName || "Attachment"}
+          width={640}
+          height={480}
           className="mt-2 rounded-xl max-h-48 object-cover"
         />
       );
@@ -308,8 +338,8 @@ export function MessageThread({ appointmentId }: { appointmentId: string }) {
   }
 
   return (
-    <div className="bg-white border border-[#E6EAF2] rounded-[24px] shadow-sm flex flex-col h-[70vh]">
-      <div className="px-6 py-4 border-b border-[#E6EAF2]">
+    <div className="bg-white border border-[#E6EAF2] rounded-[24px] shadow-sm flex flex-col h-[65dvh] min-h-[460px] max-h-[760px] lg:h-[70vh]">
+      <div className="px-4 sm:px-6 py-4 border-b border-[#E6EAF2]">
         <h2 className="text-lg font-semibold text-gray-900">{otherName}</h2>
         <p className="text-sm text-gray-500">
           {isOtherTyping
@@ -320,7 +350,7 @@ export function MessageThread({ appointmentId }: { appointmentId: string }) {
         </p>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+      <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-4">
         {messages.length === 0 ? (
           <div className="text-center text-gray-500 py-10">
             No messages yet. Say hello!
@@ -334,7 +364,7 @@ export function MessageThread({ appointmentId }: { appointmentId: string }) {
                 className={`flex ${isMine ? "justify-end" : "justify-start"}`}
               >
                 <div
-                  className={`max-w-[70%] rounded-2xl px-4 py-3 text-sm shadow-sm ${
+                  className={`max-w-[85%] sm:max-w-[75%] rounded-2xl px-4 py-3 text-sm shadow-sm ${
                     isMine
                       ? "bg-[#5B6CFF] text-white"
                       : "bg-gray-100 text-gray-700"
@@ -361,7 +391,7 @@ export function MessageThread({ appointmentId }: { appointmentId: string }) {
         )}
       </div>
 
-      <div className="border-t border-[#E6EAF2] p-4 flex flex-col gap-3">
+      <div className="border-t border-[#E6EAF2] p-3 sm:p-4 flex flex-col gap-3">
         {pendingAttachment && (
           <div className="flex items-center justify-between rounded-xl border border-gray-200 px-3 py-2 text-xs text-gray-600">
             <span>{pendingAttachment.name || "Attachment ready"}</span>
@@ -374,37 +404,37 @@ export function MessageThread({ appointmentId }: { appointmentId: string }) {
             </button>
           </div>
         )}
-        <div className="flex gap-3">
+        <div className="flex items-end gap-2 sm:gap-3">
           <UploadButton
             endpoint="messageAttachment"
             appearance={{
               button:
-                "h-11 w-11 rounded-full border border-gray-200 bg-white text-gray-600 hover:bg-gray-50",
+                "h-10 w-10 sm:h-11 sm:w-11 rounded-full border border-gray-200 bg-white text-gray-600 hover:bg-gray-50",
               allowedContent: "hidden",
             }}
             content={{ button: <Paperclip size={16} /> }}
             onClientUploadComplete={(res) => handleAttachmentUpload(res?.[0])}
             onUploadError={(error) => setError(error.message)}
           />
-        <Input
-          value={input}
-          onChange={(event) => handleTyping(event.target.value)}
-          placeholder="Type your message..."
-          className="rounded-full flex-1"
-          onKeyDown={(event) => {
-            if (event.key === "Enter") {
-              event.preventDefault();
-              sendMessage();
-            }
-          }}
-        />
-        <Button
-          type="button"
-          className="rounded-full bg-[#5B6CFF] hover:bg-[#4a5ae0]"
-          onClick={sendMessage}
-        >
-          <SendHorizontal size={16} />
-        </Button>
+          <Input
+            value={input}
+            onChange={(event) => handleTyping(event.target.value)}
+            placeholder="Type your message..."
+            className="rounded-full flex-1 min-w-0 h-10 sm:h-11"
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                sendMessage();
+              }
+            }}
+          />
+          <Button
+            type="button"
+            className="rounded-full bg-[#5B6CFF] hover:bg-[#4a5ae0] h-10 w-10 sm:h-11 sm:w-11 p-0 shrink-0"
+            onClick={sendMessage}
+          >
+            <SendHorizontal size={16} />
+          </Button>
         </div>
         {sendError && <div className="text-xs text-red-500">{sendError}</div>}
       </div>

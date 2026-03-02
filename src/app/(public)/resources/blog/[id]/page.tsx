@@ -4,12 +4,7 @@ import { BlogPostLayout } from "@/components/blog/BlogPostLayout";
 import { HeroIllustration } from "@/components/blog/HeroIllustration";
 import { HeroPhoto } from "@/components/blog/HeroPhoto";
 import { AuthorBand } from "@/components/blog/AuthorBand";
-
-interface PageProps {
-  params: {
-    id: string; // Changed from slug to id
-  };
-}
+import { getFallbackBlogPostById } from "@/lib/resource-fallback";
 
 interface BlogPostContent {
   type: 'heading' | 'paragraph' | 'list' | 'quote';
@@ -25,16 +20,17 @@ interface Author {
 }
 
 async function getBlogPost(id: string) {
+  const fallbackPost = getFallbackBlogPostById(id);
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/blog/${id}`, {
-      cache: 'no-store'
+      next: { revalidate: 120 },
     });
-    if (!res.ok) return null;
+    if (!res.ok) return fallbackPost;
     const data = await res.json();
-    return data.post ?? data ?? null;
+    return data.post ?? data ?? fallbackPost;
   } catch (error) {
     console.error('Failed to fetch blog post:', error);
-    return null;
+    return fallbackPost;
   }
 }
 
@@ -70,7 +66,7 @@ function BlogPostContentRenderer({ content }: { content?: BlogPostContent[] }) {
             case 'quote':
               return (
                 <blockquote key={index} className="border-l-4 border-black pl-6 italic text-2xl my-10 font-display text-[#1a1a1a]">
-                  "{block.value}"
+                  &ldquo;{block.value}&rdquo;
                 </blockquote>
               );
             default:
@@ -109,10 +105,8 @@ export default async function BlogPostPage(props: { params: Promise<{ id: string
     <BlogPostLayout>
       {/* 1. Hero Variant Switcher */}
       {post.heroType === 'illustration' ? (
-        // @ts-ignore - aligning types briefly
         <HeroIllustration post={postWithImage} />
       ) : (
-        // @ts-ignore
         <HeroPhoto post={postWithImage} />
       )}
 

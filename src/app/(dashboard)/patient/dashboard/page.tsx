@@ -18,17 +18,13 @@ export default function PatientDashboardHome() {
 
   return (
     <DashboardLayout>
-
-      <div className="flex flex-col gap-2"> {/* Using gap-2 (8px) which is very tight but not zero */}
-        
-        {/* Welcome Header */}
+      <div className="space-y-8">
         <div>
-           <h1 className="text-2xl font-bold text-gray-900">Welcome back, {firstName}! 👋</h1>
-           <p className="text-gray-500 text-sm">Here&apos;s what&apos;s happening with your mental health journey.</p>
+          <h1 className="text-2xl font-bold dash-heading">Welcome back, {firstName}</h1>
+          <p className="text-sm dash-muted mt-1">Here&apos;s what&apos;s happening with your mental health journey.</p>
         </div>
 
-        {/* TOP ROW: Quick Actions (Left) + Next Appointment (Right) */}
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 items-stretch">
           <div className="xl:col-span-8">
             <PatientQuickActions />
           </div>
@@ -37,13 +33,12 @@ export default function PatientDashboardHome() {
           </div>
         </div>
 
-        {/* BOTTOM ROW: APPOINTMENTS (Left) + RECENT ACTIVITY (Right) */}
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 items-stretch">
           <div className="xl:col-span-8">
             <PatientUpcomingAppointments />
           </div>
           <div className="xl:col-span-4">
-             <PatientRecentActivity />
+            <PatientRecentActivity />
           </div>
         </div>
       </div>

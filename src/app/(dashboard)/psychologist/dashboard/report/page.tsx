@@ -26,6 +26,31 @@ interface ReportData {
   growthRate: number;
 }
 
+interface AppointmentReportItem {
+  status: "SCHEDULED" | "COMPLETED" | "CANCELLED" | "NO_SHOW";
+  price: number | null;
+  duration: number;
+  startTime: string;
+}
+
+interface PsychologistPatientReportItem {
+  upcomingSessions: number;
+}
+
+const EMPTY_REPORT: ReportData = {
+  totalSessions: 0,
+  completedSessions: 0,
+  scheduledSessions: 0,
+  totalPatients: 0,
+  activePatients: 0,
+  totalEarnings: 0,
+  averageSessionDuration: 0,
+  completionRate: 0,
+  thisMonthSessions: 0,
+  lastMonthSessions: 0,
+  growthRate: 0,
+};
+
 export default function ReportPage() {
   const [report, setReport] = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -45,46 +70,36 @@ export default function ReportPage() {
 
         const appointments = await appointmentsRes.json();
         const patients = await patientsRes.json();
+        const appointmentItems = appointments as AppointmentReportItem[];
+        const patientItems = patients as PsychologistPatientReportItem[];
 
-        if (appointments.length === 0) {
-          setReport({
-            totalSessions: 0,
-            completedSessions: 0,
-            scheduledSessions: 0,
-            totalPatients: 0,
-            activePatients: 0,
-            totalEarnings: 0,
-            averageSessionDuration: 0,
-            completionRate: 0,
-            thisMonthSessions: 0,
-            lastMonthSessions: 0,
-            growthRate: 0,
-          });
+        if (appointmentItems.length === 0) {
+          setReport(EMPTY_REPORT);
           return;
         }
 
         // Calculate statistics
-        const totalSessions = appointments.length;
-        const completedSessions = appointments.filter(
-          (a: any) => a.status === "COMPLETED"
+        const totalSessions = appointmentItems.length;
+        const completedSessions = appointmentItems.filter(
+          (appointment) => appointment.status === "COMPLETED"
         ).length;
-        const scheduledSessions = appointments.filter(
-          (a: any) => a.status === "SCHEDULED"
+        const scheduledSessions = appointmentItems.filter(
+          (appointment) => appointment.status === "SCHEDULED"
         ).length;
 
-        const totalPatients = patients.length;
-        const activePatients = patients.filter(
-          (p: any) => p.upcomingSessions > 0
+        const totalPatients = patientItems.length;
+        const activePatients = patientItems.filter(
+          (patient) => patient.upcomingSessions > 0
         ).length;
 
         const totalEarnings =
-          appointments
-            .filter((a: any) => a.status === "COMPLETED")
-            .reduce((sum: number, a: any) => sum + (a.price || 0), 0) / 100;
+          appointmentItems
+            .filter((appointment) => appointment.status === "COMPLETED")
+            .reduce((sum, appointment) => sum + (appointment.price || 0), 0) / 100;
 
         const avgDuration =
-          appointments.reduce((sum: number, a: any) => sum + (a.duration || 0), 0) /
-          appointments.length;
+          appointmentItems.reduce((sum, appointment) => sum + (appointment.duration || 0), 0) /
+          appointmentItems.length;
 
         const completionRate = totalSessions > 0
           ? Math.round((completedSessions / totalSessions) * 100)
@@ -95,13 +110,13 @@ export default function ReportPage() {
         const firstOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
         const firstOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
 
-        const thisMonthSessions = appointments.filter((a: any) => {
-          const date = new Date(a.startTime);
+        const thisMonthSessions = appointmentItems.filter((appointment) => {
+          const date = new Date(appointment.startTime);
           return date >= firstOfThisMonth;
         }).length;
 
-        const lastMonthSessions = appointments.filter((a: any) => {
-          const date = new Date(a.startTime);
+        const lastMonthSessions = appointmentItems.filter((appointment) => {
+          const date = new Date(appointment.startTime);
           return date >= firstOfLastMonth && date < firstOfThisMonth;
         }).length;
 

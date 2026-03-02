@@ -45,12 +45,13 @@ export const uploadRouter = {
       return { userId: session.user.id };
     })
     .onUploadComplete(async ({ metadata, file }) => {
+      const uploadFile = file as { name?: string; type?: string };
       return {
         uploadedBy: metadata.userId,
         url: file.url,
         key: file.key,
-        name: (file as any).name,
-        type: (file as any).type,
+        name: uploadFile.name,
+        type: uploadFile.type,
       };
     }),
   credentialDocument: f({

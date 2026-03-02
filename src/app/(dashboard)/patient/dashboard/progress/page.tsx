@@ -10,8 +10,36 @@ interface ProgressEntry {
   date: Date;
   mood: string;
   notes: string | null;
-  goals: any;
+  goals: ProgressGoal[];
 }
+
+interface ProgressGoal {
+  title: string;
+  completed: boolean;
+}
+
+interface ProgressApiEntry {
+  id: string;
+  date: string;
+  mood: string;
+  notes: string | null;
+  goals?: unknown;
+}
+
+const toProgressGoals = (value: unknown): ProgressGoal[] => {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter(
+      (goal): goal is ProgressGoal =>
+        typeof goal === "object" &&
+        goal !== null &&
+        "title" in goal &&
+        "completed" in goal &&
+        typeof (goal as ProgressGoal).title === "string" &&
+        typeof (goal as ProgressGoal).completed === "boolean"
+    )
+    .map((goal) => ({ title: goal.title, completed: goal.completed }));
+};
 
 export default function ProgressPage() {
   const [entries, setEntries] = useState<ProgressEntry[]>([]);
@@ -27,10 +55,11 @@ export default function ProgressPage() {
       const res = await fetch("/api/progress");
       if (!res.ok) throw new Error("Failed to fetch progress");
 
-      const data = await res.json();
-      setEntries(data.map((entry: any) => ({
+      const data = (await res.json()) as ProgressApiEntry[];
+      setEntries(data.map((entry) => ({
         ...entry,
         date: new Date(entry.date),
+        goals: toProgressGoals(entry.goals),
       })));
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
@@ -178,9 +207,9 @@ export default function ProgressPage() {
                       {entry.notes && (
                         <p className="text-sm text-gray-700">{entry.notes}</p>
                       )}
-                      {entry.goals && Array.isArray(entry.goals) && entry.goals.length > 0 && (
+                      {entry.goals.length > 0 && (
                         <div className="mt-2 space-y-1">
-                          {entry.goals.map((goal: any, idx: number) => (
+                          {entry.goals.map((goal, idx) => (
                             <div key={idx} className="flex items-center gap-2 text-sm">
                               <div className={`w-4 h-4 rounded border ${goal.completed ? 'bg-green-500 border-green-500' : 'border-gray-300'}`}>
                                 {goal.completed && <span className="text-white text-xs">✓</span>}

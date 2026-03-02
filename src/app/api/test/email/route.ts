@@ -1,11 +1,31 @@
 import { NextResponse } from 'next/server';
 import { EmailService } from '@/lib/email/service';
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { requireRateLimit } from "@/lib/rate-limit";
 
 // Test route to verify email sending works
 // Usage: http://localhost:3000/api/test/email?to=your@email.com&type=welcome
 
 export async function GET(request: Request) {
   try {
+    if (process.env.NODE_ENV === "production") {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+
+    const session = await getServerSession(authOptions);
+    if (!session?.user || session.user.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const rateLimit = await requireRateLimit({
+      request,
+      key: "test:email",
+      limit: 10,
+      window: "1 h",
+    });
+    if (rateLimit) return rateLimit;
+
     const { searchParams } = new URL(request.url);
     const to = searchParams.get('to');
     const type = searchParams.get('type') || 'welcome';

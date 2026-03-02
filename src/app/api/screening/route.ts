@@ -21,7 +21,7 @@ export async function GET(request: Request) {
     });
     if (rateLimit) return rateLimit;
 
-    const userId = (session.user as any).id;
+    const userId = session.user.id;
 
     const patient = await prisma.patient.findUnique({
       where: { userId },

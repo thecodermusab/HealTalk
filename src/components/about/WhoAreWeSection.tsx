@@ -16,14 +16,14 @@ const StatCard = ({
   return (
     <div
       className={cn(
-        "rounded-[32px] p-8 flex flex-col justify-between hover:shadow-sm",
+        "rounded-[32px] p-6 sm:p-8 flex flex-col justify-between hover:shadow-sm",
         className
       )}
     >
       <span className="font-heading text-sm font-medium text-[#111827]/60">
         {label}
       </span>
-      <span className="font-logo text-[48px] md:text-[64px] leading-none text-[#131E0D] mt-auto pt-4">
+      <span className="font-logo text-[40px] md:text-[64px] leading-none text-[#131E0D] mt-auto pt-4">
         {value}
       </span>
     </div>
@@ -58,10 +58,10 @@ const MosaicGrid = () => {
 const IllustrationCard = () => {
   return (
     <div
-      className="w-full h-full min-h-[418px] lg:h-[418px] bg-[#e8e6ff] rounded-[32px] flex items-center justify-center relative overflow-hidden group"
+      className="w-full h-full min-h-[340px] lg:min-h-[418px] lg:h-[418px] bg-[#e8e6ff] rounded-[32px] flex items-center justify-center relative overflow-hidden group"
     >
        {/* Abstract Character Illustration Container - Scaled to fit */}
-       <div className="relative w-[300px] h-[400px] scale-90 lg:scale-[0.85] origin-center">
+       <div className="relative w-[260px] h-[330px] sm:w-[300px] sm:h-[400px] scale-90 lg:scale-[0.85] origin-center">
           {/* Planet/Halo */}
           <div 
              className="absolute top-[20px] left-[50%] -translate-x-1/2 w-[120px] h-[120px] z-10"
@@ -109,11 +109,11 @@ const IllustrationCard = () => {
 
 export default function WhoAreWeSection() {
   return (
-    <section className="py-[48px] px-10">
+    <section className="py-[48px] px-4 sm:px-6 lg:px-10">
       <div className="max-w-[1470px] mx-auto">
         {/* Title */}
         <div className="text-center mb-[48px]">
-          <h2 className="font-logo text-[64px] md:text-[80px] leading-tight tracking-[-0.02em] text-[#131E0D]">
+          <h2 className="font-logo text-[44px] sm:text-[64px] md:text-[80px] leading-tight tracking-[-0.02em] text-[#131E0D]">
             So who are we?
           </h2>
         </div>

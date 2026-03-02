@@ -155,11 +155,11 @@ http://localhost:3000/about
 - Release to see smooth momentum glide
 - Drag continuously in one direction to test infinite loop
 
-**2. Test Page (Isolated Demo):**
+**2. About Page (Live Demo):**
 ```
-http://localhost:3000/test-drag
+http://localhost:3000/about
 ```
-- See isolated carousel demo at the top
+- See the carousel integrated in the production page
 
 ### What to Verify:
 

@@ -7,6 +7,7 @@ import { parseJson } from "@/lib/validation";
 import { requireRateLimit } from "@/lib/rate-limit";
 import { validateCsrf } from "@/lib/csrf";
 import { createAuditLog } from "@/lib/audit";
+import { Prisma } from "@prisma/client";
 
 const updateSchema = z.object({
   status: z.enum(["PENDING", "APPROVED", "REJECTED", "SUSPENDED"]),
@@ -54,7 +55,7 @@ export async function PATCH(
     return NextResponse.json({ error: "Psychologist not found" }, { status: 404 });
   }
 
-  const data: any = { status };
+  const data: Prisma.PsychologistUpdateInput = { status };
 
   if (status === "APPROVED") {
     data.approvedAt = new Date();

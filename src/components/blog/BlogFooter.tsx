@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Linkedin, Instagram, Facebook, Youtube } from "lucide-react";
 
 export function BlogFooter() {
@@ -74,9 +75,11 @@ export function BlogFooter() {
 
             {/* Illustration Section */}
             <div className="flex justify-center mb-16">
-                 <img 
+                 <Image
                     src="/blog_footer_illustration.png" // Placeholder - will need to move generated image here
                     alt="Hands holding binoculars illustration" 
+                    width={500}
+                    height={280}
                     className="w-full max-w-[500px] h-auto object-contain mix-blend-multiply opacity-90"
                  />
             </div>

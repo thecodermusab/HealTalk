@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { parseSearchParams } from "@/lib/validation";
 import { requireRateLimit } from "@/lib/rate-limit";
+import { Prisma } from "@prisma/client";
+import { ReviewStatus } from "@prisma/client";
 
 const ALLOWED_STATUSES = ["APPROVED", "PENDING", "REJECTED"];
 const querySchema = z.object({
@@ -40,10 +42,10 @@ export async function GET(request: Request) {
   const page = data.page;
   const limit = data.limit;
 
-  const where: any = {};
+  const where: Prisma.ReviewWhereInput = {};
 
   if (status && status !== "ALL" && ALLOWED_STATUSES.includes(status)) {
-    where.status = status;
+    where.status = status as ReviewStatus;
   }
 
   if (search) {

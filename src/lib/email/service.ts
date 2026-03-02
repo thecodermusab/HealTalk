@@ -1,4 +1,4 @@
-import { sendEmail } from './resend';
+import { sendEmail } from "@/lib/email";
 import * as templates from './templates';
 
 // Email service for sending various notification emails

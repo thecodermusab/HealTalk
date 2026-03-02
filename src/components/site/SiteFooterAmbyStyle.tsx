@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Linkedin, Instagram, Facebook, Youtube } from "lucide-react";
 
 export function SiteFooterAmbyStyle() {
@@ -75,9 +76,11 @@ export function SiteFooterAmbyStyle() {
             {/* Illustration Section - Placeholder SVG if image unavailable, or reuse existing image */}
             <div className="flex justify-center mb-16">
                  {/* Reusing the previously generated footer illustration */}
-                 <img 
+                 <Image
                     src="/blog_footer_illustration.png" 
                     alt="Hands holding binoculars" 
+                    width={500}
+                    height={280}
                     className="w-full max-w-[500px] h-auto object-contain mix-blend-multiply opacity-90"
                  />
             </div>

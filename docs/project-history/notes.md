@@ -117,7 +117,6 @@ public/
 | `/privacy` | `src/app/(public)/privacy/page.tsx` | USED | Privacy policy page |
 | `/terms` | `src/app/(public)/terms/page.tsx` | USED | Terms of service page |
 | `/psychologist/[id]` | `src/app/(public)/psychologist/[id]/page.tsx` | USED | Psychologist profile details |
-| `/test-drag` | `src/app/test-drag/page.tsx` | NOT USED | Dev-only drag testing page |
 | `/login` | `src/app/(auth)/login/page.tsx` | USED | Sign in page |
 | `/signup` | `src/app/(auth)/signup/page.tsx` | USED | Sign up page |
 | `/forgot-password` | `src/app/(auth)/forgot-password/page.tsx` | USED | Request password reset link |
@@ -298,7 +297,6 @@ Admin:
 
 ### Dev/Test
 
-- **Test drag page** — `src/app/test-drag/page.tsx` (not linked)
 
 ---
 

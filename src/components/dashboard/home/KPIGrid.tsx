@@ -41,8 +41,8 @@ export function KPIGrid() {
       trendUp: true,
       last: "Sessions",
       icon: Users,
-      color: "text-[#5B6CFF]",
-      bg: "bg-[#EEF0FF]",
+      color: "text-[var(--dash-primary)]",
+      bg: "bg-[var(--dash-primary-soft)] border border-[var(--dash-border)]",
     },
     {
       label: "Upcoming Sessions",
@@ -51,8 +51,8 @@ export function KPIGrid() {
       trendUp: true,
       last: "Upcoming",
       icon: Calendar,
-      color: "text-[#20C997]",
-      bg: "bg-[#E6F8F3]",
+      color: "text-[var(--dash-accent)]",
+      bg: "bg-[var(--dash-accent-soft)] border border-[var(--dash-border)]",
     },
     {
       label: "This Month",
@@ -61,8 +61,8 @@ export function KPIGrid() {
       trendUp: true,
       last: "Appointments",
       icon: Activity,
-      color: "text-[#FF9F43]",
-      bg: "bg-[#FFF5EB]",
+      color: "text-[var(--dash-warning)]",
+      bg: "bg-[var(--dash-warning-soft)] border border-[var(--dash-border)]",
     },
     {
       label: "Cancelled/No-show",
@@ -71,8 +71,8 @@ export function KPIGrid() {
       trendUp: false,
       last: "Cancelled",
       icon: UserMinus,
-      color: "text-[#FF6B6B]",
-      bg: "bg-[#FFEEEE]",
+      color: "text-[var(--dash-danger)]",
+      bg: "bg-[var(--dash-danger-soft)] border border-[var(--dash-border)]",
     },
     {
       label: "Completed",
@@ -81,8 +81,8 @@ export function KPIGrid() {
       trendUp: true,
       last: "Sessions",
       icon: CheckCircle,
-      color: "text-[#20C997]",
-      bg: "bg-[#E6F8F3]",
+      color: "text-[var(--dash-success)]",
+      bg: "bg-[var(--dash-success-soft)] border border-[var(--dash-border)]",
     },
     {
       label: "Appointments Today",
@@ -91,8 +91,8 @@ export function KPIGrid() {
       trendUp: true,
       last: "Schedule",
       icon: Clock,
-      color: "text-[#5B6CFF]",
-      bg: "bg-[#EEF0FF]",
+      color: "text-[var(--dash-primary)]",
+      bg: "bg-[var(--dash-primary-soft)] border border-[var(--dash-border)]",
     },
   ];
 
@@ -101,7 +101,7 @@ export function KPIGrid() {
       {stats.map((stat, i) => (
         <div 
           key={i} 
-          className="bg-white rounded-[16px] border border-[#E6EAF2] p-5 shadow-[0_8px_24px_rgba(17,24,39,0.02)] hover:shadow-[0_8px_24px_rgba(17,24,39,0.06)] transition-shadow"
+          className="dash-card p-5 hover:border-[var(--dash-border-strong)] transition-colors"
         >
           <div className="flex items-start justify-between mb-4">
              <div className={cn("w-10 h-10 rounded-[10px] flex items-center justify-center", stat.bg)}>
@@ -109,15 +109,17 @@ export function KPIGrid() {
              </div>
           </div>
           
-          <h3 className="text-gray-500 text-sm font-medium mb-1">{stat.label}</h3>
+          <h3 className="text-[var(--dash-text-muted)] text-sm font-medium mb-1">{stat.label}</h3>
           
           <div className="flex items-end justify-between">
-             <span className="text-2xl font-bold text-gray-900">{stat.value}</span>
+             <span className="text-2xl font-bold text-[var(--dash-text)]">{stat.value}</span>
              <div className="flex items-center gap-1 text-xs">
-               <span className="text-gray-400">{stat.last}</span>
+               <span className="text-[var(--dash-text-muted)]">{stat.last}</span>
                <span className={cn(
                  "font-medium px-1.5 py-0.5 rounded",
-                 stat.trendUp ? "text-[#20C997] bg-[#E6F8F3]" : "text-[#FF6B6B] bg-[#FFEEEE]"
+                 stat.trendUp
+                   ? "text-[var(--dash-success)] bg-[var(--dash-success-soft)] border border-[var(--dash-border)]"
+                   : "text-[var(--dash-danger)] bg-[var(--dash-danger-soft)] border border-[var(--dash-border)]"
                )}>
                  {stat.trend}
                </span>

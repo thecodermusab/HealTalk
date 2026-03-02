@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { requireRateLimit } from "@/lib/rate-limit";
+import { buildDirectConversationId } from "@/lib/messaging";
 
 type ConversationRow = {
   id: string;
@@ -14,61 +15,14 @@ type ConversationRow = {
   unreadCount: number;
 };
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+type ConversationMeta = {
+  name: string;
+  image: string | null;
+};
 
-/**
- * Groups a flat list of appointments by the "other party" ID (patient or psychologist),
- * keeping only the most-recent appointment per party (appointments are already ordered
- * by startTime desc from the query).
- */
-function buildLatestAppointmentMap<T extends { patientId: string; psychologistId: string }>(
-  appointments: T[],
-  groupByKey: "patientId" | "psychologistId"
-): Map<string, T> {
-  const map = new Map<string, T>();
-  for (const appt of appointments) {
-    const key = appt[groupByKey];
-    if (!map.has(key)) map.set(key, appt);
-  }
-  return map;
-}
+const sortConversationsByLatest = (a: ConversationRow, b: ConversationRow) =>
+  b.lastMessageTime.getTime() - a.lastMessageTime.getTime();
 
-/**
- * Builds the conversation list given:
- * - a map of the latest appointment per contact
- * - a map of the last message per contact
- * - a function that extracts the display name and image from an appointment
- */
-function buildConversations<
-  A extends { id: string; patientId: string; psychologistId: string; createdAt: Date },
-  M extends { patientId: string; psychologistId: string; content: string; createdAt: Date }
->(
-  contactIds: string[],
-  latestAppointmentByContact: Map<string, A>,
-  lastMessageByContact: Map<string, M>,
-  getName: (appt: A) => string,
-  getImage: (appt: A) => string | null
-): ConversationRow[] {
-  return contactIds.map((contactId) => {
-    const appointment = latestAppointmentByContact.get(contactId);
-    const lastMessage = lastMessageByContact.get(contactId);
-
-    return {
-      id: appointment?.id ?? contactId,
-      appointmentId: appointment?.id ?? contactId,
-      name: appointment ? getName(appointment) : "Unknown",
-      image: appointment ? getImage(appointment) : null,
-      lastMessage: lastMessage?.content ?? "No messages yet",
-      lastMessageTime: lastMessage?.createdAt ?? appointment?.createdAt ?? new Date(),
-      // TODO: implement real unread count by tracking which messages the viewer has seen.
-      unreadCount: 0,
-    };
-  });
-}
-
-// ─── Route ────────────────────────────────────────────────────────────────────
-
-// GET /api/messages/conversations - Get list of all conversations for the current user
 export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -98,7 +52,6 @@ export async function GET(request: Request) {
       select: { id: true },
     });
 
-    // If neither profile exists, create a Patient record for PATIENT-role users.
     if (!patient && !psychologist) {
       if (role === "PATIENT") {
         patient = await prisma.patient.create({
@@ -112,92 +65,173 @@ export async function GET(request: Request) {
       }
     }
 
-    // ── Patient path: show all psychologists the patient has booked ──────────
     if (patient) {
-      const appointments = await prisma.appointment.findMany({
-        where: {
-          patientId: patient.id,
-          status: { in: ["SCHEDULED", "COMPLETED"] },
-        },
-        include: {
-          psychologist: {
-            include: { user: { select: { name: true, image: true } } },
+      const [appointments, messages] = await Promise.all([
+        prisma.appointment.findMany({
+          where: {
+            patientId: patient.id,
+            status: { in: ["SCHEDULED", "COMPLETED"] },
           },
-        },
-        orderBy: { startTime: "desc" },
-      });
+          include: {
+            psychologist: {
+              include: { user: { select: { name: true, image: true } } },
+            },
+          },
+          orderBy: { startTime: "desc" },
+        }),
+        prisma.message.findMany({
+          where: { patientId: patient.id },
+          include: {
+            psychologist: {
+              include: { user: { select: { name: true, image: true } } },
+            },
+          },
+          orderBy: { createdAt: "desc" },
+        }),
+      ]);
 
-      const latestByPsychologist = buildLatestAppointmentMap(appointments, "psychologistId");
-      const psychologistIds = Array.from(latestByPsychologist.keys());
-
-      const messages = psychologistIds.length
-        ? await prisma.message.findMany({
-            where: { patientId: patient.id, psychologistId: { in: psychologistIds } },
-            orderBy: { createdAt: "desc" },
-          })
-        : [];
-
+      const latestAppointmentByPsychologist = new Map<
+        string,
+        (typeof appointments)[number]
+      >();
       const lastMessageByPsychologist = new Map<string, (typeof messages)[number]>();
-      for (const msg of messages) {
-        if (!lastMessageByPsychologist.has(msg.psychologistId)) {
-          lastMessageByPsychologist.set(msg.psychologistId, msg);
+      const psychologistMetaById = new Map<string, ConversationMeta>();
+
+      for (const appointment of appointments) {
+        if (!latestAppointmentByPsychologist.has(appointment.psychologistId)) {
+          latestAppointmentByPsychologist.set(appointment.psychologistId, appointment);
+        }
+        if (!psychologistMetaById.has(appointment.psychologistId)) {
+          psychologistMetaById.set(appointment.psychologistId, {
+            name: appointment.psychologist?.user?.name || "Psychologist",
+            image: appointment.psychologist?.user?.image || null,
+          });
         }
       }
 
-      const conversations = buildConversations(
-        psychologistIds,
-        latestByPsychologist,
-        lastMessageByPsychologist,
-        (appt) => appt.psychologist?.user?.name ?? "Psychologist",
-        (appt) => appt.psychologist?.user?.image ?? null
+      for (const message of messages) {
+        if (!lastMessageByPsychologist.has(message.psychologistId)) {
+          lastMessageByPsychologist.set(message.psychologistId, message);
+        }
+        if (!psychologistMetaById.has(message.psychologistId)) {
+          psychologistMetaById.set(message.psychologistId, {
+            name: message.psychologist?.user?.name || "Psychologist",
+            image: message.psychologist?.user?.image || null,
+          });
+        }
+      }
+
+      const psychologistIds = Array.from(
+        new Set([
+          ...latestAppointmentByPsychologist.keys(),
+          ...lastMessageByPsychologist.keys(),
+        ])
       );
 
+      const conversations: ConversationRow[] = psychologistIds.map((psychologistId) => {
+        const appointment = latestAppointmentByPsychologist.get(psychologistId);
+        const lastMessage = lastMessageByPsychologist.get(psychologistId);
+        const meta = psychologistMetaById.get(psychologistId);
+
+        const conversationId =
+          appointment?.id || buildDirectConversationId(patient.id, psychologistId);
+
+        return {
+          id: conversationId,
+          appointmentId: conversationId,
+          name: meta?.name || "Psychologist",
+          image: meta?.image || null,
+          lastMessage: lastMessage?.content ?? "No messages yet",
+          lastMessageTime:
+            lastMessage?.createdAt ?? appointment?.createdAt ?? new Date(),
+          unreadCount: 0,
+        };
+      });
+
+      conversations.sort(sortConversationsByLatest);
       return NextResponse.json(conversations);
     }
 
-    // ── Psychologist path: show all patients the psychologist has seen ────────
     if (!psychologist) {
       return NextResponse.json({ error: "Profile not found" }, { status: 404 });
     }
 
-    const appointments = await prisma.appointment.findMany({
-      where: {
-        psychologistId: psychologist.id,
-        status: { in: ["SCHEDULED", "COMPLETED"] },
-      },
-      include: {
-        patient: {
-          include: { user: { select: { name: true, image: true } } },
+    const [appointments, messages] = await Promise.all([
+      prisma.appointment.findMany({
+        where: {
+          psychologistId: psychologist.id,
+          status: { in: ["SCHEDULED", "COMPLETED"] },
         },
-      },
-      orderBy: { startTime: "desc" },
-    });
+        include: {
+          patient: {
+            include: { user: { select: { name: true, image: true } } },
+          },
+        },
+        orderBy: { startTime: "desc" },
+      }),
+      prisma.message.findMany({
+        where: { psychologistId: psychologist.id },
+        include: {
+          patient: {
+            include: { user: { select: { name: true, image: true } } },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      }),
+    ]);
 
-    const latestByPatient = buildLatestAppointmentMap(appointments, "patientId");
-    const patientIds = Array.from(latestByPatient.keys());
-
-    const messages = patientIds.length
-      ? await prisma.message.findMany({
-          where: { psychologistId: psychologist.id, patientId: { in: patientIds } },
-          orderBy: { createdAt: "desc" },
-        })
-      : [];
-
+    const latestAppointmentByPatient = new Map<string, (typeof appointments)[number]>();
     const lastMessageByPatient = new Map<string, (typeof messages)[number]>();
-    for (const msg of messages) {
-      if (!lastMessageByPatient.has(msg.patientId)) {
-        lastMessageByPatient.set(msg.patientId, msg);
+    const patientMetaById = new Map<string, ConversationMeta>();
+
+    for (const appointment of appointments) {
+      if (!latestAppointmentByPatient.has(appointment.patientId)) {
+        latestAppointmentByPatient.set(appointment.patientId, appointment);
+      }
+      if (!patientMetaById.has(appointment.patientId)) {
+        patientMetaById.set(appointment.patientId, {
+          name: appointment.patient?.user?.name || "Patient",
+          image: appointment.patient?.user?.image || null,
+        });
       }
     }
 
-    const conversations = buildConversations(
-      patientIds,
-      latestByPatient,
-      lastMessageByPatient,
-      (appt) => appt.patient?.user?.name ?? "Patient",
-      (appt) => appt.patient?.user?.image ?? null
+    for (const message of messages) {
+      if (!lastMessageByPatient.has(message.patientId)) {
+        lastMessageByPatient.set(message.patientId, message);
+      }
+      if (!patientMetaById.has(message.patientId)) {
+        patientMetaById.set(message.patientId, {
+          name: message.patient?.user?.name || "Patient",
+          image: message.patient?.user?.image || null,
+        });
+      }
+    }
+
+    const patientIds = Array.from(
+      new Set([...latestAppointmentByPatient.keys(), ...lastMessageByPatient.keys()])
     );
 
+    const conversations: ConversationRow[] = patientIds.map((patientId) => {
+      const appointment = latestAppointmentByPatient.get(patientId);
+      const lastMessage = lastMessageByPatient.get(patientId);
+      const meta = patientMetaById.get(patientId);
+
+      const conversationId =
+        appointment?.id || buildDirectConversationId(patientId, psychologist.id);
+
+      return {
+        id: conversationId,
+        appointmentId: conversationId,
+        name: meta?.name || "Patient",
+        image: meta?.image || null,
+        lastMessage: lastMessage?.content ?? "No messages yet",
+        lastMessageTime: lastMessage?.createdAt ?? appointment?.createdAt ?? new Date(),
+        unreadCount: 0,
+      };
+    });
+
+    conversations.sort(sortConversationsByLatest);
     return NextResponse.json(conversations);
   } catch (error) {
     console.error("Error fetching conversations:", error);

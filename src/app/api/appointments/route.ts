@@ -285,40 +285,52 @@ export async function POST(request: Request) {
       },
     });
 
-    try {
-      const appUrl =
-        process.env.NEXT_PUBLIC_APP_URL ||
-        process.env.NEXTAUTH_URL ||
-        "http://localhost:3000";
+    const appUrl =
+      process.env.NEXT_PUBLIC_APP_URL ||
+      process.env.NEXTAUTH_URL ||
+      "http://localhost:3000";
 
-      const payload = {
-        patientName: appointment.patient?.user?.name || "Patient",
-        psychologistName: appointment.psychologist?.user?.name || "Psychologist",
-        startTime: appointment.startTime,
-        endTime: appointment.endTime,
-        type: appointment.type,
-      };
+    const payload = {
+      patientName: appointment.patient?.user?.name || "Patient",
+      psychologistName: appointment.psychologist?.user?.name || "Psychologist",
+      startTime: appointment.startTime,
+      endTime: appointment.endTime,
+      type: appointment.type,
+    };
 
-      const patientEmail = appointment.patient?.user?.email;
-      const psychologistEmail = appointment.psychologist?.user?.email;
+    const patientEmail = appointment.patient?.user?.email;
+    const psychologistEmail = appointment.psychologist?.user?.email;
 
-      if (patientEmail) {
+    if (patientEmail) {
+      try {
         const message = appointmentConfirmationEmail({
           ...payload,
           appUrl: `${appUrl}/patient/dashboard/appointments`,
         });
         await sendEmail({ to: patientEmail, ...message });
+      } catch (error) {
+        console.error(
+          "Appointment confirmation email failed for patient:",
+          patientEmail,
+          error
+        );
       }
+    }
 
-      if (psychologistEmail) {
+    if (psychologistEmail) {
+      try {
         const message = appointmentConfirmationEmail({
           ...payload,
           appUrl: `${appUrl}/psychologist/dashboard/appointments`,
         });
         await sendEmail({ to: psychologistEmail, ...message });
+      } catch (error) {
+        console.error(
+          "Appointment confirmation email failed for psychologist:",
+          psychologistEmail,
+          error
+        );
       }
-    } catch (emailError) {
-      console.error("Appointment confirmation email error:", emailError);
     }
 
     return NextResponse.json(appointment, { status: 201 });

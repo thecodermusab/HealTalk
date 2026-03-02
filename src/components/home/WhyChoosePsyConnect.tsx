@@ -13,15 +13,15 @@ export default function WhyChooseHealTalk() {
   const router = useRouter();
 
   return (
-    <section className="w-full bg-background pt-8 pb-8 lg:pt-12 lg:pb-12">
+    <section className="w-full bg-[#F6F2EA] pt-8 pb-8 lg:pt-12 lg:pb-12">
       <div className="mx-auto max-w-[1140px] px-6 lg:px-8">
-        <div className="mb-5 inline-flex items-center rounded-full border border-border bg-card px-4 py-1.5">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-text-secondary">
+        <div className="mb-5 inline-flex items-center rounded-full border border-[#D9D1C4] bg-[#F6F2EA] px-4 py-1.5">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-[#425234]">
             Why HealTalk
           </span>
         </div>
 
-        <h2 className="mb-10 max-w-3xl text-3xl font-semibold leading-tight text-foreground sm:text-4xl lg:mb-12 lg:text-[44px]">
+        <h2 className="mb-10 max-w-3xl text-3xl font-semibold leading-tight text-[#121E0D] sm:text-4xl lg:mb-12 lg:text-[44px]">
           Simple care that actually{" "}
           <span className="text-primary">fits your life</span>
         </h2>
@@ -45,18 +45,18 @@ export default function WhyChooseHealTalk() {
             </p>
           </div>
 
-          {/* Confidential & Secure -> #fffbf9 */}
+          {/* Confidential & Secure */}
           <div 
-            className="group flex flex-col rounded-2xl border border-border/80 p-6 shadow-md transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg"
-            style={{ backgroundColor: '#fffbf9' }}
+            className="group flex flex-col rounded-2xl border p-6 shadow-md transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg"
+            style={{ backgroundColor: '#fffefe', borderColor: '#D9D1C4' }}
           >
-            <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-full border border-border">
-              <Shield className="h-5 w-5 text-secondary" strokeWidth={1.5} />
+            <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-full border border-[#C8D5FF] bg-[#EEF3FF]">
+              <Shield className="h-5 w-5 text-[#4A63F6]" strokeWidth={1.5} />
             </div>
-            <h3 className="mb-3 text-lg font-semibold text-foreground lg:text-xl">
+            <h3 className="mb-3 text-lg font-semibold text-[#121E0D] lg:text-xl">
               What you share stays private
             </h3>
-            <p className="text-sm leading-relaxed text-text-secondary">
+            <p className="text-sm leading-relaxed text-[#425234]">
               Your sessions are fully encrypted and HIPAA-compliant. Nothing
               is shared, sold, or seen by anyone outside your session.
             </p>

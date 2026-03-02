@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { requireRateLimit } from "@/lib/rate-limit";
+import { getOrSetServerCache } from "@/lib/server-cache";
 
 export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
@@ -23,23 +24,27 @@ export async function GET(request: Request) {
   });
   if (rateLimit) return rateLimit;
 
-  const appointments = await prisma.appointment.findMany({
-    orderBy: { startTime: "desc" },
-    take: 6,
-    include: {
-      patient: { select: { user: { select: { name: true } } } },
-      psychologist: { select: { user: { select: { name: true } } } },
-    },
+  const payload = await getOrSetServerCache("admin:activity:v1", 15_000, async () => {
+    const appointments = await prisma.appointment.findMany({
+      orderBy: { startTime: "desc" },
+      take: 6,
+      include: {
+        patient: { select: { user: { select: { name: true } } } },
+        psychologist: { select: { user: { select: { name: true } } } },
+      },
+    });
+
+    return {
+      items: appointments.map((appointment) => ({
+        id: appointment.id,
+        startTime: appointment.startTime,
+        status: appointment.status,
+        type: appointment.type,
+        patientName: appointment.patient.user?.name || "Patient",
+        psychologistName: appointment.psychologist.user?.name || "Psychologist",
+      })),
+    };
   });
 
-  return NextResponse.json({
-    items: appointments.map((appointment) => ({
-      id: appointment.id,
-      startTime: appointment.startTime,
-      status: appointment.status,
-      type: appointment.type,
-      patientName: appointment.patient.user?.name || "Patient",
-      psychologistName: appointment.psychologist.user?.name || "Psychologist",
-    })),
-  });
+  return NextResponse.json(payload);
 }

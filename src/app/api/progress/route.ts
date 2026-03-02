@@ -17,6 +17,12 @@ const createProgressSchema = z.object({
   })).optional().nullable(),
 });
 
+const getSessionUserId = (user: unknown): string | null => {
+  if (!user || typeof user !== "object") return null;
+  const candidate = (user as { id?: unknown }).id;
+  return typeof candidate === "string" ? candidate : null;
+};
+
 // GET /api/progress - Get user's progress entries
 export async function GET(request: Request) {
   try {
@@ -34,7 +40,10 @@ export async function GET(request: Request) {
     });
     if (rateLimit) return rateLimit;
 
-    const userId = (session.user as any).id;
+    const userId = getSessionUserId(session.user);
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     // Get patient profile
     const patient = await prisma.patient.findUnique({
@@ -85,7 +94,10 @@ export async function POST(request: Request) {
     if (error) return error;
 
     const { mood, notes, goals } = body;
-    const userId = (session.user as any).id;
+    const userId = getSessionUserId(session.user);
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     // Get or create patient profile
     let patient = await prisma.patient.findUnique({

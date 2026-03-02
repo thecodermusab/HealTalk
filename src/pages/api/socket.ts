@@ -4,6 +4,7 @@ import type { Socket as NetSocket } from "net";
 import { Server as IOServer } from "socket.io";
 import { getToken } from "next-auth/jwt";
 import { prisma } from "@/lib/prisma";
+import { parseDirectConversationId } from "@/lib/messaging";
 
 export const config = {
   api: {
@@ -18,6 +19,58 @@ type NextApiResponseWithSocket = NextApiResponse & {
 };
 
 const onlineUsersByRoom = new Map<string, Set<string>>();
+const APPOINTMENT_ROOM_PREFIX = "appointment:";
+
+const getConversationIdFromRoom = (room: string) => {
+  if (!room.startsWith(APPOINTMENT_ROOM_PREFIX)) return null;
+  const conversationId = room.slice(APPOINTMENT_ROOM_PREFIX.length).trim();
+  return conversationId || null;
+};
+
+const resolveConversationParticipants = async (conversationId: string) => {
+  const directConversation = parseDirectConversationId(conversationId);
+  if (directConversation) {
+    const [patient, psychologist] = await Promise.all([
+      prisma.patient.findUnique({
+        where: { id: directConversation.patientId },
+        select: { id: true, userId: true },
+      }),
+      prisma.psychologist.findUnique({
+        where: { id: directConversation.psychologistId },
+        select: { id: true, userId: true },
+      }),
+    ]);
+    if (!patient || !psychologist) return null;
+    return { patient, psychologist };
+  }
+
+  const appointment = await prisma.appointment.findUnique({
+    where: { id: conversationId },
+    select: {
+      patient: { select: { id: true, userId: true } },
+      psychologist: { select: { id: true, userId: true } },
+    },
+  });
+
+  if (!appointment) return null;
+  return {
+    patient: appointment.patient,
+    psychologist: appointment.psychologist,
+  };
+};
+
+const canAccessRoom = async (userId: string, room: string) => {
+  const conversationId = getConversationIdFromRoom(room);
+  if (!conversationId) return false;
+
+  const participants = await resolveConversationParticipants(conversationId);
+  if (!participants) return false;
+
+  return (
+    participants.patient?.userId === userId ||
+    participants.psychologist?.userId === userId
+  );
+};
 
 export default async function handler(
   req: NextApiRequest,
@@ -32,7 +85,7 @@ export default async function handler(
     io.use(async (socket, next) => {
       try {
         const token = await getToken({
-          req: socket.request as any,
+          req: socket.request as NextApiRequest,
           secret: process.env.NEXTAUTH_SECRET,
         });
 
@@ -43,7 +96,7 @@ export default async function handler(
         socket.data.userId = token.id;
         socket.data.role = token.role;
         next();
-      } catch (error) {
+      } catch {
         next(new Error("Unauthorized"));
       }
     });
@@ -57,16 +110,38 @@ export default async function handler(
     };
 
     io.on("connection", (socket) => {
-      socket.on("join", (room: string) => {
-        socket.join(room);
-        const userId = socket.data.userId as string;
-        if (userId) {
+      socket.on(
+        "join",
+        async (
+          room: string,
+          callback?: (response: { ok: boolean; error?: string }) => void
+        ) => {
+          if (typeof room !== "string" || !room.trim()) {
+            callback?.({ ok: false, error: "Invalid room" });
+            return;
+          }
+
+          const userId = socket.data.userId as string;
+          if (!userId) {
+            callback?.({ ok: false, error: "Unauthorized" });
+            return;
+          }
+
+          const canAccess = await canAccessRoom(userId, room);
+          if (!canAccess) {
+            callback?.({ ok: false, error: "Forbidden" });
+            socket.emit("join:error", { room, error: "Forbidden" });
+            return;
+          }
+
+          socket.join(room);
           const users = onlineUsersByRoom.get(room) || new Set<string>();
           users.add(userId);
           onlineUsersByRoom.set(room, users);
           emitPresence(room);
+          callback?.({ ok: true });
         }
-      });
+      );
 
       socket.on("leave", (room: string) => {
         socket.leave(room);
@@ -84,11 +159,13 @@ export default async function handler(
       });
 
       socket.on("typing:start", (room: string) => {
+        if (!socket.rooms.has(room)) return;
         const userId = socket.data.userId as string;
         socket.to(room).emit("typing", { userId, isTyping: true });
       });
 
       socket.on("typing:stop", (room: string) => {
+        if (!socket.rooms.has(room)) return;
         const userId = socket.data.userId as string;
         socket.to(room).emit("typing", { userId, isTyping: false });
       });
@@ -106,7 +183,19 @@ export default async function handler(
               name?: string;
             };
           },
-          callback?: (response: { ok: boolean; message?: any; error?: string }) => void
+          callback?: (response: {
+            ok: boolean;
+            message?: {
+              id: string;
+              content: string;
+              senderId: string;
+              createdAt: Date;
+              attachmentUrl: string | null;
+              attachmentType: string | null;
+              attachmentName: string | null;
+            };
+            error?: string;
+          }) => void
         ) => {
           try {
             const { appointmentId, content, attachment } = payload || {};
@@ -117,25 +206,16 @@ export default async function handler(
               return;
             }
 
-            const appointment = await prisma.appointment.findUnique({
-              where: { id: appointmentId },
-              include: {
-                patient: { select: { id: true, userId: true, user: { select: { name: true } } } },
-                psychologist: {
-                  select: { id: true, userId: true, user: { select: { name: true } } },
-                },
-              },
-            });
-
-            if (!appointment) {
-              callback?.({ ok: false, error: "Appointment not found" });
+            const participants = await resolveConversationParticipants(appointmentId);
+            if (!participants) {
+              callback?.({ ok: false, error: "Conversation not found" });
               return;
             }
 
             const senderId = socket.data.userId as string;
             const isParticipant =
-              appointment.patient?.userId === senderId ||
-              appointment.psychologist?.userId === senderId;
+              participants.patient?.userId === senderId ||
+              participants.psychologist?.userId === senderId;
 
             if (!isParticipant) {
               callback?.({ ok: false, error: "Forbidden" });
@@ -144,8 +224,8 @@ export default async function handler(
 
             const message = await prisma.message.create({
               data: {
-                patientId: appointment.patient.id,
-                psychologistId: appointment.psychologist.id,
+                patientId: participants.patient.id,
+                psychologistId: participants.psychologist.id,
                 senderId,
                 content: trimmed || (hasAttachment ? "Attachment" : ""),
                 attachmentUrl: attachment?.url,
@@ -168,7 +248,7 @@ export default async function handler(
             const room = `appointment:${appointmentId}`;
             io.to(room).emit("message:new", response);
             callback?.({ ok: true, message: response });
-          } catch (error) {
+          } catch {
             callback?.({ ok: false, error: "Failed to send message" });
           }
         }

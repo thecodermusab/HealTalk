@@ -14,7 +14,6 @@ export async function GET(
           select: {
             name: true,
             image: true,
-            email: true,
           },
         },
         hospital: {
@@ -48,7 +47,11 @@ export async function GET(
       );
     }
 
-    if (psychologist.status !== 'APPROVED') {
+    const isPubliclyVisible =
+      psychologist.status === "APPROVED" ||
+      (process.env.NODE_ENV !== "production" && psychologist.status === "PENDING");
+
+    if (!isPubliclyVisible) {
       return NextResponse.json(
         { error: 'Psychologist not available' },
         { status: 403 }

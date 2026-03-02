@@ -57,7 +57,7 @@ export default function ProfilePage() {
           credentialDocumentUrl: data.psychologist?.credentialDocumentUrl || "",
           credentialDocumentKey: data.psychologist?.credentialDocumentKey || "",
         });
-      } catch (error) {
+      } catch {
         setMessage({ type: "error", text: "Failed to load profile details." });
       } finally {
         setIsLoading(false);
@@ -118,7 +118,7 @@ export default function ProfilePage() {
       }
 
       setMessage({ type: "success", text: "Profile updated successfully." });
-    } catch (error) {
+    } catch {
       setMessage({ type: "error", text: "Failed to update profile." });
     } finally {
       setIsProfileSaving(false);
@@ -146,7 +146,7 @@ export default function ProfilePage() {
           text: "Unable to access credential document.",
         });
       }
-    } catch (error) {
+    } catch {
       setMessage({
         type: "error",
         text: "Unable to access credential document.",

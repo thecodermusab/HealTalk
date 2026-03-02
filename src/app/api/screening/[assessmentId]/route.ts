@@ -25,7 +25,7 @@ export async function GET(
     if (rateLimit) return rateLimit;
 
     const { assessmentId } = await context.params;
-    const userId = (session.user as any).id;
+    const userId = session.user.id;
 
     const assessment = await prisma.screeningAssessment.findUnique({
       where: { id: assessmentId },

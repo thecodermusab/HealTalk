@@ -110,7 +110,7 @@ async function main() {
   console.log("\n🧠 Creating screening assessments...");
 
   if (patient.patient) {
-    const assessment1 = await prisma.screeningAssessment.create({
+    await prisma.screeningAssessment.create({
       data: {
         patientId: patient.patient.id,
         completedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
@@ -133,7 +133,7 @@ async function main() {
     });
     console.log(`✅ Created assessment (MEDIUM risk) from 7 days ago`);
 
-    const assessment2 = await prisma.screeningAssessment.create({
+    await prisma.screeningAssessment.create({
       data: {
         patientId: patient.patient.id,
         completedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago

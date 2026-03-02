@@ -1,23 +1,24 @@
-import { describe, it, expect } from '@jest/globals';
+import "@testing-library/jest-dom";
+import { describe, it, expect, jest } from '@jest/globals';
 import { render, screen } from '@testing-library/react';
 import { Button } from '@/components/ui/button';
 
 describe('Button Component', () => {
   it('renders button with text', () => {
     render(<Button>Click me</Button>);
-    expect(screen.getByText('Click me')).toBeInTheDocument();
+    expect(screen.getByText('Click me')).toBeTruthy();
   });
 
   it('applies primary variant styles', () => {
     render(<Button variant="default">Primary</Button>);
     const button = screen.getByText('Primary');
-    expect(button).toHaveClass('bg-primary');
+    expect(button.className).toContain('bg-primary');
   });
 
   it('applies outline variant styles', () => {
     render(<Button variant="outline">Outline</Button>);
     const button = screen.getByText('Outline');
-    expect(button).toHaveClass('border');
+    expect(button.className).toContain('border');
   });
 
   it('handles click events', () => {
@@ -31,6 +32,6 @@ describe('Button Component', () => {
   it('is disabled when disabled prop is true', () => {
     render(<Button disabled>Disabled</Button>);
     const button = screen.getByText('Disabled');
-    expect(button).toBeDisabled();
+    expect((button as HTMLButtonElement).disabled).toBe(true);
   });
 });

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getFallbackBlogPostById } from '@/lib/resource-fallback';
 
 export async function GET(
   request: Request,
@@ -18,13 +19,19 @@ export async function GET(
     });
 
     if (!post) {
+      if (process.env.NODE_ENV !== 'production') {
+        const fallbackPost = getFallbackBlogPostById(id);
+        if (fallbackPost) {
+          return NextResponse.json(fallbackPost);
+        }
+      }
       return NextResponse.json(
         { error: 'Blog post not found' },
         { status: 404 }
       );
     }
 
-    if (!post.published) {
+    if (!post.published && process.env.NODE_ENV === 'production') {
       return NextResponse.json(
         { error: 'Blog post not available' },
         { status: 403 }
@@ -34,10 +41,16 @@ export async function GET(
     // Transform content back to original format
     const transformedPost = {
       ...post,
-      content: post.content.map(c => ({
-        type: c.type,
-        value: c.type === 'list' ? JSON.parse(c.value) : c.value
-      }))
+      content: post.content.map(c => {
+        if (c.type !== 'list') {
+          return { type: c.type, value: c.value };
+        }
+        try {
+          return { type: c.type, value: JSON.parse(c.value) };
+        } catch {
+          return { type: c.type, value: [c.value] };
+        }
+      })
     };
 
     return NextResponse.json(transformedPost);

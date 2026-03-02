@@ -11,8 +11,6 @@ import {
   EMERGENCY_NUMBERS,
 } from "@/lib/constants";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 interface Message {
   role: "user" | "assistant" | "system";
   content: string;
@@ -28,12 +26,6 @@ interface ChatbotInterfaceProps {
   initialUserMessage?: string | null;
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-/**
- * Infers a risk level string from the AI's final summary text.
- * The AI includes keywords like "severe", "mild", or "crisis" in its assessment.
- */
 function detectRiskLevel(summary: string): "LOW" | "MEDIUM" | "HIGH" | "CRISIS" {
   const lower = summary.toLowerCase();
   if (
@@ -60,9 +52,6 @@ function detectRiskLevel(summary: string): "LOW" | "MEDIUM" | "HIGH" | "CRISIS" 
   return "MEDIUM";
 }
 
-/**
- * Maps a risk level to a list of recommended next steps shown to the patient.
- */
 function getCrisisResources(riskLevel: string): string[] {
   switch (riskLevel) {
     case "CRISIS":
@@ -83,7 +72,7 @@ function getCrisisResources(riskLevel: string): string[] {
         "Practice stress management",
         "Maintain healthy habits",
       ];
-    default: // MEDIUM
+    default:
       return [
         "Schedule appointment with therapist",
         "Practice self-care techniques",
@@ -92,16 +81,10 @@ function getCrisisResources(riskLevel: string): string[] {
   }
 }
 
-/**
- * Returns true if the user message contains any crisis-level keyword.
- * Uses the same keyword list as the server-side check for consistency.
- */
 function messageContainsCrisisKeyword(text: string): boolean {
   const lower = text.toLowerCase();
   return CRISIS_KEYWORDS.some((keyword) => lower.includes(keyword));
 }
-
-// ─── Component ────────────────────────────────────────────────────────────────
 
 export function ChatbotInterface({ onComplete, initialUserMessage }: ChatbotInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([
@@ -121,8 +104,6 @@ export function ChatbotInterface({ onComplete, initialUserMessage }: ChatbotInte
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const initialMessageSentRef = useRef(false);
 
-  // Refs mirror state so that callbacks/closures always read the latest values
-  // without needing to be re-created every render (important for the streaming loop).
   const messagesRef = useRef<Message[]>(messages);
   const isLoadingRef = useRef(isLoading);
 
@@ -138,7 +119,6 @@ export function ChatbotInterface({ onComplete, initialUserMessage }: ChatbotInte
     isLoadingRef.current = isLoading;
   }, [isLoading]);
 
-  /** Saves the completed assessment to the DB and notifies the parent. */
   const completeAssessment = useCallback(
     async (allMessages: Message[], finalSummary: string) => {
       const riskLevel = detectRiskLevel(finalSummary);
@@ -167,7 +147,6 @@ export function ChatbotInterface({ onComplete, initialUserMessage }: ChatbotInte
     [onComplete]
   );
 
-  /** Streams the AI response and appends it to the message list token-by-token. */
   const streamAIResponse = async (
     newMessages: Message[],
     response: Response
@@ -194,11 +173,6 @@ export function ChatbotInterface({ onComplete, initialUserMessage }: ChatbotInte
     return assistantMessage;
   };
 
-  /**
-   * Main message handler — builds the payload, sends it to the API,
-   * handles streaming, and triggers assessment completion when enough
-   * questions have been answered.
-   */
   const sendMessage = useCallback(
     async (messageText: string) => {
       if (!messageText.trim() || isLoadingRef.current) return;
@@ -215,8 +189,6 @@ export function ChatbotInterface({ onComplete, initialUserMessage }: ChatbotInte
       setQuestionCount(nextQuestionCount);
 
       try {
-        // Client-side crisis pre-check for immediate UI feedback.
-        // The server will also check, but this shows the banner without waiting for the API.
         if (messageContainsCrisisKeyword(messageText)) {
           setShowCrisisResources(true);
         }
@@ -232,7 +204,6 @@ export function ChatbotInterface({ onComplete, initialUserMessage }: ChatbotInte
           throw new Error(errorData.error || "Failed to get response");
         }
 
-        // The API returns JSON for crisis responses, streaming text for normal replies.
         const contentType = res.headers.get("content-type");
         if (contentType?.includes("application/json")) {
           const data = await res.json();
@@ -245,7 +216,6 @@ export function ChatbotInterface({ onComplete, initialUserMessage }: ChatbotInte
 
         const assistantMessage = await streamAIResponse(newMessages, res);
 
-        // Once the patient has answered enough questions, finalise the assessment.
         if (nextQuestionCount >= ASSESSMENT_QUESTION_THRESHOLD) {
           await completeAssessment(newMessages, assistantMessage);
         }
@@ -266,7 +236,6 @@ export function ChatbotInterface({ onComplete, initialUserMessage }: ChatbotInte
     [completeAssessment]
   );
 
-  // Send the optional pre-filled message once on mount (used by the onboarding flow).
   useEffect(() => {
     if (initialUserMessage && !initialMessageSentRef.current) {
       initialMessageSentRef.current = true;
@@ -279,18 +248,18 @@ export function ChatbotInterface({ onComplete, initialUserMessage }: ChatbotInte
     void sendMessage(input);
   }
 
-  // ─── Render ─────────────────────────────────────────────────────────────────
+  const completedQuestions = Math.min(questionCount, ASSESSMENT_QUESTION_THRESHOLD);
+  const progress = completedQuestions * (100 / ASSESSMENT_QUESTION_THRESHOLD);
 
   return (
-    <div className="flex flex-col h-full bg-white px-2 py-2 md:px-4 md:py-4">
-      {/* Crisis Banner — shown immediately when a crisis keyword is detected */}
+    <div className="flex flex-col h-full bg-[var(--dash-surface)] rounded-[12px]">
       {showCrisisResources && (
-        <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
+        <div className="bg-[var(--dash-danger-soft)] border border-[var(--dash-danger)] rounded-xl p-4 mb-4">
           <div className="flex items-start gap-3">
-            <AlertTriangle className="text-red-500 flex-shrink-0 mt-0.5" size={20} />
+            <AlertTriangle className="text-[var(--dash-danger)] flex-shrink-0 mt-0.5" size={20} />
             <div>
-              <h3 className="font-semibold text-red-800 mb-2">Crisis Resources Available 24/7</h3>
-              <div className="space-y-1 text-sm text-red-700">
+              <h3 className="font-semibold text-[var(--dash-danger)] mb-2">Crisis Resources Available 24/7</h3>
+              <div className="space-y-1 text-sm text-[var(--dash-text)]">
                 <p className="flex items-center gap-2">
                   <Phone size={14} />
                   <strong>National Suicide Prevention Lifeline:</strong> {EMERGENCY_NUMBERS.crisis}
@@ -307,24 +276,22 @@ export function ChatbotInterface({ onComplete, initialUserMessage }: ChatbotInte
         </div>
       )}
 
-      {/* Progress bar */}
       {!isComplete && (
         <div className="mb-4">
-          <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
-            <span>Question {Math.min(questionCount, ASSESSMENT_QUESTION_THRESHOLD)} of {ASSESSMENT_QUESTION_THRESHOLD}</span>
-            <span>{Math.min(questionCount, ASSESSMENT_QUESTION_THRESHOLD) * (100 / ASSESSMENT_QUESTION_THRESHOLD)}% complete</span>
+          <div className="flex items-center justify-between text-sm dash-muted mb-2">
+            <span>Question {completedQuestions} of {ASSESSMENT_QUESTION_THRESHOLD}</span>
+            <span>{Math.round(progress)}% complete</span>
           </div>
-          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+          <div className="h-2 bg-[var(--dash-surface-elev)] rounded-full overflow-hidden border border-[var(--dash-border)]">
             <div
-              className="h-full bg-primary transition-all duration-300"
-              style={{ width: `${Math.min(questionCount, ASSESSMENT_QUESTION_THRESHOLD) * (100 / ASSESSMENT_QUESTION_THRESHOLD)}%` }}
+              className="h-full bg-[var(--dash-primary)] transition-all duration-300"
+              style={{ width: `${progress}%` }}
             />
           </div>
         </div>
       )}
 
-      {/* Message list */}
-      <div className="flex-1 overflow-y-auto space-y-4 pb-[133px]">
+      <div className="flex-1 overflow-y-auto space-y-4 pb-4 pr-1">
         {messages.map((message, index) => (
           <div
             key={index}
@@ -335,21 +302,21 @@ export function ChatbotInterface({ onComplete, initialUserMessage }: ChatbotInte
           >
             <div
               className={cn(
-                "max-w-[80%] rounded-2xl px-4 py-3",
+                "max-w-[84%] rounded-2xl px-4 py-3 text-sm whitespace-pre-wrap",
                 message.role === "user"
-                  ? "bg-primary text-white"
-                  : "bg-gray-100 text-gray-900"
+                  ? "bg-[var(--dash-primary)] text-white"
+                  : "bg-[var(--dash-surface-elev)] text-[var(--dash-text)] border border-[var(--dash-border)]"
               )}
             >
-              <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+              {message.content}
             </div>
           </div>
         ))}
 
         {isLoading && (
           <div className="flex justify-start">
-            <div className="bg-gray-100 rounded-2xl px-4 py-3">
-              <Loader2 className="animate-spin text-gray-600" size={20} />
+            <div className="bg-[var(--dash-surface-elev)] border border-[var(--dash-border)] rounded-2xl px-4 py-3">
+              <Loader2 className="animate-spin text-[var(--dash-text-muted)]" size={20} />
             </div>
           </div>
         )}
@@ -357,10 +324,9 @@ export function ChatbotInterface({ onComplete, initialUserMessage }: ChatbotInte
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input area — hidden once assessment is complete */}
       {!isComplete && (
-        <form onSubmit={handleSubmit} className="sticky bottom-0 bg-white pt-3">
-          <div className="flex items-end gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3 shadow-sm">
+        <form onSubmit={handleSubmit} className="pt-3 border-t border-[var(--dash-border)]">
+          <div className="flex items-end gap-3 rounded-xl border border-[var(--dash-border)] bg-[var(--dash-surface-elev)] px-4 py-3">
             <Textarea
               ref={textareaRef}
               value={input}
@@ -372,7 +338,7 @@ export function ChatbotInterface({ onComplete, initialUserMessage }: ChatbotInte
                 }
               }}
               placeholder="Message HealTalk..."
-              className="min-h-[44px] max-h-40 flex-1 resize-none border-0 bg-transparent p-0 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0"
+              className="min-h-[44px] max-h-40 flex-1 resize-none border-0 bg-transparent p-0 text-sm text-[var(--dash-text)] placeholder:text-[var(--dash-text-muted)] focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0"
               rows={1}
               disabled={isLoading}
             />
@@ -380,7 +346,7 @@ export function ChatbotInterface({ onComplete, initialUserMessage }: ChatbotInte
               type="submit"
               size="icon"
               disabled={!input.trim() || isLoading}
-              className="h-9 w-9 rounded-full bg-gray-900 text-white shadow-md transition-colors hover:bg-gray-800"
+              className="h-9 w-9 rounded-lg dash-btn-primary"
             >
               {isLoading ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />}
             </Button>
@@ -389,9 +355,9 @@ export function ChatbotInterface({ onComplete, initialUserMessage }: ChatbotInte
       )}
 
       {isComplete && (
-        <div className="text-center py-6 bg-green-50 rounded-[24px] border border-green-200">
-          <p className="text-green-800 font-semibold mb-2">Assessment Complete!</p>
-          <p className="text-sm text-green-700">
+        <div className="text-center py-6 bg-[var(--dash-success-soft)] rounded-xl border border-[var(--dash-border)]">
+          <p className="text-[var(--dash-success)] font-semibold mb-2">Assessment Complete!</p>
+          <p className="text-sm dash-muted">
             Thank you for sharing. Your results have been saved.
           </p>
         </div>
@@ -399,4 +365,3 @@ export function ChatbotInterface({ onComplete, initialUserMessage }: ChatbotInte
     </div>
   );
 }
-

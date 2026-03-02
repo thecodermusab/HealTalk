@@ -4,6 +4,12 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { requireRateLimit } from "@/lib/rate-limit";
 
+const getSessionUserId = (user: unknown): string | null => {
+  if (!user || typeof user !== "object") return null;
+  const candidate = (user as { id?: unknown }).id;
+  return typeof candidate === "string" ? candidate : null;
+};
+
 // GET /api/psychologist/patients - Get unique patients from appointments
 export async function GET(request: Request) {
   try {
@@ -21,7 +27,10 @@ export async function GET(request: Request) {
     });
     if (rateLimit) return rateLimit;
 
-    const userId = (session.user as any).id;
+    const userId = getSessionUserId(session.user);
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     // Verify user is a psychologist
     const psychologist = await prisma.psychologist.findUnique({

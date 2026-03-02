@@ -29,12 +29,12 @@ export function PatientUpcomingAppointments() {
     .slice(0, 5);
 
   return (
-    <div className="bg-white rounded-[16px] border border-[#E6EAF2] p-6 shadow-[0_8px_24px_rgba(17,24,39,0.02)] relative">
+    <div className="dash-card p-6 relative">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="font-bold text-gray-900 text-lg">My Appointments</h3>
+        <h3 className="font-bold dash-heading text-lg">My Appointments</h3>
         <Link
           href="/patient/dashboard/appointments"
-          className="text-sm text-[#5B6CFF] hover:underline font-medium"
+          className="text-sm font-medium transition-colors text-[var(--dash-primary)] hover:opacity-80"
         >
           View all
         </Link>
@@ -50,36 +50,36 @@ export function PatientUpcomingAppointments() {
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[600px]">
-            <thead>
-              <tr className="text-left bg-gray-50 border-b border-gray-100">
-                <th className="py-3 px-4 font-medium text-gray-500 text-sm rounded-l-lg">
+          <table className="w-full min-w-[640px] text-left">
+            <thead className="text-xs uppercase font-medium bg-[var(--dash-surface-elev)] text-[var(--dash-text-muted)]">
+              <tr>
+                <th className="py-3 px-4">
                   Psychologist
                 </th>
-                <th className="py-3 px-4 font-medium text-gray-500 text-sm">
+                <th className="py-3 px-4">
                   Date
                 </th>
-                <th className="py-3 px-4 font-medium text-gray-500 text-sm">
+                <th className="py-3 px-4">
                   Time
                 </th>
-                <th className="py-3 px-4 font-medium text-gray-500 text-sm rounded-r-lg">
+                <th className="py-3 px-4">
                   Type
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-[var(--dash-border)]">
               {upcoming.map((appointment) => (
-                <tr key={appointment.id} className="hover:bg-gray-50/50 transition-colors">
-                  <td className="py-4 px-4 text-sm font-medium text-gray-700">
+                <tr key={appointment.id} className="transition-colors hover:bg-[var(--dash-surface-elev)]">
+                  <td className="py-4 px-4 text-sm font-medium text-[var(--dash-text)]">
                     {appointment.psychologist?.user?.name || "Psychologist"}
                   </td>
-                  <td className="py-4 px-4 text-sm text-gray-700">
+                  <td className="py-4 px-4 text-sm text-[var(--dash-text-muted)]">
                     {formatDate(appointment.startTime)}
                   </td>
-                  <td className="py-4 px-4 text-sm text-gray-700">
+                  <td className="py-4 px-4 text-sm text-[var(--dash-text-muted)]">
                     {formatTime(appointment.startTime)} - {formatTime(appointment.endTime)}
                   </td>
-                  <td className="py-4 px-4 text-sm text-gray-700">
+                  <td className="py-4 px-4 text-sm text-[var(--dash-text-muted)]">
                     {appointment.type.replace("_", " ")}
                   </td>
                 </tr>

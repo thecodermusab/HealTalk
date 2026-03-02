@@ -22,7 +22,7 @@ export default function SessionCallPage({
       setSessionId(p.sessionId);
       verifyAccess(p.sessionId);
     });
-  }, []);
+  }, [params]);
 
   async function verifyAccess(id: string) {
     try {

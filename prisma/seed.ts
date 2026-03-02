@@ -11,6 +11,11 @@ process.env.DATABASE_URL = databaseUrl;
 
 const prisma = new PrismaClient();
 
+interface BlogContentItem {
+  type: string;
+  value: string | string[];
+}
+
 async function main() {
   console.log('Seeding database...');
 
@@ -155,7 +160,7 @@ async function main() {
         continue;
       }
 
-      const user = await prisma.user.create({
+      await prisma.user.create({
         data: {
           name: p.user.name,
           email: p.user.email,
@@ -181,8 +186,9 @@ async function main() {
       });
       seededCount++;
       console.log(`  ✓ ${p.user.name}`);
-    } catch (error: any) {
-      console.log(`  ✗ ${p.user.name}: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      console.log(`  ✗ ${p.user.name}: ${message}`);
     }
   }
   console.log(`Total psychologists seeded: ${seededCount}`);
@@ -211,7 +217,7 @@ async function main() {
   for (const post of blogPostSeedData) {
     const authorId = authorMap.get(post.authorName);
 
-    const blogPost = await prisma.blogPost.create({
+    await prisma.blogPost.create({
       data: {
         title: post.title,
         subtitle: post.subtitle,
@@ -225,10 +231,10 @@ async function main() {
         published: post.published,
         authorId: authorId,
         content: {
-          create: post.content.map((c: any, index: number) => ({
+          create: (post.content as BlogContentItem[]).map((item, index: number) => ({
             order: index,
-            type: c.type,
-            value: Array.isArray(c.value) ? JSON.stringify(c.value) : c.value
+            type: item.type,
+            value: Array.isArray(item.value) ? JSON.stringify(item.value) : item.value
           }))
         }
       }

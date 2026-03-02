@@ -3,10 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -H localhost",
-    "build": "next build",
+    "dev": "next dev --webpack -H localhost",
+    "dev:webpack": "next dev --webpack -H localhost",
+    "dev:turbo": "next dev -H localhost",
+    "build": "next build --webpack",
+    "build:webpack": "next build --webpack",
+    "build:turbo": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
@@ -19,7 +23,9 @@
     "db:fix-blog-author-images": "tsx prisma/fix-blog-author-image-paths.ts",
     "cron:reminders": "tsx scripts/cron/appointment-reminders.ts",
     "db:update-passwords": "tsx prisma/update-passwords.ts",
-    "db:inspect-users": "tsx prisma/inspect-users.ts"
+    "db:inspect-users": "tsx prisma/inspect-users.ts",
+    "supabase:migration:status": "tsx scripts/supabase/migration-status.ts",
+    "supabase:migration:link-user": "tsx scripts/supabase/link-user.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

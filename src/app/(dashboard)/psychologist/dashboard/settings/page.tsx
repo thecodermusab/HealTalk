@@ -67,7 +67,7 @@ export default function SettingsPage() {
           bio: data.psychologist?.bio || "",
           image: data.image || "",
         });
-      } catch (error) {
+      } catch {
         setMessage({ type: "error", text: "Failed to load profile details." });
       } finally {
         setIsLoading(false);
@@ -122,7 +122,7 @@ export default function SettingsPage() {
         image: data.image || prev.image,
       }));
       setMessage({ type: "success", text: "Profile updated successfully." });
-    } catch (error) {
+    } catch {
       setMessage({ type: "error", text: "Failed to update profile." });
     } finally {
       setIsSaving(false);

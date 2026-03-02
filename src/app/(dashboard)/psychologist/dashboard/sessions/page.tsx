@@ -21,11 +21,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Plus, Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+
+type TherapySession = Parameters<typeof SessionCard>[0]["session"];
 
 export default function PsychologistSessionsPage() {
-  const router = useRouter();
-  const [sessions, setSessions] = useState<any[]>([]);
+  const [sessions, setSessions] = useState<TherapySession[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -108,8 +108,8 @@ export default function PsychologistSessionsPage() {
     }
   }
 
-  const upcomingSessions = sessions.filter((s) => s.status === "SCHEDULED");
-  const pastSessions = sessions.filter((s) => s.status !== "SCHEDULED");
+  const upcomingSessions = sessions.filter((session) => session.status === "SCHEDULED");
+  const pastSessions = sessions.filter((session) => session.status !== "SCHEDULED");
 
   return (
     <DashboardLayout>

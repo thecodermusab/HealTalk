@@ -1,10 +1,8 @@
 import { NextResponse } from "next/server";
 import Groq from "groq-sdk";
 import { requireRateLimit } from "@/lib/rate-limit";
-
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY || "",
-});
+import { parseJson } from "@/lib/validation";
+import { z } from "zod";
 
 const SYSTEM_PROMPT = `You are a helpful AI assistant for HealTalk, a mental health platform that connects people with licensed therapists.
 
@@ -26,10 +24,20 @@ Important:
 
 Be conversational, supportive, and helpful!`;
 
+const chatPayloadSchema = z.object({
+  messages: z
+    .array(
+      z.object({
+        role: z.enum(["user", "assistant"]),
+        content: z.string().min(1).max(4000),
+      })
+    )
+    .min(1)
+    .max(80),
+});
+
 export async function POST(request: Request) {
   try {
-    console.log("🤖 Public chatbot request");
-
     const rateLimit = await requireRateLimit({
       request,
       key: "chatbot:public",
@@ -38,17 +46,24 @@ export async function POST(request: Request) {
     });
     if (rateLimit) return rateLimit;
 
-    const { messages } = await request.json();
+    const { data, error } = await parseJson(request, chatPayloadSchema);
+    if (error) return error;
 
-    if (!Array.isArray(messages)) {
+    const groqApiKey = process.env.GROQ_API_KEY;
+    if (!groqApiKey) {
       return NextResponse.json(
-        { error: "Messages must be an array" },
-        { status: 400 }
+        { error: "AI service is not configured" },
+        { status: 500 }
       );
     }
+    const groq = new Groq({ apiKey: groqApiKey });
 
     // Check for crisis keywords
-    const lastUserMessage = messages.filter((m: any) => m.role === "user").slice(-1)[0]?.content?.toLowerCase() || "";
+    const lastUserMessage =
+      data.messages
+        .filter((m) => m.role === "user")
+        .slice(-1)[0]
+        ?.content?.toLowerCase() || "";
     const crisisKeywords = ["suicide", "kill myself", "end my life", "hurt myself", "self-harm", "die"];
     const hasCrisisKeyword = crisisKeywords.some(keyword => lastUserMessage.includes(keyword));
 
@@ -69,7 +84,7 @@ If you're in immediate danger, please call 911 or go to your nearest emergency r
     const completion = await groq.chat.completions.create({
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
-        ...messages,
+        ...data.messages,
       ],
       model: "llama-3.1-8b-instant",
       temperature: 0.7,
@@ -101,8 +116,9 @@ If you're in immediate danger, please call 911 or go to your nearest emergency r
         "Content-Type": "text/plain; charset=utf-8",
       },
     });
-  } catch (error: any) {
-    console.error("❌ Public chatbot error:", error?.message);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error("Public chatbot error:", message);
 
     return NextResponse.json(
       { error: "Failed to process chat request" },

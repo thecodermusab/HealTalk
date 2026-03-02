@@ -9,9 +9,15 @@ interface BookingWidgetProps {
   price: number;
   psychologistId: string;
   psychologistName: string;
+  psychologistImage?: string | null;
 }
 
-export default function BookingWidget({ price, psychologistId, psychologistName }: BookingWidgetProps) {
+export default function BookingWidget({
+  price,
+  psychologistId,
+  psychologistName,
+  psychologistImage,
+}: BookingWidgetProps) {
   const router = useRouter();
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
@@ -183,6 +189,8 @@ export default function BookingWidget({ price, psychologistId, psychologistName 
               psychologistId
             )}&doctor=${encodeURIComponent(
               psychologistName
+            )}&doctorImage=${encodeURIComponent(
+              psychologistImage || ""
             )}&start=${encodeURIComponent(
               start.toISOString()
             )}&end=${encodeURIComponent(

@@ -17,11 +17,28 @@ interface PageProps {
   }>;
 }
 
+type PsychologistReview = {
+  id: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+  patient: {
+    user: {
+      name: string;
+      image: string | null;
+    };
+  };
+};
+
 async function getPsychologistData(id: string) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const baseUrl =
+      process.env.NEXT_PUBLIC_APP_URL ||
+      process.env.NEXTAUTH_URL ||
+      process.env.NEXT_PUBLIC_BASE_URL ||
+      "http://localhost:3000";
     const res = await fetch(`${baseUrl}/api/psychologists/${id}`, {
-      cache: 'no-store',
+      next: { revalidate: 60 },
     });
 
     if (!res.ok) {
@@ -56,13 +73,13 @@ async function getPsychologistData(id: string) {
           { name: 'Licensed Psychologist', issuer: 'State Board', year: 2010 }
         ],
       },
-      reviews: data.reviews.map((review: any) => ({
+      reviews: (data.reviews as PsychologistReview[]).map((review) => ({
         id: review.id,
-        psychologistId: data.id,
         patientName: review.patient.user.name,
-        patientImage: review.patient.user.image || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=300&h=300',
         rating: review.rating,
-        comment: review.comment,
+        text: review.comment,
+        helpful: 0,
+        notHelpful: 0,
         date: new Date(review.createdAt).toLocaleDateString(),
       })) || [],
     };
@@ -95,7 +112,6 @@ export default async function PsychologistProfilePage({ params }: PageProps) {
             <AboutSection psychologist={psychologist} />
             <EducationSection psychologist={psychologist} />
             <ReviewsSection
-              psychologistId={psychologist.id}
               rating={psychologist.rating}
               reviewCount={psychologist.reviewCount}
               reviews={psychologistReviews}
@@ -108,6 +124,7 @@ export default async function PsychologistProfilePage({ params }: PageProps) {
               price={psychologist.price}
               psychologistId={psychologist.id}
               psychologistName={psychologist.name}
+              psychologistImage={psychologist.image}
             />
           </div>
         </div>

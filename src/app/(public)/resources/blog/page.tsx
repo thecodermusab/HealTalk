@@ -1,18 +1,20 @@
 import React from "react";
 import { BlogHero } from "@/components/blog/BlogHero";
 import { BlogGrid } from "@/components/blog/BlogGrid";
+import { RESOURCE_FALLBACK_BLOG_POSTS } from "@/lib/resource-fallback";
 
 async function getBlogPosts() {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/blog`, {
-      cache: 'no-store'
+      next: { revalidate: 120 },
     });
-    if (!res.ok) return [];
+    if (!res.ok) return RESOURCE_FALLBACK_BLOG_POSTS;
     const data = await res.json();
-    return data.posts || [];
+    const posts = Array.isArray(data.posts) ? data.posts : [];
+    return posts.length > 0 ? posts : RESOURCE_FALLBACK_BLOG_POSTS;
   } catch (error) {
     console.error('Failed to fetch blog posts:', error);
-    return [];
+    return RESOURCE_FALLBACK_BLOG_POSTS;
   }
 }
 

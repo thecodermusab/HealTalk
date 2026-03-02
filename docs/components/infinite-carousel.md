@@ -61,7 +61,6 @@
 
 ### Modified Files:
 - ✅ `src/app/(public)/about/page.tsx` - Updated to use InfiniteLogoCarousel
-- ✅ `src/app/test-drag/page.tsx` - Added carousel demo
 
 ## 🎨 Technical Implementation
 
@@ -119,11 +118,6 @@ applyMomentum: Gradually slow down with decay (0.95x per frame)
 ## 🧪 Testing
 
 ### Test Page:
-```
-http://localhost:3000/test-drag
-```
-
-### About Page:
 ```
 http://localhost:3000/about
 ```

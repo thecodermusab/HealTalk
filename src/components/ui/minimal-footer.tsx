@@ -1,11 +1,11 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   FacebookIcon,
   InstagramIcon,
   LinkedinIcon,
   TwitterIcon,
   YoutubeIcon,
-  HeartPulse,
 } from "lucide-react";
 
 export function MinimalFooter() {
@@ -87,9 +87,11 @@ export function MinimalFooter() {
         <div className="grid max-w-4xl grid-cols-6 gap-6 p-4">
           <div className="col-span-6 flex flex-col gap-5 md:col-span-4">
             <Link href="/" className="w-max opacity-25 flex items-center gap-2">
-              <img
+              <Image
                 src="/images/New_Logo.png"
                 alt="HealTalk logo"
+                width={160}
+                height={40}
                 className="h-8 w-auto"
               />
             </Link>

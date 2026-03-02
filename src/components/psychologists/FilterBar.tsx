@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, SlidersHorizontal, Check, X } from "lucide-react";
+import { ChevronDown, SlidersHorizontal, X } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter, SheetClose } from "@/components/ui/sheet";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -54,17 +54,6 @@ export default function FilterBar({ activeFilters, onApplyFilters }: FilterBarPr
     setOpen(false);
   };
 
-  const handleClear = () => {
-     setLocalFilters({
-        location: [],
-        insurance: [],
-        language: [],
-        conditions: [],
-        priceRange: [],
-        ethnicity: []
-     });
-  }
-
   const FilterContent = () => (
     <div className="flex flex-col h-full bg-white text-[#2F3A4A] select-none">
        {/* Header */}
@@ -86,7 +75,7 @@ export default function FilterBar({ activeFilters, onApplyFilters }: FilterBarPr
                     Location
                  </AccordionTrigger>
                  <AccordionContent>
-                    <div className="grid grid-cols-2 gap-x-6 gap-y-3.5 pb-5 pt-1">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3.5 pb-5 pt-1">
                         {["Online / Remote", "United States", "United Kingdom", "Canada", "Australia", "Somalia", "Kenya", "Turkey", "Saudi Arabia", "China", "India", "Brazil", "Germany", "France", "Japan"].map((loc) => (
                              <div key={loc} className="flex items-center space-x-3">
                                 <Checkbox 
@@ -108,7 +97,7 @@ export default function FilterBar({ activeFilters, onApplyFilters }: FilterBarPr
                     Insurance
                  </AccordionTrigger>
                  <AccordionContent>
-                    <div className="grid grid-cols-2 gap-x-6 gap-y-3.5 pb-5 pt-1">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3.5 pb-5 pt-1">
                         {["Aetna", "Blue Cross", "Cigna", "UnitedHealthcare", "Medicare"].map((ins) => (
                              <div key={ins} className="flex items-center space-x-3">
                                 <Checkbox 
@@ -131,7 +120,7 @@ export default function FilterBar({ activeFilters, onApplyFilters }: FilterBarPr
                  </AccordionTrigger>
                  <AccordionContent>
                     <div className="pb-5 pt-1 flex flex-col gap-3">
-                        <div className="grid grid-cols-2 gap-x-6 gap-y-3.5">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3.5">
                             {languagesList.slice(0, 6).map((lang) => (
                                 <div key={lang} className="flex items-center space-x-3">
                                     <Checkbox 
@@ -158,7 +147,7 @@ export default function FilterBar({ activeFilters, onApplyFilters }: FilterBarPr
                  </AccordionTrigger>
                  <AccordionContent>
                     <div className="pb-5 pt-1 flex flex-col gap-3">
-                        <div className="grid grid-cols-2 gap-x-6 gap-y-3.5">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3.5">
                             {conditionsList.slice(0, 8).map((c) => (
                                 <div key={c} className="flex items-center space-x-3">
                                     <Checkbox 
@@ -211,7 +200,7 @@ export default function FilterBar({ activeFilters, onApplyFilters }: FilterBarPr
                  </AccordionTrigger>
                  <AccordionContent>
                     <div className="pb-5 pt-1 flex flex-col gap-3">
-                        <div className="grid grid-cols-2 gap-x-6 gap-y-3.5">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3.5">
                             {["White", "Black/African American", "Hispanic", "Asian", "Native"].map((eth) => (
                                 <div key={eth} className="flex items-center space-x-3">
                                     <Checkbox 
@@ -249,55 +238,55 @@ export default function FilterBar({ activeFilters, onApplyFilters }: FilterBarPr
   );
 
   return (
-    <div className="flex flex-wrap gap-2 items-center mb-6 h-full">
+    <div className="flex flex-wrap gap-2 items-center mb-6">
       {/* Shared Filters Sheet */}
       <Sheet open={open} onOpenChange={setOpen}>
         {/* Triggers */}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex w-full gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible">
             <SheetTrigger asChild>
-               <Button variant="outline" className="h-[42px] px-4 rounded-xl border-primary bg-primary/5 text-primary hover:bg-primary/10 hover:text-primary font-semibold text-sm flex items-center gap-2 transition-all">
+               <Button variant="outline" className="h-[42px] px-4 rounded-xl border-primary bg-primary/5 text-primary hover:bg-primary/10 hover:text-primary font-semibold text-sm flex items-center gap-2 transition-all shrink-0">
                 Location
                 <ChevronDown size={16} />
               </Button>
             </SheetTrigger>
 
             <SheetTrigger asChild>
-                <Button variant="outline" className="h-[42px] px-4 rounded-xl border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 font-medium text-sm flex items-center gap-2">
+                <Button variant="outline" className="h-[42px] px-4 rounded-xl border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 font-medium text-sm flex items-center gap-2 shrink-0">
                     Conditions {activeFilters.conditions.length > 0 && <span className="bg-slate-800 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold ml-1">{activeFilters.conditions.length}</span>}
                     <ChevronDown size={16} className="text-slate-400" />
                 </Button>
             </SheetTrigger>
             
             <SheetTrigger asChild>
-                 <Button variant="outline" className="h-[42px] px-4 rounded-xl border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 font-medium text-sm flex items-center gap-2">
+                 <Button variant="outline" className="h-[42px] px-4 rounded-xl border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 font-medium text-sm flex items-center gap-2 shrink-0">
                     Insurance
                     <ChevronDown size={16} className="text-slate-400" />
                 </Button>
             </SheetTrigger>
 
              <SheetTrigger asChild>
-                 <Button variant="outline" className="h-[42px] px-4 rounded-xl border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 font-medium text-sm flex items-center gap-2">
+                 <Button variant="outline" className="h-[42px] px-4 rounded-xl border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 font-medium text-sm flex items-center gap-2 shrink-0">
                     Language
                     <ChevronDown size={16} className="text-slate-400" />
                 </Button>
             </SheetTrigger>
 
              <SheetTrigger asChild>
-                 <Button variant="outline" className="h-[42px] px-4 rounded-xl border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 font-medium text-sm flex items-center gap-2">
+                 <Button variant="outline" className="h-[42px] px-4 rounded-xl border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 font-medium text-sm flex items-center gap-2 shrink-0">
                     Price
                     <ChevronDown size={16} className="text-slate-400" />
                 </Button>
             </SheetTrigger>
 
              <SheetTrigger asChild>
-                 <Button variant="outline" className="h-[42px] px-4 rounded-xl border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 font-medium text-sm flex items-center gap-2">
+                 <Button variant="outline" className="h-[42px] px-4 rounded-xl border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 font-medium text-sm flex items-center gap-2 shrink-0">
                     Ethnicity
                     <ChevronDown size={16} className="text-slate-400" />
                 </Button>
             </SheetTrigger>
 
              <SheetTrigger asChild>
-                 <Button variant="ghost" className="h-[42px] px-4 text-slate-500 hover:bg-slate-50 font-medium text-sm flex items-center gap-2">
+                 <Button variant="ghost" className="h-[42px] px-4 text-slate-500 hover:bg-slate-50 font-medium text-sm flex items-center gap-2 shrink-0">
                     <SlidersHorizontal size={16} /> All Filters
                 </Button>
             </SheetTrigger>
@@ -307,7 +296,7 @@ export default function FilterBar({ activeFilters, onApplyFilters }: FilterBarPr
         <SheetContent 
             side="right" 
             showClose={false}
-            className="w-[400px] sm:max-w-[400px] h-auto max-h-[80vh] mr-4 mb-4 ml-4 mt-28 rounded-2xl border border-[#E6E6E6] shadow-[0_12px_30px_rgba(0,0,0,0.12)] p-0 gap-0 overflow-hidden bg-white z-[60]"
+            className="w-[calc(100vw-1.5rem)] max-w-[400px] h-auto max-h-[80vh] mr-3 mb-3 ml-3 mt-20 sm:mr-4 sm:mb-4 sm:ml-4 sm:mt-28 rounded-2xl border border-[#E6E6E6] shadow-[0_12px_30px_rgba(0,0,0,0.12)] p-0 gap-0 overflow-hidden bg-white z-[60]"
         >
             <FilterContent />
         </SheetContent>

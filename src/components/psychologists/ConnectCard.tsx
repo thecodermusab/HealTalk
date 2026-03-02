@@ -4,11 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Psychologist } from "@/lib/types";
-import { Info, Mail, Phone, Video, Calendar, Clock, CheckCircle } from "lucide-react";
-import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Mail, Video, Calendar, CheckCircle } from "lucide-react";
+import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import BookingCalendar from "./BookingCalendar";
+import { startTherapistConversation } from "@/lib/start-therapist-conversation";
 
 interface ConnectCardProps {
   therapist: Psychologist;
@@ -18,6 +17,8 @@ export default function ConnectCard({ therapist }: ConnectCardProps) {
   const router = useRouter();
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [time, setTime] = useState<string | undefined>(undefined);
+  const [isStartingChat, setIsStartingChat] = useState(false);
+  const [chatError, setChatError] = useState<string | null>(null);
 
   const buildStartTime = (selectedDate: Date, selectedTime: string) => {
     const [timePart, meridiem] = selectedTime.split(" ");
@@ -35,24 +36,47 @@ export default function ConnectCard({ therapist }: ConnectCardProps) {
       setTime(t);
   };
 
+  const handleMessageNow = async () => {
+    if (isStartingChat) return;
+    setIsStartingChat(true);
+    setChatError(null);
+
+    const result = await startTherapistConversation({
+      psychologistId: String(therapist.id),
+    });
+
+    if (!result.ok) {
+      if (result.shouldLogin) {
+        router.push(`/login?redirect=${encodeURIComponent(`/psychologists/${String(therapist.id)}`)}`);
+        return;
+      }
+      setChatError(result.error);
+      setIsStartingChat(false);
+      return;
+    }
+
+    router.push(
+      `/patient/dashboard/messages?appointmentId=${encodeURIComponent(result.conversationId)}`
+    );
+  };
+
   return (
-    <div className="space-y-4 sticky top-24">
+    <div className="space-y-4">
         {/* Main Card */}
-        <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm">
-        <h3 className="text-xl font-bold text-slate-900 mb-5">Let's Connect</h3>
+        <div className="bg-white border border-[#E8E0D0] rounded-2xl p-6 shadow-[0_10px_30px_rgba(18,30,13,0.08)]">
+        <h3 className="text-xl font-bold text-slate-900 mb-5">Let&apos;s Connect</h3>
         
         <div className="space-y-3 mb-6">
             <Dialog>
                 <DialogTrigger asChild>
                     <Button className="w-full h-12 text-lg font-semibold bg-[#FC7D45] hover:bg-[#e06935] text-white shadow-md shadow-orange-100 transition-all">
-                        <Phone size={20} className="mr-2 fill-current" />
+                        <Calendar size={20} className="mr-2" />
                         Book Appointment
                     </Button>
                 </DialogTrigger>
-                {/* 900px width as requested, centered by default Dialog component */}
-                <DialogContent className="max-w-[900px] h-[477px] p-0 gap-0 overflow-hidden flex flex-col md:flex-row">
+                <DialogContent className="w-[min(900px,calc(100vw-1rem))] max-w-[900px] max-h-[85dvh] p-0 gap-0 overflow-hidden flex flex-col md:flex-row bg-[#FFFDF8] border-[#E8E0D0]">
                     {/* Left Side: Calendar */}
-                    <div className="flex-1 p-6 border-r border-slate-100 bg-white overflow-y-auto">
+                    <div className="flex-1 p-4 sm:p-6 md:border-r border-slate-100 bg-white overflow-y-auto">
                         <BookingCalendar 
                             onSelectSlot={handleSlotSelect} 
                             selectedDate={date}
@@ -61,14 +85,14 @@ export default function ConnectCard({ therapist }: ConnectCardProps) {
                     </div>
 
                     {/* Right Side: Summary & Confirm */}
-                    <div className="w-full md:w-[300px] bg-slate-50/50 p-6 flex flex-col h-full">
+                    <div className="w-full md:w-[300px] bg-gradient-to-b from-[#FFF4EA] to-[#FFFDF8] p-4 sm:p-6 flex flex-col h-full overflow-y-auto">
                         <div className="mb-6">
                             <DialogTitle className="text-xl font-bold text-slate-900 mb-1">Book Session</DialogTitle>
                             <DialogDescription className="text-sm text-slate-500">with {therapist.name}</DialogDescription>
                         </div>
                         
                         <div className="space-y-4 mb-auto">
-                            <div className="bg-white p-3 rounded-xl border border-slate-200/60 shadow-sm">
+                            <div className="bg-white p-3 rounded-xl border border-[#E8E0D0] shadow-sm">
                                 <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Date & Time</span>
                                 <div className="text-slate-900 font-medium flex items-center gap-2">
                                     <Calendar size={16} className="text-[#FC7D45]" />
@@ -82,7 +106,7 @@ export default function ConnectCard({ therapist }: ConnectCardProps) {
                                 </div>
                             </div>
                             
-                            <div className="bg-white p-3 rounded-xl border border-slate-200/60 shadow-sm hidden md:block">
+                            <div className="bg-white p-3 rounded-xl border border-[#E8E0D0] shadow-sm hidden md:block">
                                 <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Fee</span>
                                 <div className="text-slate-900 font-medium">
                                     {therapist.priceRange?.split(' ')[0] || '$50'} / session
@@ -98,7 +122,8 @@ export default function ConnectCard({ therapist }: ConnectCardProps) {
                                         const price = therapist.priceRange?.split(' ')[0] || '$50';
                                         const start = buildStartTime(date, time);
                                         const end = new Date(start.getTime() + 60 * 60 * 1000);
-                                        router.push(`/checkout?psychologistId=${encodeURIComponent(therapist.id)}&doctor=${encodeURIComponent(therapist.name || 'Therapist')}&start=${encodeURIComponent(start.toISOString())}&end=${encodeURIComponent(end.toISOString())}&time=${encodeURIComponent(time)}&price=${encodeURIComponent(price)}`);
+                                        const doctorImage = therapist.image || therapist.photo || "";
+                                        router.push(`/checkout?psychologistId=${encodeURIComponent(therapist.id)}&doctor=${encodeURIComponent(therapist.name || 'Therapist')}&doctorImage=${encodeURIComponent(doctorImage)}&start=${encodeURIComponent(start.toISOString())}&end=${encodeURIComponent(end.toISOString())}&time=${encodeURIComponent(time)}&price=${encodeURIComponent(price)}`);
                                     }
                                 }}
                                 className="w-full h-12 text-base font-bold bg-[#FC7D45] hover:bg-[#e06935] text-white shadow-lg shadow-orange-100 rounded-xl disabled:opacity-50 disabled:shadow-none"
@@ -114,10 +139,18 @@ export default function ConnectCard({ therapist }: ConnectCardProps) {
                 </DialogContent>
             </Dialog>
             
-            <Button variant="outline" className="w-full h-12 text-base font-medium border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300 transition-all">
+            <Button
+                variant="outline"
+                onClick={handleMessageNow}
+                disabled={isStartingChat}
+                className="w-full h-12 text-base font-medium border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300 transition-all"
+            >
                 <Mail size={18} className="mr-2" />
-                Send Email
+                {isStartingChat ? "Opening Chat..." : "Message Now"}
             </Button>
+            {chatError && (
+              <p className="text-xs text-red-600 text-center -mt-1">{chatError}</p>
+            )}
         </div>
 
         <div className="space-y-3 pt-2 text-sm">
@@ -133,11 +166,6 @@ export default function ConnectCard({ therapist }: ConnectCardProps) {
         </div>
         </div>
 
-        {/* Free Consultation Pill */}
-        <div className="bg-slate-100/80 rounded-xl p-4 flex items-center justify-center gap-2 text-slate-700 font-medium text-sm border border-slate-200/50">
-            <span>Free 30 minutes Consultation</span>
-            <Info size={16} className="text-slate-400" />
-        </div>
     </div>
   );
 }

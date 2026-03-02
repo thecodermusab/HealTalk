@@ -137,7 +137,7 @@ export default function PrivacyPage() {
             <ul className="list-disc pl-6 mb-4 space-y-2 text-text-secondary">
               <li><strong>Access:</strong> Request a copy of your data</li>
               <li><strong>Rectification:</strong> Correct inaccurate data</li>
-              <li><strong>Erasure:</strong> Request deletion ("right to be forgotten")</li>
+              <li><strong>Erasure:</strong> Request deletion (&ldquo;right to be forgotten&rdquo;)</li>
               <li><strong>Portability:</strong> Receive data in machine-readable format</li>
               <li><strong>Objection:</strong> Object to processing</li>
             </ul>

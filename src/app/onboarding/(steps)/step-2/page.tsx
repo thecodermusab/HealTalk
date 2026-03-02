@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Check } from "lucide-react";
 import { OnboardingHeader } from "@/components/onboarding/OnboardingHeader";
 import { SelectionCard } from "@/components/onboarding/SelectionCard";
 import { NextButton } from "@/components/onboarding/NextButton";
@@ -9,49 +10,89 @@ import { NextButton } from "@/components/onboarding/NextButton";
 const GOAL_OPTIONS = [
   "Sleep better",
   "Manage anxiety",
-  "Feel less overwhelmed",
   "Build confidence",
-  "Improve relationships",
-  "Process grief",
-  "Work through trauma",
-  "I am not sure yet"
+  "I'm not sure yet",
 ];
+
+const STEPS = ["Reasons", "Focus", "Style", "Schedule"];
+
+function StepFlow({ current }: { current: 1 | 2 | 3 | 4 }) {
+  return (
+    <div className="mb-8 flex w-full items-center justify-center px-1">
+      {STEPS.map((label, i) => {
+        const num = i + 1;
+        const isDone = num < current;
+        const isActive = num === current;
+
+        return (
+          <div key={label} className="flex items-center">
+            <div className="flex w-[54px] flex-col items-center gap-1 sm:w-[60px]">
+              <div
+                className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
+                  isDone
+                    ? "bg-[#408954] text-white"
+                    : isActive
+                    ? "bg-[#b0e09e] text-black"
+                    : "bg-gray-200 text-gray-400"
+                }`}
+              >
+                {isDone ? (
+                  <Check size={14} strokeWidth={3} />
+                ) : (
+                  <span className="text-xs font-bold">{num}</span>
+                )}
+              </div>
+              <span
+                className={`text-[10px] font-semibold ${
+                  isActive ? "text-black" : isDone ? "text-[#408954]" : "text-gray-400"
+                }`}
+              >
+                {label}
+              </span>
+            </div>
+
+            {i < STEPS.length - 1 && (
+              <div
+                className={`w-8 h-[2px] mb-5 transition-colors ${
+                  num < current ? "bg-[#408954]" : "bg-gray-200"
+                }`}
+              />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 export default function OnboardingStep2() {
   const router = useRouter();
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
-  const maxSelections = 4;
-  const limitReached = selectedOptions.length >= maxSelections;
 
   const handleToggle = (option: string) => {
     setSelectedOptions((prev) =>
       prev.includes(option)
         ? prev.filter((item) => item !== option)
-        : prev.length >= maxSelections
-          ? prev
-          : [...prev, option]
+        : [...prev, option]
     );
   };
-  
+
   const handleNext = () => {
-      router.push('/onboarding/step-3'); 
+    router.push("/onboarding/step-3");
   };
 
   return (
-    <div className="flex flex-col min-h-[80vh]">
+    <div className="flex min-h-screen flex-col bg-[#F6F2EA]">
       <OnboardingHeader progress={40} />
 
-      {/* Container Padding: Matches Step 1 */}
-      <div className="flex-1 flex flex-col items-center pt-[25px] pb-8 px-8 w-full"> 
-        <h1 className="text-[20px] font-medium font-figtree text-black text-center mb-2 leading-tight">
+      <div className="flex-1 flex w-full flex-col items-center px-4 pt-16 pb-28 sm:px-8 sm:pt-20">
+        <h1 className="mb-6 px-2 text-center font-figtree text-[20px] font-medium leading-tight text-black">
           What do you want to focus on?
         </h1>
-        <p className="text-[#4b5563] text-[15px] font-medium mb-8 text-center">
-          Choose up to 4
-        </p>
 
-        {/* Gap 16px */}
-        <div className="flex flex-col gap-4 items-center w-full">
+        <StepFlow current={2} />
+
+        <div className="flex w-full max-w-[560px] flex-col items-center gap-4">
           {GOAL_OPTIONS.map((option) => (
             <SelectionCard
               key={option}
@@ -61,11 +102,6 @@ export default function OnboardingStep2() {
             />
           ))}
         </div>
-        {limitReached && (
-          <p className="mt-3 text-xs text-[#4b5563]">
-            You can choose up to 4.
-          </p>
-        )}
       </div>
 
       <NextButton show={selectedOptions.length > 0} onClick={handleNext} />

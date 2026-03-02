@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import SessionProvider from "@/providers/SessionProvider";
+import ThemeProvider from "@/providers/ThemeProvider";
 
 
 const lastik = localFont({
@@ -61,11 +62,13 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${lastik.variable} ${switzer.variable} ${figtree.variable} font-sans antialiased`} suppressHydrationWarning>
-        <SessionProvider>
-          <div className="min-h-screen w-full bg-background">
-            {children}
-          </div>
-        </SessionProvider>
+        <ThemeProvider>
+          <SessionProvider>
+            <div className="min-h-screen w-full bg-background">
+              {children}
+            </div>
+          </SessionProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

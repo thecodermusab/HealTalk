@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { signIn } from "next-auth/react";
 import { Eye, EyeOff } from "lucide-react";
 import { fetchCsrfToken } from "@/lib/client-security";
@@ -15,6 +16,7 @@ export default function SignUpPage() {
   const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [registeredEmail, setRegisteredEmail] = useState<string>("");
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -50,6 +52,8 @@ export default function SignUpPage() {
     const csrfToken = await fetchCsrfToken();
 
     // Simplified registration logic matching the UI fields
+    const emailForVerification = formData.email.trim().toLowerCase();
+
     const response = await fetch("/api/auth/register", {
       method: "POST",
       headers: {
@@ -64,8 +68,9 @@ export default function SignUpPage() {
       }),
     });
 
+    const data = await response.json().catch(() => null);
+
     if (!response.ok) {
-      const data = await response.json().catch(() => null);
       setErrorMessage(data?.error ?? "Failed to create account.");
       setIsSubmitting(false);
       return;
@@ -77,8 +82,45 @@ export default function SignUpPage() {
       password: "",
       confirmPassword: "",
     });
+    setRegisteredEmail(emailForVerification);
+    if (data?.verificationEmailSent === false) {
+      setSuccessMessage(
+        "Account created, but we could not send the verification email yet. Click resend below after you confirm email settings."
+      );
+    } else {
+      setSuccessMessage(
+        "Account created! Please check your email to verify your account before signing in."
+      );
+    }
+    setIsSubmitting(false);
+  };
+
+  const handleResendVerification = async () => {
+    if (!registeredEmail || isSubmitting) return;
+
+    setIsSubmitting(true);
+    setErrorMessage(null);
+    const csrfToken = await fetchCsrfToken();
+
+    const response = await fetch("/api/auth/resend-verification", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(csrfToken ? { "x-csrf-token": csrfToken } : {}),
+      },
+      body: JSON.stringify({ email: registeredEmail }),
+    });
+
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      setErrorMessage(data?.error ?? "Failed to resend verification email.");
+      setIsSubmitting(false);
+      return;
+    }
+
     setSuccessMessage(
-      "Account created! Please check your email to verify your account before signing in."
+      data?.message || "Verification email sent. Please check your inbox."
     );
     setIsSubmitting(false);
   };
@@ -90,7 +132,7 @@ export default function SignUpPage() {
     formData.confirmPassword.trim().length > 0;
 
   return (
-    <div className="flex flex-1 w-full items-center justify-center px-4 py-16 font-sans mb-16">
+    <div className="flex min-h-screen w-full items-center justify-center bg-[#F6F2EA] px-4 py-8 sm:py-12 font-sans">
       {/* 
          Main Card Container 
          Size: 800px x 696px
@@ -98,31 +140,33 @@ export default function SignUpPage() {
          Radius: 40px
          Shadow: Soft
       */}
-      <div className="w-[800px] h-[696px] bg-[#ebebff] rounded-[40px] shadow-sm flex flex-col items-center">
+      <div className="w-full max-w-[800px] bg-[#ebebff] rounded-[28px] sm:rounded-[40px] shadow-sm flex flex-col items-center px-5 py-8 sm:px-8 sm:py-10">
         
         {/* Top Area: Logo + Title */}
-        <div className="mt-[40px] flex flex-col items-center">
+        <div className="mt-2 sm:mt-4 flex flex-col items-center">
           {/* Logo Mark + Text */}
           <div className="flex items-center gap-2 mb-4">
             <Link href="/" className="inline-flex items-center">
-              <img
+              <Image
                 src="/images/New_Logo.png"
                 alt="HealTalk logo"
+                width={112}
+                height={28}
                 className="h-7 w-auto"
               />
             </Link>
           </div>
 
-          <h1 className="text-[32px] font-bold text-[#111111] leading-tight mb-1">
+          <h1 className="text-[28px] sm:text-[32px] font-bold text-[#111111] leading-tight mb-1 text-center">
             Create your HealTalk account
           </h1>
-          <p className="text-[16px] text-gray-500 font-medium">
+          <p className="text-[16px] text-gray-500 font-medium text-center">
             We’ll help you find the right therapist
           </p>
         </div>
 
         {/* Form Container */}
-        <div className="mt-[32px] w-[418px]">
+        <div className="mt-8 sm:mt-10 w-full max-w-[418px]">
           {errorMessage && (
             <div className="mb-4 text-center text-sm text-red-500 bg-red-50 p-3 rounded-xl border border-red-100">
               {errorMessage}
@@ -133,6 +177,17 @@ export default function SignUpPage() {
             <div className="mb-4 text-center text-sm text-green-600 bg-green-50 p-3 rounded-xl border border-green-100">
               {successMessage}
             </div>
+          )}
+
+          {registeredEmail && (
+            <button
+              type="button"
+              onClick={handleResendVerification}
+              disabled={isSubmitting}
+              className="mb-4 w-full h-11 rounded-xl border border-gray-300 bg-white text-[#111] text-sm font-medium hover:bg-gray-50 disabled:bg-[#E5E7EB] disabled:text-[#9CA3AF] disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? "Sending..." : "Resend verification email"}
+            </button>
           )}
 
           <button

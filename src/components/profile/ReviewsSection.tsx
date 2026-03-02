@@ -5,7 +5,6 @@ import { Star, ThumbsUp, ThumbsDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface ReviewsSectionProps {
-  psychologistId: string | number;
   rating: number;
   reviewCount: number;
   reviews: Array<{
@@ -19,7 +18,7 @@ interface ReviewsSectionProps {
   }>;
 }
 
-export default function ReviewsSection({ psychologistId, rating, reviewCount, reviews }: ReviewsSectionProps) {
+export default function ReviewsSection({ rating, reviewCount, reviews }: ReviewsSectionProps) {
   const [sortBy, setSortBy] = useState("Most Recent");
 
   // Calculate rating breakdown

@@ -64,14 +64,14 @@ export default function FeaturesAccordion({ features = defaultFeatures }: Featur
   const [activeImage, setActiveImage] = useState(features[0].image);
 
   return (
-    <section className="pt-8 pb-8 md:pt-12 md:pb-12 bg-background">
+    <section className="pt-8 pb-8 md:pt-12 md:pb-12 bg-[#F6F2EA]">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="mb-16 text-center max-w-3xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-[#121E0D] mb-4">
             Everything you need to get started
           </h2>
-          <p className="text-lg text-text-secondary">
+          <p className="text-lg text-[#425234]">
             From finding the right therapist to booking your first session — it&apos;s all simple, private, and built around you.
           </p>
         </div>
@@ -87,18 +87,18 @@ export default function FeaturesAccordion({ features = defaultFeatures }: Featur
                       setActiveImage(tab.image);
                       setActiveTabId(tab.id);
                     }}
-                    className="cursor-pointer py-5 !no-underline transition hover:no-underline"
+                    className="cursor-pointer py-5 text-[#121E0D] !no-underline transition hover:no-underline [&>svg]:text-[#121E0D]"
                   >
                     <h3
                       className={`text-lg md:text-xl font-semibold text-left transition-colors ${
-                        tab.id === activeTabId ? "text-primary" : "text-foreground"
+                        tab.id === activeTabId ? "text-primary" : "text-[#121E0D]"
                       }`}
                     >
                       {tab.title}
                     </h3>
                   </AccordionTrigger>
                   <AccordionContent>
-                    <p className="mt-2 text-text-secondary leading-relaxed">
+                    <p className="mt-2 text-[#425234] leading-relaxed">
                       {tab.description}
                     </p>
                     {/* Mobile Image */}

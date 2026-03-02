@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { parseJson } from "@/lib/validation";
+import { validateCsrf } from "@/lib/csrf";
 
 const updateProfileSchema = z.object({
   name: z.string().min(1).optional(),
@@ -67,6 +68,9 @@ export async function PATCH(request: Request) {
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const csrfError = validateCsrf(request);
+  if (csrfError) return csrfError;
 
   const { data: body, error } = await parseJson(request, updateProfileSchema);
   if (error) return error;

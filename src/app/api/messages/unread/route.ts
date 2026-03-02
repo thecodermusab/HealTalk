@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import { Prisma } from "@prisma/client";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -26,7 +27,7 @@ export async function GET() {
     return NextResponse.json({ count: 0 });
   }
 
-  const where: any = {
+  const where: Prisma.MessageWhereInput = {
     read: false,
     senderId: { not: userId },
   };

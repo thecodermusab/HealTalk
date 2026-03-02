@@ -1,5 +1,3 @@
-import Image from "next/image";
-
 export default function AboutHero() {
   return (
     <div className="bg-[#fff7f2] w-full py-16 md:py-24 px-4 sm:px-6 lg:px-8 flex flex-col items-center overflow-hidden">

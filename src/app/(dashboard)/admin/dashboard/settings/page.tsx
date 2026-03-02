@@ -65,7 +65,7 @@ export default function AdminSettingsPage() {
           role: data.role || "",
           image: data.image || "",
         });
-      } catch (error) {
+      } catch {
         setMessage({ type: "error", text: "Failed to load admin profile details." });
       } finally {
         setIsLoading(false);
@@ -115,7 +115,7 @@ export default function AdminSettingsPage() {
         image: data.image || prev.image,
       }));
       setMessage({ type: "success", text: "Profile updated successfully." });
-    } catch (error) {
+    } catch {
       setMessage({ type: "error", text: "Failed to update profile." });
     } finally {
       setIsSaving(false);

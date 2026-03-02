@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { parseSearchParams } from "@/lib/validation";
 import { requireRateLimit } from "@/lib/rate-limit";
+import { Prisma } from "@prisma/client";
+import { UserRole, UserStatus } from "@prisma/client";
 
 const ALLOWED_ROLES = ["PATIENT", "PSYCHOLOGIST", "ADMIN"];
 const ALLOWED_STATUSES = ["ACTIVE", "SUSPENDED", "BANNED"];
@@ -43,14 +45,14 @@ export async function GET(request: Request) {
   const page = data.page;
   const limit = data.limit;
 
-  const where: any = {};
+  const where: Prisma.UserWhereInput = {};
 
   if (role && role !== "ALL" && ALLOWED_ROLES.includes(role)) {
-    where.role = role;
+    where.role = role as UserRole;
   }
 
   if (status && status !== "ALL" && ALLOWED_STATUSES.includes(status)) {
-    where.status = status;
+    where.status = status as UserStatus;
   }
 
   if (search) {

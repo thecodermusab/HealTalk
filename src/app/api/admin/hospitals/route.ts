@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { parseSearchParams } from "@/lib/validation";
 import { requireRateLimit } from "@/lib/rate-limit";
+import { Prisma } from "@prisma/client";
 
 const querySchema = z.object({
   search: z.string().optional(),
@@ -39,7 +40,7 @@ export async function GET(request: Request) {
   const page = data.page;
   const limit = data.limit;
 
-  const where: any = {};
+  const where: Prisma.HospitalWhereInput = {};
 
   if (status && status !== "ALL") {
     where.status = status;
@@ -83,4 +84,49 @@ export async function GET(request: Request) {
       totalPages: Math.ceil(total / limit),
     },
   });
+}
+
+export async function POST(request: Request) {
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (session.user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const rateLimit = await requireRateLimit({
+    request,
+    key: "admin:hospitals:create",
+    limit: 30,
+    window: "1 m",
+  });
+  if (rateLimit) return rateLimit;
+
+  let body: Record<string, unknown>;
+  try {
+    body = (await request.json()) as Record<string, unknown>;
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
+  if (typeof body.name !== "string" || !body.name.trim()) {
+    return NextResponse.json({ error: "Hospital name is required" }, { status: 400 });
+  }
+  if (typeof body.location !== "string" || !body.location.trim()) {
+    return NextResponse.json({ error: "Location is required" }, { status: 400 });
+  }
+
+  const hospital = await prisma.hospital.create({
+    data: {
+      name: body.name.trim(),
+      location: body.location.trim(),
+      address: typeof body.address === "string" ? body.address.trim() : "",
+      status: body.status === "inactive" ? "inactive" : "active",
+    },
+  });
+
+  return NextResponse.json({ hospital }, { status: 201 });
 }

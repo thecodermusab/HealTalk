@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { UploadButton } from "@/lib/uploadthing";
 
 type AvatarUploaderProps = {
@@ -22,7 +23,13 @@ export function AvatarUploader({
     <div className="flex items-center gap-6 py-4 border-b border-gray-100 mt-8">
       <div className="w-20 h-20 rounded-full bg-gray-100 border-2 border-white shadow-md flex items-center justify-center overflow-hidden">
         {imageUrl ? (
-          <img src={imageUrl} alt="Profile" className="w-full h-full object-cover" />
+          <Image
+            src={imageUrl}
+            alt="Profile"
+            width={80}
+            height={80}
+            className="w-full h-full object-cover"
+          />
         ) : (
           <span className="text-xl font-semibold text-gray-600">
             {fallback || "U"}

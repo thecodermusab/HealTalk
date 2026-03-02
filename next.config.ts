@@ -35,6 +35,10 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'ui-avatars.com',
       },
+      {
+        protocol: 'https',
+        hostname: '**.supabase.co',
+      },
     ],
   },
 
@@ -70,7 +74,7 @@ const nextConfig: NextConfig = {
                     "default-src 'self'",
                     "script-src 'self' 'unsafe-inline'",
                     "style-src 'self' 'unsafe-inline'",
-                    "img-src 'self' data: https://images.unsplash.com https://randomuser.me https://lh3.googleusercontent.com https://*.ufs.sh https://*.utfs.io https://ui-avatars.com",
+                    "img-src 'self' data: https://images.unsplash.com https://randomuser.me https://lh3.googleusercontent.com https://*.ufs.sh https://*.utfs.io https://ui-avatars.com https://*.supabase.co",
                     "font-src 'self' data:",
                     "connect-src 'self' https://*.ufs.sh https://*.utfs.io https://*.agora.io wss://*.agora.io https://*.sentry.io",
                     "frame-ancestors 'none'",

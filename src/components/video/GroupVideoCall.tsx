@@ -5,6 +5,7 @@ import AgoraRTC, {
   IAgoraRTCClient,
   IAgoraRTCRemoteUser,
   ICameraVideoTrack,
+  ILocalVideoTrack,
   IMicrophoneAudioTrack,
 } from "agora-rtc-sdk-ng";
 import { Video, VideoOff, Mic, MicOff, Monitor, MonitorOff, Phone, Users } from "lucide-react";
@@ -17,24 +18,16 @@ interface GroupVideoCallProps {
   onLeave: () => void;
 }
 
-interface Participant {
-  uid: string;
-  hasVideo: boolean;
-  hasAudio: boolean;
-  name?: string;
-}
-
 export function GroupVideoCall({ sessionId, isHost, onLeave }: GroupVideoCallProps) {
-  const [client, setClient] = useState<IAgoraRTCClient | null>(null);
-  const [localVideoTrack, setLocalVideoTrack] = useState<ICameraVideoTrack | null>(null);
-  const [localAudioTrack, setLocalAudioTrack] = useState<IMicrophoneAudioTrack | null>(null);
+  const clientRef = useRef<IAgoraRTCClient | null>(null);
+  const localVideoTrackRef = useRef<ICameraVideoTrack | null>(null);
+  const localAudioTrackRef = useRef<IMicrophoneAudioTrack | null>(null);
+  const screenTrackRef = useRef<ILocalVideoTrack | null>(null);
   const [remoteUsers, setRemoteUsers] = useState<Map<string, IAgoraRTCRemoteUser>>(new Map());
-  const [participants, setParticipants] = useState<Participant[]>([]);
 
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
-  const [isJoined, setIsJoined] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const localVideoRef = useRef<HTMLDivElement>(null);
@@ -58,7 +51,7 @@ export function GroupVideoCall({ sessionId, isHost, onLeave }: GroupVideoCallPro
 
         // Create Agora client
         const agoraClient = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
-        setClient(agoraClient);
+        clientRef.current = agoraClient;
 
         // Set up event listeners
         agoraClient.on("user-published", async (user, mediaType) => {
@@ -109,8 +102,8 @@ export function GroupVideoCall({ sessionId, isHost, onLeave }: GroupVideoCallPro
           AgoraRTC.createCameraVideoTrack(),
         ]);
 
-        setLocalAudioTrack(audioTrack);
-        setLocalVideoTrack(videoTrack);
+        localAudioTrackRef.current = audioTrack;
+        localVideoTrackRef.current = videoTrack;
 
         // Play local video
         if (localVideoRef.current) {
@@ -119,10 +112,9 @@ export function GroupVideoCall({ sessionId, isHost, onLeave }: GroupVideoCallPro
 
         // Publish tracks
         await agoraClient.publish([audioTrack, videoTrack]);
-        setIsJoined(true);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Failed to initialize Agora client:", err);
-        setError(err.message || "Failed to join video call");
+        setError(err instanceof Error ? err.message : "Failed to join video call");
       }
     };
 
@@ -130,47 +122,58 @@ export function GroupVideoCall({ sessionId, isHost, onLeave }: GroupVideoCallPro
 
     return () => {
       // Cleanup
-      if (localVideoTrack) {
-        localVideoTrack.stop();
-        localVideoTrack.close();
+      if (screenTrackRef.current) {
+        screenTrackRef.current.stop();
+        screenTrackRef.current.close();
+        screenTrackRef.current = null;
       }
-      if (localAudioTrack) {
-        localAudioTrack.stop();
-        localAudioTrack.close();
+      if (localVideoTrackRef.current) {
+        localVideoTrackRef.current.stop();
+        localVideoTrackRef.current.close();
+        localVideoTrackRef.current = null;
       }
-      if (client) {
-        client.leave();
+      if (localAudioTrackRef.current) {
+        localAudioTrackRef.current.stop();
+        localAudioTrackRef.current.close();
+        localAudioTrackRef.current = null;
       }
+      void clientRef.current?.leave();
+      clientRef.current = null;
     };
   }, [sessionId]);
 
   const toggleVideo = async () => {
-    if (localVideoTrack) {
-      await localVideoTrack.setEnabled(!isVideoEnabled);
+    if (localVideoTrackRef.current) {
+      await localVideoTrackRef.current.setEnabled(!isVideoEnabled);
       setIsVideoEnabled(!isVideoEnabled);
     }
   };
 
   const toggleAudio = async () => {
-    if (localAudioTrack) {
-      await localAudioTrack.setEnabled(!isAudioEnabled);
+    if (localAudioTrackRef.current) {
+      await localAudioTrackRef.current.setEnabled(!isAudioEnabled);
       setIsAudioEnabled(!isAudioEnabled);
     }
   };
 
   const toggleScreenShare = async () => {
+    const client = clientRef.current;
     if (!client) return;
 
     try {
       if (!isScreenSharing) {
         // Disable audio to ensure we get a single video track, not an array
-        const screenTrack = await AgoraRTC.createScreenVideoTrack({}, "disable");
+        const screenTrack = (await AgoraRTC.createScreenVideoTrack(
+          {},
+          "disable"
+        )) as ILocalVideoTrack;
 
-        if (localVideoTrack) {
-          await client.unpublish([localVideoTrack]);
+        if (localVideoTrackRef.current) {
+          await client.unpublish([localVideoTrackRef.current]);
         }
 
         await client.publish([screenTrack]);
+        screenTrackRef.current = screenTrack;
 
         if (screenShareRef.current) {
           screenTrack.play(screenShareRef.current);
@@ -179,10 +182,16 @@ export function GroupVideoCall({ sessionId, isHost, onLeave }: GroupVideoCallPro
         setIsScreenSharing(true);
       } else {
         // Stop screen sharing and resume camera
-        if (localVideoTrack && client) {
-          await client.publish([localVideoTrack]);
+        if (screenTrackRef.current) {
+          await client.unpublish([screenTrackRef.current]);
+          screenTrackRef.current.stop();
+          screenTrackRef.current.close();
+          screenTrackRef.current = null;
+        }
+        if (localVideoTrackRef.current) {
+          await client.publish([localVideoTrackRef.current]);
           if (localVideoRef.current) {
-            localVideoTrack.play(localVideoRef.current);
+            localVideoTrackRef.current.play(localVideoRef.current);
           }
         }
         setIsScreenSharing(false);
@@ -193,17 +202,23 @@ export function GroupVideoCall({ sessionId, isHost, onLeave }: GroupVideoCallPro
   };
 
   const handleLeave = async () => {
-    if (localVideoTrack) {
-      localVideoTrack.stop();
-      localVideoTrack.close();
+    if (screenTrackRef.current) {
+      screenTrackRef.current.stop();
+      screenTrackRef.current.close();
+      screenTrackRef.current = null;
     }
-    if (localAudioTrack) {
-      localAudioTrack.stop();
-      localAudioTrack.close();
+    if (localVideoTrackRef.current) {
+      localVideoTrackRef.current.stop();
+      localVideoTrackRef.current.close();
+      localVideoTrackRef.current = null;
     }
-    if (client) {
-      await client.leave();
+    if (localAudioTrackRef.current) {
+      localAudioTrackRef.current.stop();
+      localAudioTrackRef.current.close();
+      localAudioTrackRef.current = null;
     }
+    await clientRef.current?.leave();
+    clientRef.current = null;
     onLeave();
   };
 

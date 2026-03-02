@@ -26,6 +26,20 @@ interface EarningDetail {
   amount: number;
 }
 
+interface CompletedAppointment {
+  id: string;
+  startTime: string;
+  duration: number;
+  price?: number | null;
+  patient?: {
+    user?: {
+      name?: string | null;
+    } | null;
+  } | null;
+}
+
+const CENTS_IN_DOLLAR = 100;
+
 export default function EarningsPage() {
   const [summary, setSummary] = useState<EarningsSummary | null>(null);
   const [earnings, setEarnings] = useState<EarningDetail[]>([]);
@@ -38,7 +52,7 @@ export default function EarningsPage() {
         const res = await fetch("/api/appointments?status=COMPLETED");
         if (!res.ok) throw new Error("Failed to fetch earnings");
 
-        const appointments = await res.json();
+        const appointments = (await res.json()) as CompletedAppointment[];
 
         if (appointments.length === 0) {
           setSummary({
@@ -53,9 +67,9 @@ export default function EarningsPage() {
 
         // Calculate summary
         const totalEarnings = appointments.reduce(
-          (sum: number, apt: any) => sum + (apt.price || 0),
+          (sum, appointment) => sum + (appointment.price || 0),
           0
-        ) / 100; // Convert cents to dollars
+        ) / CENTS_IN_DOLLAR; // Convert cents to dollars
 
         const completedSessions = appointments.length;
 
@@ -66,8 +80,9 @@ export default function EarningsPage() {
         const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
         const thisMonthEarnings =
           appointments
-            .filter((apt: any) => new Date(apt.startTime) >= firstOfMonth)
-            .reduce((sum: number, apt: any) => sum + (apt.price || 0), 0) / 100;
+            .filter((appointment) => new Date(appointment.startTime) >= firstOfMonth)
+            .reduce((sum, appointment) => sum + (appointment.price || 0), 0) /
+          CENTS_IN_DOLLAR;
 
         setSummary({
           totalEarnings,
@@ -79,15 +94,15 @@ export default function EarningsPage() {
         // Map earnings details
         const earningsList = appointments
           .sort(
-            (a: any, b: any) =>
+            (a, b) =>
               new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
           )
-          .map((apt: any) => ({
-            id: apt.id,
-            patientName: apt.patient?.user?.name || "Patient",
-            date: new Date(apt.startTime),
-            duration: apt.duration,
-            amount: (apt.price || 0) / 100,
+          .map((appointment) => ({
+            id: appointment.id,
+            patientName: appointment.patient?.user?.name || "Patient",
+            date: new Date(appointment.startTime),
+            duration: appointment.duration,
+            amount: (appointment.price || 0) / CENTS_IN_DOLLAR,
           }));
 
         setEarnings(earningsList);

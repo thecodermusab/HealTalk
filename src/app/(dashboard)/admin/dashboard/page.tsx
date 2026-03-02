@@ -27,10 +27,10 @@ const formatDate = (value: string) =>
   }).format(new Date(value));
 
 const statusStyles: Record<string, string> = {
-  SCHEDULED: "bg-amber-100 text-amber-700",
-  COMPLETED: "bg-green-100 text-green-700",
-  CANCELLED: "bg-red-100 text-red-700",
-  NO_SHOW: "bg-gray-100 text-gray-700",
+  SCHEDULED: "bg-yellow-500/10 border border-yellow-500/30 text-yellow-300",
+  COMPLETED: "bg-green-500/10 border border-green-500/30 text-green-300",
+  CANCELLED: "bg-red-500/10 border border-red-500/30 text-red-300",
+  NO_SHOW: "bg-gray-700/50 border border-gray-600 text-gray-300",
 };
 
 export default function AdminDashboardHome() {
@@ -97,7 +97,7 @@ export default function AdminDashboardHome() {
         } else {
           setActivityError("Failed to load activity.");
         }
-      } catch (err) {
+      } catch {
         setError("Failed to load metrics.");
       } finally {
         setIsLoading(false);
@@ -109,156 +109,137 @@ export default function AdminDashboardHome() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        {/* Page Header */}
-        <div className="mb-2 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="space-y-8">
+        <div className="flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-1">
-              Admin Dashboard
-            </h1>
-            <p className="text-gray-500">Platform overview and management</p>
-            {isLoading && (
-              <p className="text-sm text-gray-400 mt-2">Loading metrics...</p>
-            )}
-            {error && (
-              <p className="text-sm text-red-500 mt-2">{error}</p>
-            )}
+            <h1 className="text-2xl font-bold text-white">Dashboard</h1>
+            <p className="text-sm text-gray-500 mt-1">Platform overview and management</p>
+            {isLoading && <p className="text-xs text-gray-500 mt-2">Loading metrics...</p>}
+            {error && <p className="text-xs text-red-400 mt-2">{error}</p>}
           </div>
           <Link
             href="/admin/dashboard/reports"
-            className="inline-flex items-center justify-center rounded-full bg-[#5B6CFF] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#4a5ae0]"
+            className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors font-medium text-sm"
           >
+            <TrendingUp className="w-4 h-4" />
             View Reports
           </Link>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Link href="/admin/dashboard/psychologists">
-            <div className="bg-white border border-[#E6EAF2] rounded-[16px] p-6 hover:shadow-[0_8px_24px_rgba(17,24,39,0.06)] hover:border-[#5B6CFF] transition-all cursor-pointer group h-full">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-[#EEF0FF] rounded-xl flex items-center justify-center group-hover:bg-[#5B6CFF] transition-colors">
-                  <Users className="text-[#5B6CFF] group-hover:text-white transition-colors" size={24} />
-                </div>
-                {metrics.pendingApprovals > 0 && (
-                  <span className="px-2.5 py-1 bg-[#FFF5EB] text-[#FF9F43] text-xs font-bold rounded-full">
-                    {metrics.pendingApprovals} pending
-                  </span>
-                )}
-              </div>
-              <div className="text-3xl font-bold text-gray-900 mb-1">
-                {metrics.totalPsychologists}
-              </div>
-              <div className="text-sm text-gray-500 font-medium">Total Psychologists</div>
-              <div className="text-xs text-[#20C997] font-bold mt-2 flex items-center gap-1">
-                <CheckCircle size={12} /> {metrics.activePsychologists} active
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Link
+            href="/admin/dashboard/psychologists"
+            className="bg-gray-900 border border-gray-800 rounded-xl p-5 hover:border-gray-700 transition-colors group"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-sm text-gray-400">Psychologists</span>
+              <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center">
+                <Users className="w-4 h-4 text-red-400" />
               </div>
             </div>
+            <p className="text-3xl font-bold text-white">{metrics.totalPsychologists.toLocaleString()}</p>
+            <p className="text-xs text-green-400 mt-2 inline-flex items-center gap-1">
+              <CheckCircle className="w-3 h-3" />
+              {metrics.activePsychologists} active
+            </p>
           </Link>
 
-          <div className="bg-white border border-[#E6EAF2] rounded-[16px] p-6 h-full">
+          <Link
+            href="/admin/dashboard/patients"
+            className="bg-gray-900 border border-gray-800 rounded-xl p-5 hover:border-gray-700 transition-colors group"
+          >
             <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-[#E6F8F3] rounded-xl flex items-center justify-center">
-                <Users className="text-[#20C997]" size={24} />
+              <span className="text-sm text-gray-400">Patients</span>
+              <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                <Users className="w-4 h-4 text-blue-400" />
               </div>
             </div>
-            <div className="text-3xl font-bold text-gray-900 mb-1">
-              {metrics.totalPatients.toLocaleString()}
-            </div>
-            <div className="text-sm text-gray-500 font-medium">Total Patients</div>
-            <div className="text-xs text-[#20C997] font-bold mt-2 flex items-center gap-1">
-               <ArrowUpRight size={12} /> {metrics.activePatients} active this month
-            </div>
-          </div>
-
-          <Link href="/admin/dashboard/hospitals">
-            <div className="bg-white border border-[#E6EAF2] rounded-[16px] p-6 hover:shadow-[0_8px_24px_rgba(17,24,39,0.06)] hover:border-[#5B6CFF] transition-all cursor-pointer group h-full">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-[#F4F7FF] rounded-xl flex items-center justify-center group-hover:bg-[#5B6CFF] transition-colors">
-                  <Building className="text-[#5B6CFF] group-hover:text-white transition-colors" size={24} />
-                </div>
-              </div>
-              <div className="text-3xl font-bold text-gray-900 mb-1">
-                {metrics.totalHospitals}
-              </div>
-              <div className="text-sm text-gray-500 font-medium">Partner Hospitals</div>
-            </div>
+            <p className="text-3xl font-bold text-white">{metrics.totalPatients.toLocaleString()}</p>
+            <p className="text-xs text-green-400 mt-2 inline-flex items-center gap-1">
+              <ArrowUpRight className="w-3 h-3" />
+              {metrics.activePatients} active this month
+            </p>
           </Link>
 
-          <div className="bg-white border border-[#E6EAF2] rounded-[16px] p-6 h-full">
+          <Link
+            href="/admin/dashboard/hospitals"
+            className="bg-gray-900 border border-gray-800 rounded-xl p-5 hover:border-gray-700 transition-colors group"
+          >
             <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-[#FFF5EB] rounded-xl flex items-center justify-center">
-                <Calendar className="text-[#FF9F43]" size={24} />
+              <span className="text-sm text-gray-400">Hospitals</span>
+              <div className="w-8 h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center">
+                <Building className="w-4 h-4 text-yellow-400" />
               </div>
             </div>
-            <div className="text-3xl font-bold text-gray-900 mb-1">
-              {metrics.totalAppointments.toLocaleString()}
+            <p className="text-3xl font-bold text-white">{metrics.totalHospitals.toLocaleString()}</p>
+            <p className="text-xs text-gray-500 mt-2">Partner hospitals</p>
+          </Link>
+
+          <Link
+            href="/admin/dashboard/appointments"
+            className="bg-gray-900 border border-gray-800 rounded-xl p-5 hover:border-gray-700 transition-colors group"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-sm text-gray-400">Appointments</span>
+              <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center">
+                <Calendar className="w-4 h-4 text-green-400" />
+              </div>
             </div>
-            <div className="text-sm text-gray-500 font-medium">Total Appointments</div>
-            <div className="text-xs text-[#20C997] font-bold mt-2 flex items-center gap-1">
-               <ArrowUpRight size={12} /> {metrics.thisMonthAppointments} this month
+            <p className="text-3xl font-bold text-white">{metrics.totalAppointments.toLocaleString()}</p>
+            <p className="text-xs text-green-400 mt-2 inline-flex items-center gap-1">
+              <ArrowUpRight className="w-3 h-3" />
+              {metrics.thisMonthAppointments} this month
+            </p>
+          </Link>
+        </div>
+
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-red-400" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-400">Total Platform Revenue</p>
+                <p className="text-2xl font-bold text-white">
+                  ₺{(metrics.totalRevenue / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-6">
+              <div>
+                <p className="text-xs text-gray-500">This Month</p>
+                <p className="text-lg font-semibold text-white">
+                  ₺{(metrics.thisMonthRevenue / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500">Growth</p>
+                <p className="text-lg font-semibold text-green-400">{metrics.totalRevenue ? "+0%" : "—"}</p>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Revenue Card */}
-        <div className="bg-gradient-to-r from-[#5B6CFF] to-[#8090FF] rounded-[24px] p-8 text-white shadow-xl shadow-blue-500/20 relative overflow-hidden">
-          <div className="absolute right-0 top-0 w-64 h-64 bg-white/10 rounded-full translate-x-1/2 -translate-y-1/2 blur-2xl pointer-events-none" />
-          
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
-            <div className="flex items-center gap-4">
-                <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-                    <TrendingUp size={32} className="text-white" />
-                </div>
-                <div>
-                <div className="text-blue-100 font-medium mb-1">Total Platform Revenue</div>
-                <div className="text-4xl font-bold">₺{(metrics.totalRevenue / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-                </div>
-            </div>
-
-            <div className="flex items-center gap-10 bg-white/10 backdrop-blur-sm px-8 py-4 rounded-2xl border border-white/10">
-                <div>
-                <div className="text-blue-100 text-sm mb-1">This Month</div>
-                <div className="text-2xl font-bold">₺{(metrics.thisMonthRevenue / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-                </div>
-                <div className="h-10 w-px bg-white/20" />
-                <div>
-                <div className="text-blue-100 text-sm mb-1">Growth</div>
-                <div className="text-2xl font-bold flex items-center gap-1">
-                    {metrics.totalRevenue ? "+0%" : "—"} <ArrowUpRight size={20} />
-                </div>
-                </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Two Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Top Psychologists */}
-          <div className="bg-white border border-[#E6EAF2] rounded-[16px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)]">
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
             <div className="flex items-center justify-between mb-6">
-                 <h3 className="text-lg font-bold text-gray-900">Top Psychologists</h3>
-                 <span className="text-xs font-bold text-[#5B6CFF] bg-[#EEF0FF] px-2 py-1 rounded">Last 6 months</span>
+              <h2 className="text-lg font-bold text-white">Top Psychologists</h2>
+              <span className="text-xs text-gray-400 bg-gray-800 px-2 py-1 rounded">Last 6 months</span>
             </div>
             {topPsychologists.length === 0 ? (
-              <div className="py-10 text-center text-sm text-gray-500">
-                No top psychologists yet.
-              </div>
+              <div className="py-10 text-center text-sm text-gray-500">No top psychologists yet.</div>
             ) : (
               <div className="space-y-4">
                 {topPsychologists.map((psychologist, index) => (
-                  <div key={psychologist.id} className="flex items-center justify-between text-sm">
+                  <div key={psychologist.id} className="flex items-center justify-between gap-3">
                     <div>
-                      <div className="font-semibold text-gray-900">
-                        {index + 1}. {psychologist.name}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        {psychologist.appointments} appointments
-                      </div>
+                      <p className="text-sm font-semibold text-white">{index + 1}. {psychologist.name}</p>
+                      <p className="text-xs text-gray-500">{psychologist.appointments} appointments</p>
                     </div>
                     <Link
                       href="/admin/dashboard/psychologists"
-                      className="text-xs font-semibold text-[#5B6CFF] hover:underline"
+                      className="text-xs font-semibold text-red-400 hover:text-red-300 transition-colors"
                     >
                       View
                     </Link>
@@ -268,30 +249,25 @@ export default function AdminDashboardHome() {
             )}
           </div>
 
-          {/* Recent Activity */}
-          <div className="bg-white border border-[#E6EAF2] rounded-[16px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)]">
-            <h3 className="text-lg font-bold text-gray-900 mb-6">Recent Activity</h3>
-            {activityError && (
-              <div className="mb-4 text-sm text-red-500">{activityError}</div>
-            )}
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+            <h2 className="text-lg font-bold text-white mb-6">Recent Activity</h2>
+            {activityError && <p className="mb-4 text-sm text-red-400">{activityError}</p>}
             {recentActivity.length === 0 ? (
-              <div className="py-10 text-center text-sm text-gray-500">
-                No recent activity yet.
-              </div>
+              <div className="py-10 text-center text-sm text-gray-500">No recent activity yet.</div>
             ) : (
               <div className="space-y-4">
                 {recentActivity.map((item) => (
                   <div key={item.id} className="flex items-start justify-between gap-4">
                     <div>
-                      <div className="text-sm font-semibold text-gray-900">
+                      <p className="text-sm font-semibold text-white">
                         {item.patientName} → {item.psychologistName}
-                      </div>
-                      <div className="text-xs text-gray-500">
+                      </p>
+                      <p className="text-xs text-gray-500">
                         {item.type.replace("_", " ")} · {formatDate(item.startTime)}
-                      </div>
+                      </p>
                     </div>
                     <span
-                      className={`px-2.5 py-1 rounded-full text-[11px] font-semibold ${statusStyles[item.status] || "bg-gray-100 text-gray-700"}`}
+                      className={`px-2.5 py-1 rounded-full text-[11px] font-semibold ${statusStyles[item.status] || "bg-gray-700/50 border border-gray-600 text-gray-300"}`}
                     >
                       {item.status}
                     </span>

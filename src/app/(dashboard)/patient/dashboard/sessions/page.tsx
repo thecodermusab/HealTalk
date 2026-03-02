@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { SessionCard } from "@/components/sessions/SessionCard";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -13,11 +12,32 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Loader2, Search, Filter } from "lucide-react";
-import { useRouter } from "next/navigation";
+
+type SessionListItem = {
+  id: string;
+  title: string;
+  description?: string;
+  type: string;
+  maxParticipants: number;
+  startTime: string;
+  duration: number;
+  pricePerPerson: number;
+  status: string;
+  psychologist: {
+    user: {
+      name: string;
+      image: string | null;
+    };
+  };
+  _count?: {
+    participants: number;
+  };
+  availableSpots?: number;
+  isFull?: boolean;
+};
 
 export default function PatientSessionsPage() {
-  const router = useRouter();
-  const [sessions, setSessions] = useState<any[]>([]);
+  const [sessions, setSessions] = useState<SessionListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [joiningSessionId, setJoiningSessionId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -39,7 +59,13 @@ export default function PatientSessionsPage() {
       const res = await fetch(`/api/sessions?${params.toString()}`);
       if (res.ok) {
         const data = await res.json();
-        setSessions(data.sessions || []);
+        const normalizedSessions: SessionListItem[] = (data.sessions || []).map(
+          (session: SessionListItem & { description?: string | null }) => ({
+            ...session,
+            description: session.description ?? undefined,
+          })
+        );
+        setSessions(normalizedSessions);
       }
     } catch (err) {
       console.error("Error fetching sessions:", err);
@@ -49,7 +75,6 @@ export default function PatientSessionsPage() {
   }
 
   async function handleJoinSession(sessionId: string) {
-    console.log("🎯 Joining session:", sessionId);
     setJoiningSessionId(sessionId);
 
     try {
@@ -57,27 +82,22 @@ export default function PatientSessionsPage() {
         method: "POST",
       });
 
-      console.log("Response status:", res.status);
-
       if (res.ok) {
-        console.log("✅ Successfully joined!");
         alert("Successfully registered for session! 🎉");
         await fetchSessions();
       } else {
         const error = await res.json();
-        console.error("❌ Error:", error);
         alert(error.error || "Failed to join session");
       }
     } catch (err) {
-      console.error("❌ Error joining session:", err);
+      console.error("Error joining session:", err);
       alert("Failed to join session. Please try again.");
     } finally {
       setJoiningSessionId(null);
     }
   }
 
-  // Filter and sort sessions
-  let filteredSessions = sessions.filter((session) => {
+  const filteredSessions = sessions.filter((session) => {
     const matchesSearch =
       session.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       session.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -101,50 +121,45 @@ export default function PatientSessionsPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-1">Discover Sessions</h1>
-          <p className="text-gray-500">Find and join group therapy sessions</p>
+          <h1 className="text-3xl font-bold dash-heading mb-1">Discover Sessions</h1>
+          <p className="dash-muted">Find and join group therapy sessions</p>
         </div>
 
-        {/* Filters */}
-        <div className="bg-white border border-gray-200 rounded-[24px] p-6">
-          <div className="flex items-center gap-4 flex-wrap">
-            {/* Search */}
-            <div className="flex-1 min-w-[250px]">
+        <div className="dash-card p-5">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 sm:gap-4">
+            <div className="w-full flex-1 min-w-0 sm:min-w-[240px]">
               <div className="relative">
                 <Search
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 dash-muted"
                   size={18}
                 />
                 <Input
                   placeholder="Search sessions, topics, or psychologists..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 h-10 dash-input"
                 />
               </div>
             </div>
 
-            {/* Type Filter */}
             <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-[180px]">
-                <Filter size={16} className="mr-2" />
+              <SelectTrigger className="w-full sm:w-[190px] border-[var(--dash-border)] bg-[var(--dash-surface)] text-[var(--dash-text)]">
+                <Filter size={16} className="mr-2 dash-muted" />
                 <SelectValue placeholder="Session Type" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="border-[var(--dash-border)] bg-[var(--dash-surface)] text-[var(--dash-text)]">
                 <SelectItem value="ALL">All Types</SelectItem>
                 <SelectItem value="GROUP">Group Only</SelectItem>
                 <SelectItem value="ONE_ON_ONE">One-on-One</SelectItem>
               </SelectContent>
             </Select>
 
-            {/* Sort */}
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-full sm:w-[190px] border-[var(--dash-border)] bg-[var(--dash-surface)] text-[var(--dash-text)]">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="border-[var(--dash-border)] bg-[var(--dash-surface)] text-[var(--dash-text)]">
                 <SelectItem value="DATE">Date (Soonest)</SelectItem>
                 <SelectItem value="PRICE">Price (Low to High)</SelectItem>
                 <SelectItem value="SPOTS">Available Spots</SelectItem>
@@ -153,30 +168,29 @@ export default function PatientSessionsPage() {
           </div>
         </div>
 
-        {/* Sessions Grid */}
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="animate-spin text-primary" size={32} />
+          <div className="flex items-center justify-center py-16 dash-card">
+            <Loader2 className="animate-spin text-[var(--dash-primary)]" size={32} />
           </div>
         ) : filteredSessions.length === 0 ? (
-          <div className="text-center py-12 bg-gray-50 rounded-[24px]">
-            <p className="text-gray-500 mb-2">
+          <div className="text-center py-12 dash-card border-dashed">
+            <p className="dash-muted mb-2">
               {searchQuery || typeFilter !== "ALL"
                 ? "No sessions match your filters"
                 : "No upcoming sessions available"}
             </p>
-            <p className="text-sm text-gray-400">Check back later for new sessions</p>
+            <p className="text-sm dash-muted">Check back later for new sessions</p>
           </div>
         ) : (
           <>
             <div className="flex items-center justify-between">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm dash-muted">
                 {filteredSessions.length} session{filteredSessions.length !== 1 ? "s" : ""}{" "}
                 available
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6 auto-rows-fr">
               {filteredSessions.map((session) => (
                 <SessionCard
                   key={session.id}

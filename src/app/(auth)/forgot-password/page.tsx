@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
 
 export default function ForgotPasswordPage() {
@@ -39,7 +40,7 @@ export default function ForgotPasswordPage() {
             text: data?.error || "Something went wrong. Please try again."
          });
       }
-    } catch (err) {
+    } catch {
       setMessage({ type: 'error', text: "Something went wrong. Please try again." });
     } finally {
       setIsSubmitting(false);
@@ -47,12 +48,18 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="flex flex-1 w-full items-center justify-center px-4 py-16 font-sans mb-16">
-      <div className="w-[800px] bg-[#ebebff] rounded-[40px] shadow-sm flex flex-col items-center py-12">
-        <div className="flex flex-col items-center w-[418px]">
-            {/* Logo */}
+    <div className="flex min-h-screen w-full items-center justify-center bg-[#F6F2EA] px-4 py-8 sm:py-12 font-sans">
+      <div className="w-full max-w-[800px] bg-[#ebebff] rounded-[28px] sm:rounded-[40px] shadow-sm flex flex-col items-center px-5 py-8 sm:px-8 sm:py-10">
+        <div className="flex flex-col items-center w-full max-w-[418px]">
+          {/* Logo */}
           <Link href="/" className="mb-6">
-            <img src="/images/New_Logo.png" alt="HealTalk" className="h-7 w-auto" />
+            <Image
+              src="/images/New_Logo.png"
+              alt="HealTalk"
+              width={112}
+              height={28}
+              className="h-7 w-auto"
+            />
           </Link>
 
           <h1 className="text-[32px] font-bold text-[#111] mb-2 text-center">Reset Password</h1>

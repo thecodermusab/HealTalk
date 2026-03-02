@@ -7,6 +7,7 @@ import { parseJson } from "@/lib/validation";
 import { requireRateLimit } from "@/lib/rate-limit";
 import { validateCsrf } from "@/lib/csrf";
 import { createAuditLog } from "@/lib/audit";
+import { Prisma } from "@prisma/client";
 
 const ALLOWED_ROLES = ["PATIENT", "PSYCHOLOGIST", "ADMIN"];
 const ALLOWED_STATUSES = ["ACTIVE", "SUSPENDED", "BANNED"];
@@ -73,7 +74,7 @@ export async function PATCH(
     }
   }
 
-  const data: any = {};
+  const data: Prisma.UserUpdateInput = {};
 
   if (name) data.name = name;
   if (email) data.email = email;

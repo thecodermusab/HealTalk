@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { cn } from "@/lib/utils";
 
 const cards = [
   {
@@ -82,7 +81,7 @@ const cards = [
 
 export default function CoreValuesSection() {
   return (
-    <section className="py-[48px] px-10">
+    <section className="py-[48px] px-4 sm:px-6 lg:px-10">
       <div className="max-w-[1470px] mx-auto">
         {/* Header */}
         <div className="text-center mb-[48px]">
@@ -91,17 +90,17 @@ export default function CoreValuesSection() {
                Driven by Principle
              </span>
           </div>
-          <h2 className="font-logo text-[48px] md:text-[56px] leading-[1.1] text-[#131E0D] max-w-[900px] mx-auto">
+          <h2 className="font-logo text-[36px] sm:text-[48px] md:text-[56px] leading-[1.1] text-[#131E0D] max-w-[900px] mx-auto">
             Our four values guide how we care for people.
           </h2>
         </div>
 
         {/* Flex Layout for Fixed Cards - Always in a row */}
-        <div className="flex flex-nowrap overflow-x-auto pb-8 -mx-10 px-10 md:justify-center gap-6 scrollbar-hide snap-x">
+        <div className="flex flex-nowrap overflow-x-auto pb-8 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-10 lg:px-10 md:justify-center gap-6 scrollbar-hide snap-x">
           {cards.map((card, index) => (
             <div
               key={index}
-              className="group relative w-[327px] h-[496px] shrink-0 bg-white rounded-[32px] overflow-hidden transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 focus-within:shadow-md focus-within:-translate-y-1 outline-none border border-[#131E0D]/5 snap-center"
+              className="group relative w-[300px] sm:w-[327px] h-[460px] sm:h-[496px] shrink-0 bg-white rounded-[32px] overflow-hidden transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 focus-within:shadow-md focus-within:-translate-y-1 outline-none border border-[#131E0D]/5 snap-center"
               tabIndex={0}
             >
               {/* Illustration Area (Top) */}

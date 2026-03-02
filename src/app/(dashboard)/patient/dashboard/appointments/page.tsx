@@ -53,29 +53,29 @@ export default function AppointmentsPage() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-1">
+            <h1 className="text-3xl font-bold dash-heading mb-1">
               My Appointments
             </h1>
-            <p className="text-gray-500">
+            <p className="dash-muted">
               Manage your upcoming and past sessions
             </p>
           </div>
           <Link href="/find-psychologists">
-            <Button className="bg-[#5B6CFF] hover:bg-[#4a5ae0] rounded-xl shadow-lg shadow-blue-500/20">
+            <Button className="dash-btn-primary rounded-xl">
               <Calendar className="mr-2" size={18} />
               Book New Appointment
             </Button>
           </Link>
         </div>
 
-        <div className="flex gap-2 p-1 bg-gray-100/50 rounded-xl w-fit border border-gray-200">
+        <div className="flex gap-2 p-1 rounded-xl w-fit border bg-[var(--dash-surface-elev)] border-[var(--dash-border)]">
           <button
             onClick={() => setActiveTab("upcoming")}
             className={cn(
               "px-6 py-2.5 text-sm font-semibold rounded-lg transition-all",
               activeTab === "upcoming"
-                ? "bg-white text-[#5B6CFF] shadow-sm border border-gray-100"
-                : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                ? "bg-[var(--dash-surface)] text-[var(--dash-primary)] shadow-sm border border-[var(--dash-border)]"
+                : "text-[var(--dash-text-muted)] hover:text-[var(--dash-text)] hover:bg-[var(--dash-chip)]"
             )}
           >
             Upcoming ({upcomingAppointments.length})
@@ -85,8 +85,8 @@ export default function AppointmentsPage() {
             className={cn(
               "px-6 py-2.5 text-sm font-semibold rounded-lg transition-all",
               activeTab === "past"
-                ? "bg-white text-[#5B6CFF] shadow-sm border border-gray-100"
-                : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                ? "bg-[var(--dash-surface)] text-[var(--dash-primary)] shadow-sm border border-[var(--dash-border)]"
+                : "text-[var(--dash-text-muted)] hover:text-[var(--dash-text)] hover:bg-[var(--dash-chip)]"
             )}
           >
             Past ({pastAppointments.length})
@@ -94,8 +94,8 @@ export default function AppointmentsPage() {
         </div>
 
         {isLoading ? (
-          <div className="text-center py-20 bg-white border border-dashed border-gray-200 rounded-[24px]">
-            <div className="text-gray-500">Loading appointments...</div>
+          <div className="text-center py-20 dash-card border-dashed">
+            <div className="dash-muted">Loading appointments...</div>
           </div>
         ) : (
           <>
@@ -103,55 +103,54 @@ export default function AppointmentsPage() {
               {list.map((appointment) => (
                 <div
                   key={appointment.id}
-                  className="bg-white border border-[#E6EAF2] rounded-[16px] p-6 hover:shadow-[0_8px_24px_rgba(17,24,39,0.02)] transition-shadow group"
+                  className="dash-card p-6 transition-colors group hover:border-[var(--dash-border-strong)]"
                 >
                   <div className="flex flex-col lg:flex-row items-start gap-6">
-                    <div className="flex items-start gap-4 flex-1">
-                      <div className="w-16 h-16 rounded-[16px] bg-[#EEF0FF] flex items-center justify-center flex-shrink-0 border border-blue-100">
-                        <span className="text-2xl font-bold text-[#5B6CFF]">
+                    <div className="flex items-start gap-4 flex-1 min-w-0">
+                      <div className="w-16 h-16 rounded-[16px] bg-[var(--dash-primary-soft)] flex items-center justify-center flex-shrink-0 border border-[var(--dash-border)]">
+                        <span className="text-2xl font-bold text-[var(--dash-primary)]">
                           {(appointment.psychologist?.user?.name || "P")[0]}
                         </span>
                       </div>
 
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="text-xl font-bold text-gray-900">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <h3 className="text-xl font-bold dash-heading truncate">
                             {appointment.psychologist?.user?.name || "Psychologist"}
                           </h3>
-                          {appointment.status === "SCHEDULED" && (
-                            <span className="px-2 py-0.5 bg-[#E6F8F3] text-[#20C997] text-[10px] font-bold rounded-full uppercase tracking-wide flex items-center gap-1">
+                          {appointment.status === "SCHEDULED" ? (
+                            <span className="px-2 py-0.5 bg-[var(--dash-success-soft)] text-[var(--dash-success)] text-[10px] font-bold rounded-full uppercase tracking-wide flex items-center gap-1 border border-[var(--dash-border)]">
                               <CheckCircle size={10} /> Scheduled
                             </span>
-                          )}
-                          {appointment.status !== "SCHEDULED" && (
-                            <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-[10px] font-bold rounded-full uppercase tracking-wide flex items-center gap-1">
+                          ) : (
+                            <span className="px-2 py-0.5 bg-[var(--dash-chip)] text-[var(--dash-text-muted)] text-[10px] font-bold rounded-full uppercase tracking-wide flex items-center gap-1 border border-[var(--dash-border)]">
                               <CheckCircle size={10} /> {appointment.status.toLowerCase()}
                             </span>
                           )}
                         </div>
-                        <p className="text-sm text-[#5B6CFF] font-medium mb-4">
+                        <p className="text-sm text-[var(--dash-primary)] font-medium mb-4">
                           {appointment.psychologist?.credentials || "Psychologist"}
                         </p>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-8">
-                          <div className="flex items-center gap-3 text-sm text-gray-600">
-                            <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400">
+                          <div className="flex items-center gap-3 text-sm dash-muted">
+                            <div className="w-8 h-8 rounded-full bg-[var(--dash-surface-elev)] border border-[var(--dash-border)] flex items-center justify-center">
                               <Calendar size={16} />
                             </div>
-                            <span className="font-medium text-gray-900">
+                            <span className="font-medium dash-heading">
                               {formatDate(appointment.startTime)}
                             </span>
                           </div>
-                          <div className="flex items-center gap-3 text-sm text-gray-600">
-                            <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400">
+                          <div className="flex items-center gap-3 text-sm dash-muted">
+                            <div className="w-8 h-8 rounded-full bg-[var(--dash-surface-elev)] border border-[var(--dash-border)] flex items-center justify-center">
                               <Clock size={16} />
                             </div>
-                            <span className="font-medium text-gray-900">
+                            <span className="font-medium dash-heading">
                               {formatTime(appointment.startTime)} - {formatTime(appointment.endTime)}
                             </span>
                           </div>
-                          <div className="flex items-center gap-3 text-sm text-gray-600">
-                            <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400">
+                          <div className="flex items-center gap-3 text-sm dash-muted">
+                            <div className="w-8 h-8 rounded-full bg-[var(--dash-surface-elev)] border border-[var(--dash-border)] flex items-center justify-center">
                               <Video size={16} />
                             </div>
                             <span>{appointment.type.replace("_", " ")}</span>
@@ -160,18 +159,18 @@ export default function AppointmentsPage() {
                       </div>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row lg:flex-col gap-3 w-full lg:w-48 pt-4 lg:pt-0 lg:border-l lg:border-gray-100 lg:pl-6">
+                    <div className="flex flex-col sm:flex-row lg:flex-col gap-3 w-full lg:w-52 pt-4 lg:pt-0 lg:border-l lg:border-[var(--dash-border)] lg:pl-6">
                       {activeTab === "upcoming" ? (
                         <>
                           <Link href={`/shared/call/${appointment.id}`} className="w-full">
-                            <Button className="w-full bg-[#5B6CFF] hover:bg-[#4a5ae0]">
+                            <Button className="w-full dash-btn-primary">
                               Join Session
                             </Button>
                           </Link>
                           <Link href={`/patient/dashboard/messages?appointmentId=${appointment.id}`} className="w-full">
                             <Button
                               variant="outline"
-                              className="w-full border-gray-200 text-gray-600 hover:bg-gray-50"
+                              className="w-full dash-btn-outline"
                             >
                               <MessageCircle size={16} className="mr-2" />
                               Send Message
@@ -179,13 +178,13 @@ export default function AppointmentsPage() {
                           </Link>
                           <Button
                             variant="outline"
-                            className="w-full border-gray-200 text-gray-600 hover:bg-gray-50"
+                            className="w-full dash-btn-outline"
                           >
                             Reschedule
                           </Button>
                           <Button
                             variant="ghost"
-                            className="w-full text-red-500 hover:text-red-600 hover:bg-red-50 justify-start lg:justify-center"
+                            className="w-full text-[var(--dash-danger)] hover:bg-[var(--dash-danger-soft)] justify-start lg:justify-center"
                           >
                             Cancel Appointment
                           </Button>
@@ -194,14 +193,14 @@ export default function AppointmentsPage() {
                         <>
                           <Button
                             variant="outline"
-                            className="w-full border-gray-200"
+                            className="w-full dash-btn-outline"
                           >
                             View Details
                           </Button>
                           <Link href={`/patient/dashboard/messages?appointmentId=${appointment.id}`} className="w-full">
                             <Button
                               variant="outline"
-                              className="w-full border-gray-200 text-gray-600 hover:bg-gray-50"
+                              className="w-full dash-btn-outline"
                             >
                               <MessageCircle size={16} className="mr-2" />
                               Send Message
@@ -209,7 +208,7 @@ export default function AppointmentsPage() {
                           </Link>
                           <Button
                             variant="outline"
-                            className="w-full border-[#5B6CFF] text-[#5B6CFF] hover:bg-[#EEF0FF]"
+                            className="w-full border-[var(--dash-primary)] text-[var(--dash-primary)] hover:bg-[var(--dash-primary-soft)]"
                           >
                             Book Again
                           </Button>
@@ -222,21 +221,21 @@ export default function AppointmentsPage() {
             </div>
 
             {list.length === 0 && (
-              <div className="text-center py-20 bg-white border border-dashed border-gray-200 rounded-[24px]">
-                <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Calendar className="text-gray-300" size={32} />
+              <div className="text-center py-20 dash-card border-dashed">
+                <div className="w-16 h-16 bg-[var(--dash-surface-elev)] border border-[var(--dash-border)] rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Calendar className="dash-muted" size={32} />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                <h3 className="text-xl font-bold dash-heading mb-2">
                   No {activeTab} appointments
                 </h3>
-                <p className="text-gray-500 mb-8 max-w-sm mx-auto">
+                <p className="dash-muted mb-8 max-w-sm mx-auto">
                   {activeTab === "upcoming"
                     ? "You don't have any upcoming sessions scheduled. Book a new appointment to get started."
                     : "Your completed appointment history will appear here once you finish your sessions."}
                 </p>
                 {activeTab === "upcoming" && (
                   <Link href="/find-psychologists">
-                    <Button className="bg-[#5B6CFF] hover:bg-[#4a5ae0] h-11 px-8 rounded-xl">
+                    <Button className="dash-btn-primary h-11 px-8 rounded-xl">
                       Find a Psychologist
                     </Button>
                   </Link>
