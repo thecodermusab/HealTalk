@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { User, Bell, Shield, Save, Eye, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { AvatarUploader } from "@/components/profile/AvatarUploader";
-import SupabaseLinkCard from "@/components/settings/SupabaseLinkCard";
+import { fetchCsrfToken } from "@/lib/client-security";
 
 const splitName = (value: string) => {
   const trimmed = value.trim();
@@ -30,6 +30,12 @@ export default function SettingsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [securityMessage, setSecurityMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [profile, setProfile] = useState({
     firstName: "",
     lastName: "",
@@ -95,9 +101,19 @@ export default function SettingsPage() {
     setMessage(null);
 
     try {
+      const csrfToken = await fetchCsrfToken();
+      if (!csrfToken) {
+        setMessage({ type: "error", text: "Security token missing. Please refresh and try again." });
+        setIsSaving(false);
+        return;
+      }
+
       const res = await fetch("/api/user/me", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-csrf-token": csrfToken,
+        },
         body: JSON.stringify({
           name: fullName,
           phone: profile.phone || null,
@@ -134,6 +150,115 @@ export default function SettingsPage() {
       setMessage({ type: "error", text: "Failed to update profile." });
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleUpdatePassword = async () => {
+    if (isUpdatingPassword) return;
+    setSecurityMessage(null);
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setSecurityMessage({ type: "error", text: "Please fill all password fields." });
+      return;
+    }
+    if (newPassword.length < 8) {
+      setSecurityMessage({ type: "error", text: "New password must be at least 8 characters." });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setSecurityMessage({ type: "error", text: "New password and confirmation do not match." });
+      return;
+    }
+    if (newPassword === currentPassword) {
+      setSecurityMessage({ type: "error", text: "New password must be different from current password." });
+      return;
+    }
+
+    setIsUpdatingPassword(true);
+    try {
+      const csrfToken = await fetchCsrfToken();
+      if (!csrfToken) {
+        setSecurityMessage({ type: "error", text: "Security token missing. Please refresh and try again." });
+        setIsUpdatingPassword(false);
+        return;
+      }
+
+      const res = await fetch("/api/user/security", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "x-csrf-token": csrfToken,
+        },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        setSecurityMessage({
+          type: "error",
+          text: data?.error || "Failed to update password.",
+        });
+        setIsUpdatingPassword(false);
+        return;
+      }
+
+      setNewPassword("");
+      setConfirmPassword("");
+      setCurrentPassword("");
+      setSecurityMessage({ type: "success", text: "Password updated successfully." });
+    } catch {
+      setSecurityMessage({ type: "error", text: "Failed to update password." });
+    } finally {
+      setIsUpdatingPassword(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (isDeletingAccount) return;
+    setSecurityMessage(null);
+
+    if (!currentPassword) {
+      setSecurityMessage({ type: "error", text: "Enter your current password to delete account." });
+      return;
+    }
+
+    const shouldDelete = window.confirm(
+      "Are you sure you want to delete your account? This action cannot be undone."
+    );
+    if (!shouldDelete) return;
+
+    setIsDeletingAccount(true);
+    try {
+      const csrfToken = await fetchCsrfToken();
+      if (!csrfToken) {
+        setSecurityMessage({ type: "error", text: "Security token missing. Please refresh and try again." });
+        setIsDeletingAccount(false);
+        return;
+      }
+
+      const res = await fetch("/api/user/security", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "x-csrf-token": csrfToken,
+        },
+        body: JSON.stringify({ currentPassword }),
+      });
+
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        setSecurityMessage({
+          type: "error",
+          text: data?.error || "Failed to delete account.",
+        });
+        setIsDeletingAccount(false);
+        return;
+      }
+
+      await signOut({ callbackUrl: "/login" });
+    } catch {
+      setSecurityMessage({ type: "error", text: "Failed to delete account." });
+      setIsDeletingAccount(false);
     }
   };
 
@@ -331,18 +456,46 @@ export default function SettingsPage() {
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
 
                    <div className="space-y-4 mt-8">
-                      <SupabaseLinkCard />
+                      {securityMessage && (
+                        <div
+                          className={`w-full p-4 rounded-xl text-sm border ${
+                            securityMessage.type === "success"
+                              ? "bg-green-50 text-green-700 border-green-100"
+                              : "bg-red-50 text-red-700 border-red-100"
+                          }`}
+                        >
+                          {securityMessage.text}
+                        </div>
+                      )}
                       <div className="space-y-2">
                          <label className="text-sm font-medium text-gray-700">Current Password</label>
-                         <Input type="password" placeholder="••••••••" />
+                         <Input
+                           type="password"
+                           placeholder="••••••••"
+                           value={currentPassword}
+                           onChange={(event) => setCurrentPassword(event.target.value)}
+                           disabled={isUpdatingPassword || isDeletingAccount}
+                         />
                       </div>
                       <div className="space-y-2">
                          <label className="text-sm font-medium text-gray-700">New Password</label>
-                         <Input type="password" placeholder="••••••••" />
+                         <Input
+                           type="password"
+                           placeholder="••••••••"
+                           value={newPassword}
+                           onChange={(event) => setNewPassword(event.target.value)}
+                           disabled={isUpdatingPassword || isDeletingAccount}
+                         />
                       </div>
                       <div className="space-y-2">
                          <label className="text-sm font-medium text-gray-700">Confirm New Password</label>
-                         <Input type="password" placeholder="••••••••" />
+                         <Input
+                           type="password"
+                           placeholder="••••••••"
+                           value={confirmPassword}
+                           onChange={(event) => setConfirmPassword(event.target.value)}
+                           disabled={isUpdatingPassword || isDeletingAccount}
+                         />
                       </div>
                    </div>
 
@@ -356,13 +509,24 @@ export default function SettingsPage() {
                             <p className="text-sm font-medium text-gray-900">Delete Account</p>
                             <p className="text-xs text-gray-500">Once deleted, your data cannot be recovered.</p>
                          </div>
-                         <Button variant="outline" className="text-red-600 border-red-200 hover:bg-red-100 hover:text-red-700">Delete</Button>
+                         <Button
+                           variant="outline"
+                           className="text-red-600 border-red-200 hover:bg-red-100 hover:text-red-700"
+                           onClick={handleDeleteAccount}
+                           disabled={isDeletingAccount || isUpdatingPassword}
+                         >
+                           {isDeletingAccount ? "Deleting..." : "Delete"}
+                         </Button>
                       </div>
                    </div>
                    
                    <div className="pt-4 flex justify-end">
-                      <Button className="bg-[#5B6CFF] hover:bg-[#4a5ae0] gap-2">
-                        <Save size={16} /> Update Password
+                      <Button
+                        className="bg-[#5B6CFF] hover:bg-[#4a5ae0] gap-2"
+                        onClick={handleUpdatePassword}
+                        disabled={isUpdatingPassword || isDeletingAccount}
+                      >
+                        <Save size={16} /> {isUpdatingPassword ? "Updating..." : "Update Password"}
                       </Button>
                    </div>
                 </div>
