@@ -15,7 +15,7 @@ const psychologistImages = [
 
 export default function FeaturedPsychologists() {
   return (
-    <section className="bg-[#F6F2EA] pt-8 pb-8 md:pt-12 md:pb-12">
+    <section className="bg-[#F6F2EA] pt-10 pb-12 md:pt-14 md:pb-14">
       <div className="mx-auto max-w-7xl border-t border-[#D9D1C4] px-6">
         <span className="text-caption text-[#425234] -ml-6 -mt-3.5 block w-max bg-[#F6F2EA] px-6">
           Our Therapists

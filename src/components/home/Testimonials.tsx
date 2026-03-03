@@ -43,44 +43,38 @@ export default function Testimonials() {
   const activeTestimonial = testimonials[activeIndex];
 
   return (
-    <section id="testimonials" className="pt-10 pb-10 sm:pt-12 sm:pb-12 bg-[#F6F2EA] flex flex-col items-center font-sans text-[#121E0D]">
+    <section id="testimonials" className="pt-14 pb-10 sm:pt-20 sm:pb-12 bg-[#F6F2EA] flex flex-col items-center font-sans text-[#121E0D]">
       <div className="w-full max-w-[1400px] px-4 flex flex-col items-center">
-        
-        {/* Title: Centered, Switzer 700 */}
-        <div className="text-center mb-10 relative z-20">
+
+        {/* Title */}
+        <div className="text-center mb-6 sm:mb-8">
           <h2 className="text-[28px] sm:text-[40px] font-bold tracking-tight text-[#121E0D]" style={{ fontFamily: 'Switzer, sans-serif' }}>
             What Our Patients Say.
           </h2>
         </div>
 
-        {/* Card Container - Relative for absolute pill positioning */}
-        <div className="relative w-full max-w-[1209px] flex justify-center">
-          
-          {/* OVERLAY NAV PILL */}
-          {/* Centered on Top Edge (Half in/out approximately, or just sitting on edge) */}
-          {/* User asked for "sit slightly inside the card's top edge (not floating far above it)" */}
-          {/* Using -top-[26px] centers it exactly on the border line which is standard 'overlay' */}
-          <div className="absolute -top-[24px] sm:-top-[26px] left-1/2 -translate-x-1/2 w-[92px] sm:w-[100px] h-[48px] sm:h-[52px] bg-[#8888FC] rounded-[56px] flex items-center justify-center gap-2 px-1 z-30 shadow-sm">
-            <button
-              onClick={handlePrevious}
-              className="w-[32px] h-[32px] sm:w-[36px] sm:h-[36px] rounded-full border-2 border-[#121E0D] flex items-center justify-center hover:bg-black/5 transition-colors text-[#121E0D]"
-              aria-label="Previous testimonial"
-            >
-              <ArrowLeft size={16} strokeWidth={2} />
-            </button>
-            <button
-              onClick={handleNext}
-              className="w-[32px] h-[32px] sm:w-[36px] sm:h-[36px] rounded-full border-2 border-[#121E0D] flex items-center justify-center hover:bg-black/5 transition-colors text-[#121E0D]"
-              aria-label="Next testimonial"
-            >
-              <ArrowRight size={16} strokeWidth={2} />
-            </button>
-          </div>
+        {/* Nav Pill — in normal flow, centered; -mb-6 makes it overlap card edge safely */}
+        <div className="relative z-10 -mb-6 w-[92px] sm:w-[100px] h-[48px] sm:h-[52px] bg-[#8888FC] rounded-[56px] flex items-center justify-center gap-2 px-1 shadow-sm">
+          <button
+            onClick={handlePrevious}
+            className="w-[32px] h-[32px] sm:w-[36px] sm:h-[36px] rounded-full border-2 border-[#121E0D] flex items-center justify-center hover:bg-black/5 transition-colors text-[#121E0D]"
+            aria-label="Previous testimonial"
+          >
+            <ArrowLeft size={16} strokeWidth={2} />
+          </button>
+          <button
+            onClick={handleNext}
+            className="w-[32px] h-[32px] sm:w-[36px] sm:h-[36px] rounded-full border-2 border-[#121E0D] flex items-center justify-center hover:bg-black/5 transition-colors text-[#121E0D]"
+            aria-label="Next testimonial"
+          >
+            <ArrowRight size={16} strokeWidth={2} />
+          </button>
+        </div>
 
-          {/* Testimonial Card */}
-          {/* Exact dimensions: 1209px width, 530px min-height */}
-          <div className="bg-[#EBEBFF] rounded-[28px] sm:rounded-[40px] px-5 py-12 sm:px-[88px] sm:py-[72px] w-full min-h-[420px] sm:min-h-[530px] flex flex-col md:flex-row items-center gap-8 sm:gap-12 md:gap-24">
-            
+        {/* Testimonial Card */}
+        <div className="w-full max-w-[1209px]">
+          <div className="bg-[#EBEBFF] rounded-[28px] sm:rounded-[40px] px-5 pt-14 pb-12 sm:px-[88px] sm:pt-[88px] sm:pb-[72px] w-full min-h-[420px] sm:min-h-[530px] flex flex-col md:flex-row items-center gap-8 sm:gap-12 md:gap-24">
+
             {/* Left Column: Text */}
             <div className="flex-1 flex flex-col items-start relative h-full justify-between">
               <div>
@@ -128,7 +122,6 @@ export default function Testimonials() {
             </div>
 
             {/* Right Column: Image */}
-            {/* 200x299px */}
             <div className="w-full md:w-auto flex justify-center md:block self-center">
               <div className="relative w-[170px] h-[255px] sm:w-[200px] sm:h-[299px] rounded-[24px] overflow-hidden shadow-sm bg-gray-200 shrink-0">
                   <Image
