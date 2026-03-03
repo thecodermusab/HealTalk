@@ -120,6 +120,10 @@ model Psychologist {
   credentialDocumentUrl String?
   credentialDocumentKey String?
   experience     Int
+  location       String?
+  languages      String[] @default([])
+  education      Json?
+  certifications Json?
   bio            String   @db.Text
   specializations String[]
   price60        Int      // Price for 60 min session in cents
@@ -140,6 +144,7 @@ model Psychologist {
   messages         Message[]
   favorites        Favorite[]
   reviews          Review[]
+  testimonials     PsychologistTestimonial[]
   availability     Availability[]
   therapySessions  TherapySession[]
 }
@@ -286,6 +291,20 @@ model Review {
   psychologist    Psychologist @relation(fields: [psychologistId], references: [id])
 }
 
+model PsychologistTestimonial {
+  id             String   @id @default(cuid())
+  psychologistId String
+  psychologist   Psychologist @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
+  name           String
+  role           String?
+  text           String   @db.Text
+  image          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([psychologistId, createdAt])
+}
+
 enum ReviewStatus {
   APPROVED
   PENDING
@@ -336,6 +355,7 @@ model BlogPost {
   subtitle        String?
   excerpt         String   @db.Text
   imageUrl        String
+  imagePosition   String?
   category        String?
   date            DateTime
   heroType        String?  // 'illustration' | 'photo'

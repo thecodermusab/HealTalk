@@ -17,6 +17,73 @@ const querySchema = z.object({
   limit: z.coerce.number().int().min(1).max(50).default(10),
 });
 
+const normalizeStringArray = (value: unknown): string[] => {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((item): item is string => typeof item === "string")
+    .map((item) => item.trim())
+    .filter(Boolean);
+};
+
+const normalizeEducation = (
+  value: unknown
+): Array<{ degree: string; institution: string; year?: string }> => {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map((item) => {
+      if (!item || typeof item !== "object" || Array.isArray(item)) return null;
+      const record = item as Record<string, unknown>;
+      const degree = typeof record.degree === "string" ? record.degree.trim() : "";
+      const institution =
+        typeof record.institution === "string" ? record.institution.trim() : "";
+      const yearRaw = record.year;
+      const year =
+        typeof yearRaw === "string"
+          ? yearRaw.trim()
+          : typeof yearRaw === "number"
+          ? String(yearRaw)
+          : "";
+
+      if (!degree || !institution) return null;
+
+      return year ? { degree, institution, year } : { degree, institution };
+    })
+    .filter(
+      (item): item is { degree: string; institution: string; year?: string } =>
+        Boolean(item)
+    );
+};
+
+const normalizeCertifications = (
+  value: unknown
+): Array<{ name: string; issuer: string; year?: string }> => {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map((item) => {
+      if (!item || typeof item !== "object" || Array.isArray(item)) return null;
+      const record = item as Record<string, unknown>;
+      const name = typeof record.name === "string" ? record.name.trim() : "";
+      const issuer = typeof record.issuer === "string" ? record.issuer.trim() : "";
+      const yearRaw = record.year;
+      const year =
+        typeof yearRaw === "string"
+          ? yearRaw.trim()
+          : typeof yearRaw === "number"
+          ? String(yearRaw)
+          : "";
+
+      if (!name || !issuer) return null;
+
+      return year ? { name, issuer, year } : { name, issuer };
+    })
+    .filter(
+      (item): item is { name: string; issuer: string; year?: string } =>
+        Boolean(item)
+    );
+};
+
 export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
 
@@ -66,9 +133,19 @@ export async function GET(request: Request) {
       select: {
         id: true,
         credentials: true,
+        bio: true,
         licenseNumber: true,
         experience: true,
+        location: true,
+        languages: true,
+        education: true,
+        certifications: true,
+        rating: true,
+        reviewCount: true,
         specializations: true,
+        price60: true,
+        price90: true,
+        hospitalId: true,
         status: true,
         approvedAt: true,
         rejectedAt: true,
@@ -134,13 +211,15 @@ export async function POST(request: Request) {
   const password = typeof body.password === "string" ? body.password : "";
   const bio = typeof body.bio === "string" ? body.bio : "";
   const licenseNumber = typeof body.licenseNumber === "string" ? body.licenseNumber : "";
+  const location = typeof body.location === "string" ? body.location : "";
+  const languages = normalizeStringArray(body.languages);
+  const education = normalizeEducation(body.education);
+  const certifications = normalizeCertifications(body.certifications);
   const experience =
     typeof body.experience === "number" || typeof body.experience === "string"
       ? Number(body.experience)
       : 0;
-  const specializations = Array.isArray(body.specializations)
-    ? body.specializations.filter((item): item is string => typeof item === "string")
-    : [];
+  const specializations = normalizeStringArray(body.specializations);
   const price60 =
     typeof body.price60 === "number" || typeof body.price60 === "string"
       ? Number(body.price60)
@@ -194,6 +273,10 @@ export async function POST(request: Request) {
           credentials: bio?.trim() || "",
           licenseNumber: licenseNumber.trim(),
           experience: Number.isFinite(experience) ? experience : 0,
+          location: location.trim() || null,
+          languages,
+          education: education as Prisma.InputJsonValue,
+          certifications: certifications as Prisma.InputJsonValue,
           bio: bio?.trim() || "",
           specializations,
           price60: Number.isFinite(price60) ? price60 : 0,
