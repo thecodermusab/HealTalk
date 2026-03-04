@@ -326,6 +326,17 @@
     background: var(--dash-surface-elev);
     border-color: var(--dash-border-strong);
   }
+
+  /* Keep admin dashboard hover behavior consistent with sidebar hover color. */
+  .admin-hover-unified :is(a, button, [role="button"], .cursor-pointer):hover {
+    background-color: var(--dash-surface-elev) !important;
+    border-color: var(--dash-border-strong) !important;
+    color: var(--dash-text) !important;
+  }
+
+  .admin-hover-unified tr:hover {
+    background-color: var(--dash-surface-elev) !important;
+  }
 }
 
 @keyframes accordion-down {

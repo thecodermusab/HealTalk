@@ -18,7 +18,7 @@ export default function DashboardShell({ children }: DashboardShellProps) {
 
   if (isAdmin) {
     return (
-      <div className="dashboard-theme flex min-h-screen">
+      <div className="dashboard-theme admin-hover-unified flex min-h-screen">
         <AdminSidebar className="hidden lg:flex" />
         <div className="flex-1 flex flex-col h-screen overflow-hidden">
           <AdminHeader onMobileMenuClick={() => setMobileMenuOpen(!mobileMenuOpen)} />

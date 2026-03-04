@@ -11,13 +11,22 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { status } = useSession();
+  const { data: session, status } = useSession();
+  const role = (session?.user as { role?: string } | undefined)?.role;
+  const isAdminRoute = pathname?.startsWith("/admin");
 
   useEffect(() => {
-    if (status !== "unauthenticated") return;
-    const isAdminRoute = pathname?.startsWith("/admin");
-    router.push(isAdminRoute ? "/admin/login" : "/login");
-  }, [pathname, router, status]);
+    if (status === "loading") return;
+
+    if (status === "unauthenticated") {
+      router.push(isAdminRoute ? "/admin/login" : "/login");
+      return;
+    }
+
+    if (isAdminRoute && role !== "ADMIN") {
+      router.push("/admin/login");
+    }
+  }, [isAdminRoute, role, router, status]);
 
   if (status === "loading") {
     return (
@@ -31,6 +40,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   if (status === "unauthenticated") {
+    return null;
+  }
+
+  if (isAdminRoute && role !== "ADMIN") {
     return null;
   }
 

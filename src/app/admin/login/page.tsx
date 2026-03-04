@@ -1,8 +1,8 @@
 "use client";
 
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { getSession, signIn } from "next-auth/react";
+import { getSession, signIn, signOut } from "next-auth/react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import {
   isSupabasePasswordPreferred,
@@ -50,6 +50,21 @@ function AdminLoginForm() {
   );
   const errorMessage = runtimeError ?? queryError;
 
+  useEffect(() => {
+    let isActive = true;
+
+    (async () => {
+      const role = await getSessionRole();
+      if (isActive && role === "ADMIN") {
+        router.replace("/admin/dashboard");
+      }
+    })();
+
+    return () => {
+      isActive = false;
+    };
+  }, [router]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting || !email || !password) return;
@@ -94,7 +109,7 @@ function AdminLoginForm() {
 
     if (role !== "ADMIN") {
       setRuntimeError("This login is for administrators only.");
-      await signIn("credentials", { redirect: false }); // sign out
+      await signOut({ redirect: false });
       setIsSubmitting(false);
       return;
     }
