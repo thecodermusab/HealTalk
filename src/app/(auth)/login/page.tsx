@@ -64,6 +64,7 @@ function LoginForm() {
   const [runtimeErrorMessage, setRuntimeErrorMessage] = useState<string | null>(
     null
   );
+  const [dismissQueryFeedback, setDismissQueryFeedback] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -75,13 +76,15 @@ function LoginForm() {
     () => getAuthQueryFeedback(searchParams),
     [searchParams]
   );
-  const errorMessage = runtimeErrorMessage ?? queryErrorMessage;
-  const successMessage = querySuccessMessage;
+  const errorMessage =
+    runtimeErrorMessage ?? (dismissQueryFeedback ? null : queryErrorMessage);
+  const successMessage = dismissQueryFeedback ? null : querySuccessMessage;
   // Preserve the redirect destination set by the onboarding flow (or any other caller).
   const redirectAfterLogin = searchParams?.get("redirect") ?? null;
 
   const handleGoogleSignIn = async () => {
     if (isGoogleSubmitting) return;
+    setDismissQueryFeedback(true);
     setIsGoogleSubmitting(true);
     if (isSupabaseGooglePreferred()) {
       const result = startSupabaseGoogleOAuth();
@@ -98,6 +101,7 @@ function LoginForm() {
     e.preventDefault();
     if (isSubmitting || !formData.email || !formData.password) return;
     
+    setDismissQueryFeedback(true);
     setIsSubmitting(true);
     setRuntimeErrorMessage(null);
 
@@ -218,7 +222,10 @@ function LoginForm() {
                 type="email"
                 placeholder="Email"
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onChange={(e) => {
+                  setDismissQueryFeedback(true);
+                  setFormData({ ...formData, email: e.target.value });
+                }}
                 className="w-full h-[57px] bg-[#F5F5F5] border border-gray-200 rounded-xl px-4 text-[16px] text-[#111] placeholder-gray-400 outline-none focus:border-black focus:border-2 focus:ring-0 transition-all"
                 required
               />
@@ -230,7 +237,10 @@ function LoginForm() {
                 type={showPassword ? "text" : "password"}
                 placeholder="Password"
                 value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                onChange={(e) => {
+                  setDismissQueryFeedback(true);
+                  setFormData({ ...formData, password: e.target.value });
+                }}
                 className="w-full h-[57px] bg-[#F5F5F5] border border-gray-200 rounded-xl px-4 pr-12 text-[16px] text-[#111] placeholder-gray-400 outline-none focus:border-black focus:border-2 focus:ring-0 transition-all"
                 required
               />

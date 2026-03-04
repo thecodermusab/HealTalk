@@ -179,14 +179,14 @@
   --secondary-foreground: #131E0D;
   
   --muted: #1a2e12; /* Slightly lighter dark green for muted areas? Or just use black transparency. Let's use a dark shade. */
-  --muted-foreground: #E1F4D7; /* lighter green for text */
+  --muted-foreground: #9fb0cc;
   
   --accent: #D2E500;
   --accent-foreground: #131E0D;
   
   --destructive: #FC7D45;
-  --border: #2f4f25; /* Darker border for dark mode */
-  --input: #2f4f25;
+  --border: #2a3550;
+  --input: #2a3550;
   --ring: #FC7D45;
   
   --chart-1: #FC7D45;
@@ -270,6 +270,43 @@
   .dashboard-theme {
     background-color: var(--dash-bg);
     color: var(--dash-text);
+    --background: var(--dash-bg);
+    --foreground: var(--dash-text);
+    --text-secondary: var(--dash-text-muted);
+    --muted-foreground: var(--dash-text-muted);
+    --border: var(--dash-border);
+    --input: var(--dash-border);
+    --card: var(--dash-surface);
+    --card-foreground: var(--dash-text);
+  }
+
+  /* Unify dashboard form fields and prevent green-tinted autofill styles. */
+  .dashboard-theme :is(input, textarea, select) {
+    background-color: var(--dash-surface);
+    border-color: var(--dash-border);
+    color: var(--dash-text);
+  }
+
+  .dashboard-theme :is(input, textarea, select)::placeholder {
+    color: var(--dash-text-muted);
+    opacity: 1;
+  }
+
+  .dashboard-theme :is(input, textarea, select):disabled {
+    background-color: var(--dash-surface-elev);
+    color: var(--dash-text-muted);
+    opacity: 1;
+  }
+
+  .dashboard-theme :is(input, textarea, select):-webkit-autofill,
+  .dashboard-theme :is(input, textarea, select):-webkit-autofill:hover,
+  .dashboard-theme :is(input, textarea, select):-webkit-autofill:focus,
+  .dashboard-theme :is(input, textarea, select):-webkit-autofill:active {
+    -webkit-text-fill-color: var(--dash-text);
+    box-shadow: 0 0 0 1000px var(--dash-surface) inset;
+    -webkit-box-shadow: 0 0 0 1000px var(--dash-surface) inset;
+    caret-color: var(--dash-text);
+    transition: background-color 5000s ease-in-out 0s;
   }
 
   .dash-card {

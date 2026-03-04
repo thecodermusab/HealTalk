@@ -39,6 +39,7 @@ function AdminLoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [runtimeError, setRuntimeError] = useState<string | null>(null);
+  const [dismissQueryFeedback, setDismissQueryFeedback] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
@@ -48,7 +49,7 @@ function AdminLoginForm() {
     () => getAdminQueryErrorMessage(searchParams),
     [searchParams]
   );
-  const errorMessage = runtimeError ?? queryError;
+  const errorMessage = runtimeError ?? (dismissQueryFeedback ? null : queryError);
 
   useEffect(() => {
     let isActive = true;
@@ -73,6 +74,7 @@ function AdminLoginForm() {
     e.preventDefault();
     if (isSubmitting || !email || !password) return;
 
+    setDismissQueryFeedback(true);
     setIsSubmitting(true);
     setRuntimeError(null);
 
@@ -144,7 +146,10 @@ function AdminLoginForm() {
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setDismissQueryFeedback(true);
+                setEmail(e.target.value);
+              }}
               required
               placeholder="admin@example.com"
               className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
@@ -159,7 +164,10 @@ function AdminLoginForm() {
               <input
                 type={showPassword ? "text" : "password"}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setDismissQueryFeedback(true);
+                  setPassword(e.target.value);
+                }}
                 required
                 placeholder="••••••••"
                 className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
