@@ -245,7 +245,7 @@ export default function ProfilePage() {
                     Bio
                   </label>
                   <textarea
-                    className="w-full min-h-24 px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                    className="w-full min-h-24 px-3 py-2 border border-border rounded-lg bg-background text-white caret-white placeholder:text-slate-300 focus:ring-2 focus:ring-primary focus:border-primary"
                     value={profile.bio}
                     onChange={(event) =>
                       setProfile((prev) => ({ ...prev, bio: event.target.value }))

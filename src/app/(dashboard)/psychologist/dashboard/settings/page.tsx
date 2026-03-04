@@ -317,7 +317,7 @@ export default function SettingsPage() {
                       <div className="col-span-1 md:col-span-2 space-y-2">
                          <label className="text-sm font-medium text-gray-700">Bio</label>
                          <textarea 
-                           className="flex min-h-[100px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" 
+                           className="flex min-h-[100px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm text-white caret-white shadow-sm placeholder:text-slate-300 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" 
                            value={profile.bio}
                            onChange={(event) =>
                              setProfile((prev) => ({ ...prev, bio: event.target.value }))
