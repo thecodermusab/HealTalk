@@ -219,7 +219,7 @@ export function ChatbotInterface({ initialUserMessage }: ChatbotInterfaceProps) 
               }
             }}
             placeholder="Message HealTalk AI..."
-            className="min-h-[44px] max-h-40 flex-1 resize-none border-0 bg-transparent p-0 text-sm text-[var(--dash-text)] placeholder:text-[var(--dash-text-muted)] focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0"
+            className="min-h-[44px] max-h-40 flex-1 resize-none border-0 bg-transparent p-0 text-[16px] md:text-sm text-[var(--dash-text)] placeholder:text-[var(--dash-text-muted)] focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0"
             rows={1}
             disabled={isLoading}
           />

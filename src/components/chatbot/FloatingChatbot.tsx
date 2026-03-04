@@ -78,7 +78,7 @@ export function FloatingChatbot() {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-50 w-16 h-16 bg-gradient-to-br from-[#5B6CFF] to-[#8B5CF6] text-white rounded-full shadow-2xl hover:scale-110 transition-transform duration-200 flex items-center justify-center group"
+        className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-50 w-14 h-14 md:w-16 md:h-16 bg-gradient-to-br from-[#5B6CFF] to-[#8B5CF6] text-white rounded-full shadow-2xl hover:scale-110 transition-transform duration-200 flex items-center justify-center group"
         aria-label="Open chat"
       >
         <MessageCircle size={28} className="group-hover:scale-110 transition-transform" />
@@ -90,8 +90,10 @@ export function FloatingChatbot() {
   return (
     <div
       className={cn(
-        "fixed bottom-6 right-6 z-50 bg-white rounded-[24px] shadow-2xl border border-gray-200 transition-all duration-300 flex flex-col overflow-hidden",
-        isMinimized ? "w-80 h-16" : "w-96 h-[600px]"
+        "fixed bottom-3 right-3 md:bottom-6 md:right-6 z-50 bg-white rounded-[22px] shadow-2xl border border-gray-200 transition-all duration-300 flex flex-col overflow-hidden",
+        isMinimized
+          ? "w-[calc(100vw-1.5rem)] md:w-80 h-16"
+          : "w-[calc(100vw-1.5rem)] md:w-96 h-[70vh] md:h-[600px] max-h-[680px]"
       )}
     >
       {/* Header */}
@@ -170,7 +172,7 @@ export function FloatingChatbot() {
                   }
                 }}
                 placeholder="Type your message..."
-                className="resize-none text-sm flex-1"
+                className="resize-none text-[16px] md:text-sm flex-1"
                 rows={2}
                 disabled={isLoading}
               />

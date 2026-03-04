@@ -35,13 +35,7 @@ export default function HeroSection() {
 
     return (
         <section 
-            className="relative w-full flex flex-col justify-center overflow-hidden z-0"
-            style={{
-                height: '884px', // Exact desktop height
-                margin: '0',
-                padding: '0',
-                top: '0',
-            }}
+            className="relative w-full flex flex-col justify-center overflow-hidden z-0 h-[72vh] min-h-[540px] max-h-[760px] md:h-[884px] md:min-h-0 md:max-h-none"
         >
             {/* 
               BACKGROUND CONTENT
@@ -56,12 +50,11 @@ export default function HeroSection() {
                 >
                     <video
                         ref={video1Ref}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover object-[62%_center] md:object-center"
                         autoPlay
                         muted
                         playsInline
                         onEnded={() => handleVideoEnd(1)}
-                        style={{ objectPosition: 'center' }}
                     >
                         <source src="/videos/Hero1.mp4" type="video/mp4" />
                     </video>
@@ -73,14 +66,13 @@ export default function HeroSection() {
                 >
                     <video
                         ref={video2Ref}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover object-[62%_center] md:object-center"
                         // We don't verify 'autoPlay' here because we trigger it manually on switch, 
                         // but keeping keys consistent helps. 
                         // Actually, for seamlessness, we can keep both mounted and play them when needed.
                         muted
                         playsInline
                         onEnded={() => handleVideoEnd(2)}
-                        style={{ objectPosition: 'center' }}
                     >
                         <source src="/videos/Hero2.mp4" type="video/mp4" />
                     </video>
@@ -121,18 +113,13 @@ export default function HeroSection() {
                 {/* Headline & Subtext Container */}
                 <div 
                     suppressHydrationWarning
-                    className={`absolute left-0 px-6 lg:left-[72px] lg:px-0 transition-all duration-1000 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
-                    style={{
-                        top: '25%', // Approx 200-250px from top
-                    }}
+                    className={`absolute left-0 top-[18%] sm:top-[20%] md:top-[25%] px-5 sm:px-6 lg:left-[72px] lg:px-0 transition-all duration-1000 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
                 >
                     <h1 
-                        className="text-white font-serif tracking-tight leading-tight mb-0"
+                        className="text-white font-serif tracking-tight leading-[0.92] mb-0 text-[44px] sm:text-[56px] md:text-[84px] md:leading-[78px]"
                         style={{
                             fontFamily: '"Times New Roman", Times, Baskerville, Georgia, serif',
                             fontWeight: 300,
-                            fontSize: 'clamp(40px, 6vw, 84px)', // Responsive clamp
-                            lineHeight: '78px', // Exact line height
                             whiteSpace: 'pre-line', // Respect line breaks in text
                         }}
                     >
@@ -147,32 +134,16 @@ export default function HeroSection() {
                 {/* CTA BUTTON */}
                 <div 
                     suppressHydrationWarning
-                    className={`absolute left-6 lg:left-[72px] transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
-                    style={{
-                        bottom: '50px', // 40-60px from bottom
-                    }}
+                    className={`absolute left-5 sm:left-6 lg:left-[72px] bottom-6 sm:bottom-8 md:bottom-[50px] transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
                 >
                     <Link href="/find-psychologists">
                         <button 
-                            className="group inline-flex items-center justify-between transition-all duration-300 hover:brightness-110 active:scale-95"
-                            style={{
-                                height: '53px',
-                                background: 'rgba(190, 200, 185, 0.35)', // Matches CTA section exact color
-                                backdropFilter: 'blur(10px)',
-                                WebkitBackdropFilter: 'blur(10px)',
-                                border: '1px solid rgba(255,255,255,0.18)',
-                                borderRadius: '3rem', 
-                                paddingLeft: '24px',
-                                paddingRight: '4.5px', // Matches vertical margin: (53-44)/2 = 4.5px
-                                gap: '16px',
-                                boxShadow: '0 10px 30px rgba(0,0,0,0.20)'
-                            }}
+                            className="group inline-flex items-center justify-between h-12 md:h-[53px] rounded-full border border-white/20 bg-[rgba(190,200,185,0.35)] backdrop-blur-[10px] pl-4 md:pl-6 pr-1 md:pr-[4.5px] gap-3 md:gap-4 shadow-[0_10px_30px_rgba(0,0,0,0.20)] transition-all duration-300 hover:brightness-110 active:scale-95"
                         >
                             <span 
-                                className="text-white/95"
+                                className="text-white/95 text-[15px] md:text-[16px]"
                                 style={{ 
                                     fontFamily: '"Helvetica Now", Helvetica, Arial, sans-serif',
-                                    fontSize: '16px',
                                     lineHeight: '1',
                                     fontWeight: 400,
                                     whiteSpace: 'nowrap'
@@ -183,12 +154,7 @@ export default function HeroSection() {
                             
                             {/* Circle Badge with Arrow */}
                             <div 
-                                className="flex items-center justify-center rounded-full bg-[#d9e7c8] text-black transition-transform duration-300 group-hover:scale-105"
-                                style={{
-                                    width: '44px',
-                                    height: '44px',
-                                    flexShrink: 0
-                                }}
+                                className="flex items-center justify-center rounded-full bg-[#d9e7c8] text-black transition-transform duration-300 group-hover:scale-105 w-10 h-10 md:w-11 md:h-11 shrink-0"
                             >
                                 {/* Custom Sharp Arrow SVG to match reference exactly */}
                                 <svg 

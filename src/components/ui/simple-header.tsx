@@ -145,19 +145,13 @@ export function SimpleHeader() {
           </div>
       </div>
 
-      <header className="w-full fixed top-[22px] z-[9999] flex justify-center px-4">
+      <header className="w-full fixed top-3 md:top-[22px] z-[9999] flex justify-center px-3 md:px-4">
         <nav
           className={cn(
-            "flex items-center justify-between rounded-[16px] bg-white/95 backdrop-blur-sm pr-2 sm:pr-4", 
+            "flex items-center justify-between w-full max-w-[947px] h-[64px] md:h-[78px] rounded-[16px] bg-white/95 backdrop-blur-sm pl-4 md:pl-[30px] pr-2 sm:pr-4",
             "transition-shadow duration-300",
-            "pl-[30px]", 
             isScrolled ? "shadow-lg" : "shadow-md"
           )}
-          style={{
-            width: '947px',
-            maxWidth: '100%',
-            height: '78px',
-          }}
         >
             {/* Brand Logo - Left */}
             <Link href="/" className="flex items-center shrink-0 gap-0"> 
@@ -166,7 +160,7 @@ export function SimpleHeader() {
                 alt="HealTalk logo"
                 width={160}
                 height={40}
-                className="h-8 sm:h-10 w-auto"
+                className="h-7 sm:h-8 md:h-10 w-auto"
               />
             </Link>
 
@@ -237,18 +231,18 @@ export function SimpleHeader() {
             </div>
 
             {/* Mobile Menu Toggle */}
-            <div className="flex lg:hidden items-center gap-3">
+            <div className="flex lg:hidden items-center gap-1.5 sm:gap-2">
               {/* CTA Button (Mobile - visible) */}
               {isAuthenticated ? (
                 <Link href={dashboardHref}>
-                  <Button className="h-10 px-5 rounded-full bg-[#d5f567] text-black font-semibold text-sm hover:bg-[#c3e555] transition-colors duration-200 shadow-none border-0">
+                  <Button className="h-9 sm:h-10 px-3.5 sm:px-4 rounded-full bg-[#d5f567] text-black font-semibold text-xs sm:text-sm hover:bg-[#c3e555] transition-colors duration-200 shadow-none border-0">
                     Dashboard
                   </Button>
                 </Link>
               ) : (
                 <Link href="/onboarding/step-1">
-                  <Button className="h-10 px-5 rounded-full bg-[#d5f567] text-black font-semibold text-sm hover:bg-[#c3e555] transition-colors duration-200 shadow-none border-0">
-                    Get Started
+                  <Button className="h-9 sm:h-10 px-3.5 sm:px-4 rounded-full bg-[#d5f567] text-black font-semibold text-xs sm:text-sm hover:bg-[#c3e555] transition-colors duration-200 shadow-none border-0">
+                    Start
                   </Button>
                 </Link>
               )}
@@ -258,7 +252,7 @@ export function SimpleHeader() {
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="h-10 w-10 text-gray-900 hover:bg-gray-100"
+                  className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl text-gray-900 hover:bg-gray-100"
                   aria-label="Open menu"
                 >
                   <MenuToggle
@@ -269,48 +263,75 @@ export function SimpleHeader() {
                   />
                 </Button>
                 <SheetContent
-                  className="bg-white gap-0 border-l border-gray-200"
+                  className="bg-white gap-0 border-l border-gray-200 w-[88vw] max-w-[360px] p-0"
                   showClose={false}
-                  side="left"
+                  side="right"
                 >
                   <SheetTitle className="sr-only">Main menu</SheetTitle>
-                  <div className="grid gap-y-2 overflow-y-auto px-4 pt-12 pb-5">
-                    {links.filter((l) => !l.isMegaMenu).map((link) => (
+                  <div className="flex h-full flex-col">
+                    <div className="border-b border-gray-100 px-5 pt-6 pb-4">
+                      <Image
+                        src="/images/New_Logo.png"
+                        alt="HealTalk logo"
+                        width={132}
+                        height={32}
+                        className="h-8 w-auto"
+                      />
+                    </div>
+
+                    <div className="grid gap-y-2 overflow-y-auto px-4 py-4">
+                      {links.map((link) => (
+                        <Link
+                          key={link.label}
+                          className={cn(
+                            "px-4 py-3 text-[16px] font-semibold text-gray-900 rounded-xl transition-colors",
+                            "hover:bg-[#dcd5cb]"
+                          )}
+                          href={link.isMegaMenu ? "/resources" : link.href}
+                          onClick={() => setOpen(false)}
+                        >
+                          {link.label}
+                        </Link>
+                      ))}
+
+                      <span className="px-4 pt-2 pb-1 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                        Resource Quick Links
+                      </span>
+                      {resourcesCards.map((card) => (
+                        <Link
+                          key={card.title}
+                          className={cn(
+                            "px-4 py-3 rounded-xl transition-colors",
+                            "hover:bg-[#dcd5cb]"
+                          )}
+                          href={card.href}
+                          onClick={() => setOpen(false)}
+                        >
+                          <div className="text-[15px] font-semibold text-gray-900">{card.title}</div>
+                          <div className="text-xs text-gray-500 mt-0.5">{card.subtitle}</div>
+                        </Link>
+                      ))}
+                    </div>
+
+                    <div className="mt-auto border-t border-gray-100 p-4 space-y-2">
+                      {!isAuthenticated && (
+                        <Link
+                          href="/login"
+                          className="block px-4 py-3 text-[15px] font-medium text-gray-900 hover:bg-[#dcd5cb] rounded-xl transition-colors"
+                          onClick={() => setOpen(false)}
+                        >
+                          Sign In
+                        </Link>
+                      )}
                       <Link
-                        key={link.label}
-                        className={cn(
-                          "px-4 py-3 text-base font-medium text-gray-900 rounded-lg transition-colors",
-                          "hover:bg-[#dcd5cb]"
-                        )}
-                        href={link.href}
+                        href={isAuthenticated ? dashboardHref : "/onboarding/step-1"}
                         onClick={() => setOpen(false)}
                       >
-                        {link.label}
+                        <Button className="w-full h-11 rounded-full bg-[#d5f567] text-black font-semibold text-[15px] hover:bg-[#c3e555] transition-colors duration-200 shadow-none border-0">
+                          {isAuthenticated ? "Go to Dashboard" : "Get Started"}
+                        </Button>
                       </Link>
-                    ))}
-                    <span className="px-4 pt-2 pb-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">Resources</span>
-                    {resourcesCards.map((card) => (
-                      <Link
-                        key={card.title}
-                        className={cn(
-                          "px-4 py-3 text-base font-medium text-gray-900 rounded-lg transition-colors",
-                          "hover:bg-[#dcd5cb]"
-                        )}
-                        href={card.href}
-                        onClick={() => setOpen(false)}
-                      >
-                        {card.title}
-                      </Link>
-                    ))}
-                    {!isAuthenticated && (
-                      <Link
-                        href="/login"
-                        className="px-4 py-3 text-base font-medium text-gray-900 hover:bg-[#dcd5cb] rounded-lg transition-colors"
-                        onClick={() => setOpen(false)}
-                      >
-                        Sign In
-                      </Link>
-                    )}
+                    </div>
                   </div>
                 </SheetContent>
               </Sheet>
