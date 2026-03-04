@@ -8,6 +8,7 @@ import { parseJson } from "@/lib/validation";
 import { requireRateLimit } from "@/lib/rate-limit";
 import { validateCsrf } from "@/lib/csrf";
 import { AGORA_TOKEN_TTL_SECONDS } from "@/lib/constants";
+import { parseDirectConversationId } from "@/lib/messaging";
 
 const tokenSchema = z.object({
   appointmentId: z.string().min(1).optional(),
@@ -68,24 +69,48 @@ export async function POST(request: Request) {
 
   // Handle appointment-based calls
   if (appointmentId) {
-    const appointment = await prisma.appointment.findUnique({
-      where: { id: appointmentId },
-      include: {
-        patient: { select: { userId: true } },
-        psychologist: { select: { userId: true } },
-      },
-    });
+    const directConversation = parseDirectConversationId(appointmentId);
 
-    if (!appointment) {
-      return NextResponse.json({ error: "Appointment not found" }, { status: 404 });
+    if (directConversation) {
+      const [patient, psychologist] = await Promise.all([
+        prisma.patient.findUnique({
+          where: { id: directConversation.patientId },
+          select: { userId: true },
+        }),
+        prisma.psychologist.findUnique({
+          where: { id: directConversation.psychologistId },
+          select: { userId: true },
+        }),
+      ]);
+
+      if (!patient || !psychologist) {
+        return NextResponse.json({ error: "Conversation not found" }, { status: 404 });
+      }
+
+      isAuthorized =
+        patient.userId === session.user.id || psychologist.userId === session.user.id;
+      isHost = psychologist.userId === session.user.id;
+      channelName = appointmentId;
+    } else {
+      const appointment = await prisma.appointment.findUnique({
+        where: { id: appointmentId },
+        include: {
+          patient: { select: { userId: true } },
+          psychologist: { select: { userId: true } },
+        },
+      });
+
+      if (!appointment) {
+        return NextResponse.json({ error: "Appointment not found" }, { status: 404 });
+      }
+
+      isAuthorized =
+        appointment.patient?.userId === session.user.id ||
+        appointment.psychologist?.userId === session.user.id;
+
+      isHost = appointment.psychologist?.userId === session.user.id;
+      channelName = appointment.id;
     }
-
-    isAuthorized =
-      appointment.patient?.userId === session.user.id ||
-      appointment.psychologist?.userId === session.user.id;
-
-    isHost = appointment.psychologist?.userId === session.user.id;
-    channelName = appointment.id;
   }
   // Handle session-based calls
   else if (sessionId) {

@@ -24,8 +24,22 @@ const AGORA_ERROR_MESSAGES: Record<string, string> = {
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+const getAgoraCodec = (): "vp8" | "h264" => {
+  if (typeof navigator === "undefined") return "vp8";
+  const ua = navigator.userAgent.toLowerCase();
+  const isIOS = /iphone|ipad|ipod/.test(ua);
+  const isSafari =
+    ua.includes("safari") &&
+    !ua.includes("chrome") &&
+    !ua.includes("chromium") &&
+    !ua.includes("crios") &&
+    !ua.includes("fxios") &&
+    !ua.includes("edgios");
+  return isIOS || isSafari ? "h264" : "vp8";
+};
+
 const createClient = () =>
-  AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+  AgoraRTC.createClient({ mode: "rtc", codec: getAgoraCodec() });
 
 type VideoCallProps = {
   appointmentId: string;
@@ -88,7 +102,7 @@ async function fetchAgoraToken(
   appointmentId: string
 ): Promise<{ appId: string; token: string; channelName: string }> {
   const csrfController = new AbortController();
-  const csrfTimeout = setTimeout(() => csrfController.abort(), 8_000);
+  const csrfTimeout = setTimeout(() => csrfController.abort(), 15_000);
   const csrfResponse = await fetch("/api/security/csrf", {
     credentials: "include",
     signal: csrfController.signal,
@@ -107,7 +121,7 @@ async function fetchAgoraToken(
   }
 
   const tokenController = new AbortController();
-  const tokenTimeout = setTimeout(() => tokenController.abort(), 12_000);
+  const tokenTimeout = setTimeout(() => tokenController.abort(), 25_000);
   const res = await fetch("/api/agora/token", {
     method: "POST",
     credentials: "include",

@@ -26,6 +26,8 @@ type AppointmentMeta = {
   psychologistName: string;
   patientUserId: string;
   psychologistUserId: string;
+  patientImageUrl?: string | null;
+  psychologistImageUrl?: string | null;
 };
 
 type SocketSendResponse = {
@@ -74,6 +76,25 @@ const toSocketResponse = (payload: unknown): SocketSendResponse => {
   };
 };
 
+const mergeMessages = (
+  existing: MessageRecord[],
+  incoming: MessageRecord[]
+): MessageRecord[] => {
+  const map = new Map<string, MessageRecord>();
+
+  existing.forEach((message) => {
+    map.set(message.id, message);
+  });
+  incoming.forEach((message) => {
+    map.set(message.id, message);
+  });
+
+  return Array.from(map.values()).sort(
+    (a, b) =>
+      new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+  );
+};
+
 export function MessageThread({ appointmentId }: { appointmentId: string }) {
   const { data: session } = useSession();
   const [messages, setMessages] = useState<MessageRecord[]>([]);
@@ -106,6 +127,18 @@ export function MessageThread({ appointmentId }: { appointmentId: string }) {
       ? appointment.psychologistUserId
       : appointment.patientUserId;
   }, [appointment, session?.user?.id]);
+
+  const otherImageUrl = useMemo(() => {
+    if (!appointment || !session?.user?.id) return null;
+    return session.user.id === appointment.patientUserId
+      ? appointment.psychologistImageUrl || null
+      : appointment.patientImageUrl || null;
+  }, [appointment, session?.user?.id]);
+
+  const otherInitial = useMemo(() => {
+    const trimmed = otherName.trim();
+    return trimmed ? trimmed.charAt(0).toUpperCase() : "U";
+  }, [otherName]);
 
   useEffect(() => {
     let isMounted = true;
@@ -144,10 +177,63 @@ export function MessageThread({ appointmentId }: { appointmentId: string }) {
 
   useEffect(() => {
     if (!appointmentId) return;
+
+    let isCancelled = false;
+    const pollMessages = async () => {
+      try {
+        const res = await fetchWithTimeout(
+          `/api/messages/${appointmentId}`,
+          { credentials: "include" },
+          10_000
+        );
+        if (!res.ok) return;
+
+        const data = (await res.json().catch(() => null)) as
+          | { messages?: MessageRecord[]; appointment?: AppointmentMeta }
+          | null;
+
+        if (isCancelled || !data) return;
+
+        if (Array.isArray(data.messages)) {
+          setMessages((prev) => mergeMessages(prev, data.messages || []));
+        }
+        if (data.appointment) {
+          setAppointment((prev) => prev || data.appointment || null);
+        }
+      } catch {
+        // Polling fallback is best effort only.
+      }
+    };
+
+    const intervalId = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        void pollMessages();
+      }
+    }, 3000);
+
+    return () => {
+      isCancelled = true;
+      clearInterval(intervalId);
+    };
+  }, [appointmentId]);
+
+  useEffect(() => {
+    if (!appointmentId) return;
     const socket = connectSocket();
     const room = `appointment:${appointmentId}`;
 
-    socket.emit("join", room);
+    socket.emit(
+      "join",
+      room,
+      (response?: { ok?: boolean; error?: string }) => {
+        if (response && response.ok === false) {
+          setSendError(
+            response.error ||
+              "Live updates are limited right now. Messages will still refresh."
+          );
+        }
+      }
+    );
 
     const handleMessage = (message: MessageRecord) => {
       setMessages((prev) => {
@@ -378,7 +464,7 @@ export function MessageThread({ appointmentId }: { appointmentId: string }) {
         <h2 className="text-lg font-semibold text-gray-900">{otherName}</h2>
         <p className="text-sm text-gray-500">
           {isOtherTyping
-            ? "Typing..."
+            ? `${otherName} is typing...`
             : isOtherOnline
             ? "Online"
             : "Offline"}
@@ -398,6 +484,23 @@ export function MessageThread({ appointmentId }: { appointmentId: string }) {
                 key={message.id}
                 className={`flex ${isMine ? "justify-end" : "justify-start"}`}
               >
+                {!isMine && (
+                  <div className="mr-2 mb-1 h-8 w-8 shrink-0 overflow-hidden rounded-full bg-gray-200">
+                    {otherImageUrl ? (
+                      <Image
+                        src={otherImageUrl}
+                        alt={otherName}
+                        width={32}
+                        height={32}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-xs font-semibold text-gray-600">
+                        {otherInitial}
+                      </div>
+                    )}
+                  </div>
+                )}
                 <div
                   className={`max-w-[85%] sm:max-w-[75%] rounded-2xl px-4 py-3 text-sm shadow-sm ${
                     isMine

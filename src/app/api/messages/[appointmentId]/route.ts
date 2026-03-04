@@ -44,6 +44,8 @@ type ConversationContext = {
   psychologistUserId: string;
   patientName: string;
   psychologistName: string;
+  patientImageUrl: string | null;
+  psychologistImageUrl: string | null;
 };
 
 const resolveConversation = async (
@@ -58,11 +60,11 @@ const resolveConversation = async (
     const [patient, psychologist] = await Promise.all([
       prisma.patient.findUnique({
         where: { id: directConversation.patientId },
-        include: { user: { select: { id: true, name: true } } },
+        include: { user: { select: { id: true, name: true, image: true } } },
       }),
       prisma.psychologist.findUnique({
         where: { id: directConversation.psychologistId },
-        include: { user: { select: { id: true, name: true } } },
+        include: { user: { select: { id: true, name: true, image: true } } },
       }),
     ]);
 
@@ -86,6 +88,8 @@ const resolveConversation = async (
         psychologistUserId: psychologist.userId,
         patientName: patient.user?.name || "Patient",
         psychologistName: psychologist.user?.name || "Psychologist",
+        patientImageUrl: patient.user?.image || null,
+        psychologistImageUrl: psychologist.user?.image || null,
       },
     };
   }
@@ -93,8 +97,12 @@ const resolveConversation = async (
   const appointment = await prisma.appointment.findUnique({
     where: { id: conversationId },
     include: {
-      patient: { select: { id: true, userId: true, user: { select: { name: true } } } },
-      psychologist: { select: { id: true, userId: true, user: { select: { name: true } } } },
+      patient: {
+        select: { id: true, userId: true, user: { select: { name: true, image: true } } },
+      },
+      psychologist: {
+        select: { id: true, userId: true, user: { select: { name: true, image: true } } },
+      },
     },
   });
 
@@ -120,6 +128,8 @@ const resolveConversation = async (
       psychologistUserId: appointment.psychologist.userId,
       patientName: appointment.patient.user?.name || "Patient",
       psychologistName: appointment.psychologist.user?.name || "Psychologist",
+      patientImageUrl: appointment.patient.user?.image || null,
+      psychologistImageUrl: appointment.psychologist.user?.image || null,
     },
   };
 };
@@ -171,6 +181,8 @@ export async function GET(request: Request, { params }: RouteParams) {
       psychologistName: context.psychologistName,
       patientUserId: context.patientUserId,
       psychologistUserId: context.psychologistUserId,
+      patientImageUrl: context.patientImageUrl,
+      psychologistImageUrl: context.psychologistImageUrl,
     },
     messages,
   });

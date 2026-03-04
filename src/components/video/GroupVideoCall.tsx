@@ -19,6 +19,20 @@ interface GroupVideoCallProps {
   onLeave: () => void;
 }
 
+const getAgoraCodec = (): "vp8" | "h264" => {
+  if (typeof navigator === "undefined") return "vp8";
+  const ua = navigator.userAgent.toLowerCase();
+  const isIOS = /iphone|ipad|ipod/.test(ua);
+  const isSafari =
+    ua.includes("safari") &&
+    !ua.includes("chrome") &&
+    !ua.includes("chromium") &&
+    !ua.includes("crios") &&
+    !ua.includes("fxios") &&
+    !ua.includes("edgios");
+  return isIOS || isSafari ? "h264" : "vp8";
+};
+
 export function GroupVideoCall({ sessionId, isHost, onLeave }: GroupVideoCallProps) {
   const clientRef = useRef<IAgoraRTCClient | null>(null);
   const localVideoTrackRef = useRef<ICameraVideoTrack | null>(null);
@@ -63,7 +77,10 @@ export function GroupVideoCall({ sessionId, isHost, onLeave }: GroupVideoCallPro
         const { appId, token, channelName } = await res.json();
 
         // Create Agora client
-        const agoraClient = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+        const agoraClient = AgoraRTC.createClient({
+          mode: "rtc",
+          codec: getAgoraCodec(),
+        });
         clientRef.current = agoraClient;
 
         // Set up event listeners
