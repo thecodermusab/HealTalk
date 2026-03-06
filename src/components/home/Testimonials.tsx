@@ -11,21 +11,21 @@ const testimonials = [
     text: "I was nervous to try therapy, but my first session felt like talking to someone who genuinely cared. It made a real difference.",
     name: "Arne N.",
     role: "Client",
-    image: "/images/portrait-1.png",
+    image: "/images/Review 1.jpg",
   },
   {
     id: 2,
     text: "I booked in under five minutes and the session felt completely safe. I didn't expect it to feel so normal — in a good way.",
     name: "Nora M.",
     role: "Client",
-    image: "/images/portrait-2.png",
+    image: "/images/Review 2 .jpg",
   },
   {
     id: 3,
     text: "I kept telling myself I could handle it alone. Starting therapy was the best decision I've made this year.",
     name: "Sarah A.",
     role: "Client",
-    image: "/images/portrait-3.png",
+    image: "/images/Review 3 .jpg",
   },
 ];
 
